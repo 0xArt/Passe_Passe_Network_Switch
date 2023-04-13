@@ -28,10 +28,21 @@ module rgmii_port(
     input   wire            phy_rx_clock,
     input   wire            phy_rx_data_enable,
     input   wire    [3:0]   phy_rx_data,
+    input   wire    [8:0]   transmit_data,
+    input   wire            transmit_data_enable,
+
     output  wire            phy_tx_clock,
     output  wire            phy_tx_data_valid,
     output  wire    [3:0]   phy_tx_data
+    output  wire            transmit_data_ready,
+    output  wire            rgmii_reference_clock,
+    output  wire            valid_packet,
+    output  wire            invalid_packet,
+    output  wire    [47:0]  parsed_mac_destination,
+    output  wire    [47:0]  parsed_mac_source
 );
+
+
 
 
 
