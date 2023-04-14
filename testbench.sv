@@ -6,7 +6,7 @@
 //
 // Create Date: 04/12/2023
 // Design Name:
-// Module Name: ethernet_packet_generator
+// Module Name: frame_check_sequence_generator
 // Project Name:
 // Target Devices:
 // Tool Versions:
@@ -19,17 +19,9 @@
 // Additional Comments:
 //
 //////////////////////////////////////////////////////////////////////////////////
-module ethernet_packet_generator(
+module testbench(
     input   wire            clock,
-    input   wire            reset_n,
-    input   wire            enable,
-    input   wire    [7:0]   payload_data,
-    input   wire            packet_data_enable,
-    input   wire            pll_lock,
-
-    output  wire    [7:0]   transmit_data,
-    output  wire            transmit_data_valid
+    input   wire            reset_n
 );
-
 
 endmodule
