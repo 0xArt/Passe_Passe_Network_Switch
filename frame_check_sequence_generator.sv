@@ -25,43 +25,53 @@ module frame_check_sequence_generator(
     input   wire    [7:0]   data,
     input   wire            data_enable,
 
-    output  reg    [31:0]   checksum,
+    output  reg     [7:0]   checksum,
     output  reg             checksum_valid
 );
 
+
+typedef enum
+{
+    S_IDLE,
+    S_COMPUTE,
+    S_FINISH
+} state_type;
+
 integer i;
-
-reg [31:0]  _checksum;
-reg         _checkums_valid;
-
+reg [7:0]   _checksum;
+reg         _checksum_valid;
 reg [7:0]   data_binary_reverse;
 reg [7:0]   _data_binary_reverse;
-
 reg [31:0]  lfsr_out;
 reg [31:0]  _lfsr_out;
-
 reg [31:0]  lfsr_out_xor;
 reg [31:0]  _lfsr_out_xor;
-
 reg [31:0]  lfsr_out_xor_binary_reverse;
 reg [31:0]  _lfsr_out_xor_binary_reverse;
-
 reg [31:0]  lfsr_in;
 reg [31:0]  _lfsr_in;
+reg [31:0]  checksum_result;
+reg [31:0]  _checksum_result;
+reg [1:0]   _counter;
+reg [1:0]   counter;
+
+state_type  _state;
+state_type  state;
 
 always_comb begin
 
     for (i=0;i<8;i++)begin
         _data_binary_reverse[i]             = data[7-i];
     end
-
+    _lfsr_out_xor                   = lfsr_out ^ 32'hFFFF_FFFF;
     for (i=0;i<32;i++)begin
         _lfsr_out_xor_binary_reverse[i]     = lfsr_out_xor[31-i];
     end
-
+    _state                          = state;
+    _checksum_result                = checksum_result;
     _checksum                       = checksum;
-    _checkums_valid                 = checksum_valid;
-    _lfsr_out_xor                   = lfsr_out ^ 32'hFFFF_FFFF;
+    _checksum_valid                 = 0;
+    _counter                        = counter;
     _lfsr_out[0]                    = data_binary_reverse[6] ^ data_binary_reverse[0] ^ lfsr_in[24] ^ lfsr_in[30];
     _lfsr_out[1]                    = data_binary_reverse[7] ^ data_binary_reverse[6] ^ data_binary_reverse[1] ^ data_binary_reverse[0] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[30] ^ lfsr_in[31];
     _lfsr_out[2]                    = data_binary_reverse[7] ^ data_binary_reverse[6] ^ data_binary_reverse[2] ^ data_binary_reverse[1] ^ data_binary_reverse[0] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[30] ^ lfsr_in[31];
@@ -95,35 +105,67 @@ always_comb begin
     _lfsr_out[30]                   = data_binary_reverse[7] ^ data_binary_reverse[4] ^ lfsr_in[22] ^ lfsr_in[28] ^ lfsr_in[31];
     _lfsr_out[31]                   = data_binary_reverse[5] ^ lfsr_in[23] ^ lfsr_in[29];
 
+    case (state)
+
+        S_IDLE: begin
+            _lfsr_in    = 32'hFFFF_FFFF;
+            _counter    = 0;
+            if (data_enable) begin
+                _state      = S_COMPUTE;
+                _lfsr_in    =   lfsr_out;
+            end
+        end
+        S_COMPUTE: begin
+            if (data_enable) begin
+                _lfsr_in         =   lfsr_out;
+                _checksum_result = lfsr_out_xor_binary_reverse;
+            end
+            else begin
+                _state                       = S_FINISH;
+                _lfsr_out_xor_binary_reverse = {8'b0000_0000,lfsr_out_xor_binary_reverse[31:8]};
+                _checksum                    = lfsr_out_xor_binary_reverse[7:0];
+                _checksum_valid              = 1;
+            end
+        end
+        S_FINISH: begin
+            _counter                     = counter + 1;
+            _checksum                    = lfsr_out_xor_binary_reverse[7:0];
+            _checksum_valid              = 1;
+
+            if (counter == 3) begin
+                _state  = S_IDLE;
+            end
+        end
+
+    endcase
 end
 
 always_ff @(posedge clock) begin
     if (!reset_n) begin
+        state                       <= S_IDLE;
+        checksum_result             <= 0;
         checksum                    <= 0;
         checksum_valid              <= 0;
         data_binary_reverse         <= 0;
         lfsr_out                    <= 0;
         lfsr_out_xor                <= 0;
         lfsr_out_xor_binary_reverse <= 0;
+        counter                     <= 0;
         lfsr_in                     <= 32'hFFFF_FFFF;
     end
     else begin
+        state                       <= _state;
+        checksum_result             <= _checksum_result;
         checksum                    <= _checksum;
-        checksum_valid              <= _checkums_valid;
+        checksum_valid              <= _checksum_valid;
         data_binary_reverse         <= _data_binary_reverse;
         lfsr_out                    <= _lfsr_out;
         lfsr_out_xor                <= _lfsr_out_xor;
         lfsr_out_xor_binary_reverse <= _lfsr_out_xor_binary_reverse;
+        counter                     <= _counter;
         lfsr_in                     <= _lfsr_in;
     end
 end
-
-
-
-
-
-
-
 
 
 endmodule
