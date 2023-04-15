@@ -19,7 +19,9 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-module rgmii_port(
+module rgmii_port #(
+    parameter RECEIVE_QUE_SLOTS = 1
+)(
     input   wire            clock,
     input   wire            reset_n,
     input   wire            enable,
@@ -130,6 +132,32 @@ endgenerate
     
 */
 
+wire            ethernet_packet_parser_clock;
+wire            ethernet_packet_parser_reset_n;
+wire   [7:0]    ethernet_packet_parser_data;
+wire            ethernet_packet_parser_data_enable;
+wire   [7:0]    ethernet_packet_parser_checksum_data;
+wire            ethernet_packet_parser_checksum_data_enable;
+wire            ethernet_packet_parser_recieve_slot_enable;
+wire            ethernet_packet_parser_checksum_data_valid;
+wire   [7:0]    ethernet_packet_parser_packet_data;
+wire            ethernet_packet_parser_packet_data_valid;
+
+ethernet_packet_parser ethernet_packet_parser(
+    .clock                  (ethernet_packet_parser_clock),
+    .reset_n                (ethernet_packet_parser_reset_n),
+    .data                   (ethernet_packet_parser_data),
+    .data_enable            (ethernet_packet_parser_data_enable),
+    .checksum_data          (ethernet_packet_parser_checksum_data),
+    .checksum_data_enable   (ethernet_packet_parser_checksum_data_enable),
+    .recieve_slot_enable    (ethernet_packet_parser_recieve_slot_enable),
+
+    .checksum_data_valid    (ethernet_packet_parser_checksum_data_valid),
+    .packet_data            (ethernet_packet_parser_packet_data),
+    .packet_data_valid      (ethernet_packet_parser_packet_data_valid)
+);
+
+
 wire            ethernet_packet_generator_clock;
 wire            ethernet_packet_generator_reset_n;
 wire            ethernet_packet_generator_enable;
@@ -164,5 +192,8 @@ assign ddr_out_txctl_buffer_clock       = rgmii_rx_clock;
 assign ddr_out_txctl_buffer_input       = ethernet_packet_data_transmit_data_valid;
 
 assign ddr_out_tx_clock_buffer_clock    = pll_clock;
+
+assign ethernet_packet_generator_clock  = clock;
+assign ethernet_packet_parser_reset_n   = reset_n;
 
 endmodule

@@ -4,9 +4,9 @@
 // Engineer: Artin Isagholian
 //           artinisagholian@gmail.com
 //
-// Create Date: 04/12/2023
+// Create Date: 04/14/2023
 // Design Name:
-// Module Name: ethernet_packet_generator
+// Module Name: ethernet_packet_pusher
 // Project Name:
 // Target Devices:
 // Tool Versions:
@@ -19,17 +19,20 @@
 // Additional Comments:
 //
 //////////////////////////////////////////////////////////////////////////////////
-module ethernet_packet_generator(
+module ethernet_packet_pusher(
     input   wire            clock,
     input   wire            reset_n,
-    input   wire            enable,
-    input   wire    [7:0]   payload_data,
-    input   wire            payload_data_enable,
-    input   wire            pll_lock,
+    input   wire            good_packet,
+    input   wire            bad_packet,
+    input   wire    [7:0]   packet_data,
+    input   wire            packet_data_enable,
 
-    output  wire    [7:0]   transmit_data,
-    output  wire            transmit_data_valid
+    output  reg             packet_data_ready,
+    output  reg    [8:0]    pushed_data,
+    output  reg             pushed_data_valid
+
 );
+
 
 
 endmodule

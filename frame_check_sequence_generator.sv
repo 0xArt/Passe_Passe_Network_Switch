@@ -60,18 +60,19 @@ state_type  state;
 
 always_comb begin
 
-    for (i=0;i<8;i++)begin
+    for (i=0;i<8;i++) begin
         _data_binary_reverse[i]             = data[7-i];
     end
-    _lfsr_out_xor                   = lfsr_out ^ 32'hFFFF_FFFF;
-    for (i=0;i<32;i++)begin
+    for (i=0;i<32;i++) begin
         _lfsr_out_xor_binary_reverse[i]     = lfsr_out_xor[31-i];
     end
+
     _state                          = state;
     _checksum_result                = checksum_result;
     _checksum                       = checksum;
     _checksum_valid                 = 0;
     _counter                        = counter;
+    _lfsr_out_xor                   = lfsr_out ^ 32'hFFFF_FFFF;
     _lfsr_out[0]                    = data_binary_reverse[6] ^ data_binary_reverse[0] ^ lfsr_in[24] ^ lfsr_in[30];
     _lfsr_out[1]                    = data_binary_reverse[7] ^ data_binary_reverse[6] ^ data_binary_reverse[1] ^ data_binary_reverse[0] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[30] ^ lfsr_in[31];
     _lfsr_out[2]                    = data_binary_reverse[7] ^ data_binary_reverse[6] ^ data_binary_reverse[2] ^ data_binary_reverse[1] ^ data_binary_reverse[0] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[30] ^ lfsr_in[31];
@@ -106,37 +107,36 @@ always_comb begin
     _lfsr_out[31]                   = data_binary_reverse[5] ^ lfsr_in[23] ^ lfsr_in[29];
 
     case (state)
-
         S_IDLE: begin
-            _lfsr_in    = 32'hFFFF_FFFF;
-            _counter    = 0;
+            _lfsr_in    = '1;
+            _counter    = 3;
+
             if (data_enable) begin
-                _state      = S_COMPUTE;
+                _state      =   S_COMPUTE;
                 _lfsr_in    =   lfsr_out;
             end
         end
         S_COMPUTE: begin
             if (data_enable) begin
-                _lfsr_in         =   lfsr_out;
-                _checksum_result = lfsr_out_xor_binary_reverse;
+                _lfsr_in         =  lfsr_out;
+                _checksum_result =  lfsr_out_xor_binary_reverse;
             end
             else begin
-                _state                       = S_FINISH;
-                _lfsr_out_xor_binary_reverse = {8'b0000_0000,lfsr_out_xor_binary_reverse[31:8]};
-                _checksum                    = lfsr_out_xor_binary_reverse[7:0];
-                _checksum_valid              = 1;
+                _state                       =  S_FINISH;
+                _lfsr_out_xor_binary_reverse =  {8'h00,lfsr_out_xor_binary_reverse[31:8]};
+                _checksum                    =  lfsr_out_xor_binary_reverse[7:0];
+                _checksum_valid              =  1;
             end
         end
         S_FINISH: begin
-            _counter                     = counter + 1;
+            _counter                     = counter - 1;
             _checksum                    = lfsr_out_xor_binary_reverse[7:0];
             _checksum_valid              = 1;
 
-            if (counter == 3) begin
+            if (counter == 0) begin
                 _state  = S_IDLE;
             end
         end
-
     endcase
 end
 
@@ -151,7 +151,7 @@ always_ff @(posedge clock) begin
         lfsr_out_xor                <= 0;
         lfsr_out_xor_binary_reverse <= 0;
         counter                     <= 0;
-        lfsr_in                     <= 32'hFFFF_FFFF;
+        lfsr_in                     <= '1;
     end
     else begin
         state                       <= _state;
