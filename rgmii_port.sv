@@ -132,16 +132,18 @@ endgenerate
     
 */
 
-wire            ethernet_packet_parser_clock;
-wire            ethernet_packet_parser_reset_n;
-wire   [7:0]    ethernet_packet_parser_data;
-wire            ethernet_packet_parser_data_enable;
-wire   [7:0]    ethernet_packet_parser_checksum_data;
-wire            ethernet_packet_parser_checksum_data_enable;
-wire            ethernet_packet_parser_recieve_slot_enable;
-wire            ethernet_packet_parser_checksum_data_valid;
-wire   [7:0]    ethernet_packet_parser_packet_data;
-wire            ethernet_packet_parser_packet_data_valid;
+wire                                ethernet_packet_parser_clock;
+wire                                ethernet_packet_parser_reset_n;
+wire    [7:0]                       ethernet_packet_parser_data;
+wire                                ethernet_packet_parser_data_enable;
+wire    [7:0]                       ethernet_packet_parser_checksum_data;
+wire                                ethernet_packet_parser_checksum_data_enable;
+wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_packet_parser_recieve_slot_enable;
+wire                                ethernet_packet_parser_checksum_data_valid;
+wire    [7:0]                       ethernet_packet_parser_packet_data;
+wire                                ethernet_packet_parser_packet_data_valid;
+wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_packet_parser_good_packet;
+wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_packet_parser_bad_packet;
 
 ethernet_packet_parser ethernet_packet_parser(
     .clock                  (ethernet_packet_parser_clock),
@@ -154,7 +156,9 @@ ethernet_packet_parser ethernet_packet_parser(
 
     .checksum_data_valid    (ethernet_packet_parser_checksum_data_valid),
     .packet_data            (ethernet_packet_parser_packet_data),
-    .packet_data_valid      (ethernet_packet_parser_packet_data_valid)
+    .packet_data_valid      (ethernet_packet_parser_packet_data_valid),
+    .good_packet            (ethernet_packet_parser_good_packet),
+    .bad_packet             (ethernet_packet_parser_bad_packet)
 );
 
 

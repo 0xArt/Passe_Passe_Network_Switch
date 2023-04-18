@@ -19,16 +19,18 @@
 // Additional Comments:
 //
 //////////////////////////////////////////////////////////////////////////////////
-module ethernet_packet_pusher(
-    input   wire            clock,
-    input   wire            reset_n,
-    input   wire            good_packet,
-    input   wire            bad_packet,
-    input   wire    [7:0]   packet_data,
-    input   wire            packet_data_enable,
+module ethernet_packet_pusher#(
+    parameter RECEIVE_QUE_SLOTS = 1
+)(
+    input   wire                                    clock,
+    input   wire                                    reset_n,
+    input   wire    [RECEIVE_QUE_SLOTS-1:0]         good_packet,
+    input   wire    [RECEIVE_QUE_SLOTS-1:0]         bad_packet,
+    input   wire    [RECEIVE_QUE_SLOTS-1:0][7:0]    packet_data,
+    input   wire    [RECEIVE_QUE_SLOTS-1:0]         packet_data_enable,
 
     output  reg             packet_data_ready,
-    output  reg    [8:0]    pushed_data,
+    output  reg     [8:0]   pushed_data,
     output  reg             pushed_data_valid
 
 );
