@@ -17,8 +17,8 @@ vlog -sv -work presynth testbench.sv
 vsim -L rtg4 -L presynth -work presynth -t 1ps presynth.testbench
 add log -r /*
 
-if{[file exists "wave.do"]} {
-
+if {[file exists "wave.do"]} {
+    do  "wave.do"
 }
 
 run -all
