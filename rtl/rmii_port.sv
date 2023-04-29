@@ -26,7 +26,7 @@ module rmii_port#(
     input   wire            enable,
     input   wire    [1:0]   rmii_receive_data,
     input   wire            rmii_receive_data_enable,
-    input   wire            rmii_data_error,
+    input   wire            rmii_receive_data_error,
     input   wire    [8:0]   transmit_data,
     input   wire            transmit_data_enable,
     input   wire            receive_data_enable,
@@ -273,9 +273,9 @@ assign  frame_fifo_write_reset_n                                =   reset_n;
 
 assign  rmii_byte_packager_clock                                =   clock;
 assign  rmii_byte_packager_reset_n                              =   reset_n;
-assign  rmii_byte_packager_data                                 =   ethernet_transmit_data;
-assign  rmii_byte_packager_data_enable                          =   ethernet_transmit_data_valid;
-assign  rmii_byte_packager_data_error                           =   0;
+assign  rmii_byte_packager_data                                 =   rmii_receive_data;
+assign  rmii_byte_packager_data_enable                          =   rmii_receive_data_enable;
+assign  rmii_byte_packager_data_error                           =   rmii_receive_data_error;
 
 assign  ethernet_frame_parser_clock                             =   clock;
 assign  ethernet_frame_parser_reset_n                           =   reset_n;
