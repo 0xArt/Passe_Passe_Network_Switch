@@ -35,6 +35,7 @@ vlog -sv -work presynth \
     "rtl/ethernet_packet_parser.sv" \
     "rtl/frame_check_sequence_generator.sv" \
     "rtl/rgmii_port.sv" \
+    "rtl/rmii_port.sv" \
     "test/testbench.sv"
 
 vlog -sv -work presynth testbench.sv
