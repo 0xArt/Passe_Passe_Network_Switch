@@ -29,6 +29,7 @@ vlog -sv -work presynth \
     "rtl/fifo/payload_fifo/corefifo_async.v" \
     "rtl/fifo/payload_fifo/COREFIFO_C1.v" \
     "rtl/rmii_byte_packager.sv" \
+    "rtl/que_slot_receieve_handler.sv" \
     "rtl/receive_slot_arbiter.sv" \
     "rtl/ethernet_packet_generator.sv" \
     "rtl/ethernet_packet_parser.sv" \
