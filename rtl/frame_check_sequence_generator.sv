@@ -26,6 +26,7 @@ module frame_check_sequence_generator(
     input   wire            data_enable,
     input   wire            data_last,
 
+    output  reg             ready,
     output  reg     [31:0]  checksum,
     output  reg             checksum_valid
 );
@@ -33,16 +34,15 @@ module frame_check_sequence_generator(
 
 typedef enum
 {
+    S_IDLE,
     S_CALCULATE,
     S_FINISH
 } state_type;
 
-state_type  _state;
-state_type  state;
-
-integer i;
-integer j;
-
+state_type          _state;
+state_type          state;
+integer             i;
+integer             j;
 logic   [31:0]      _checksum;
 logic               _checksum_valid;
 logic   [7:0]       data_binary_reverse;
@@ -51,6 +51,7 @@ logic   [31:0]      _lfsr_in;
 logic   [31:0]      lfsr_out;
 logic   [31:0]      lfsr_in_xor;
 logic   [31:0]      lfsr_in_xor_binary_reverse;
+logic               _ready;
 
 
 always_comb begin
@@ -58,6 +59,7 @@ always_comb begin
     _checksum                       =   checksum;
     _lfsr_in                        =   lfsr_in;
     _checksum_valid                 =   0;
+    _ready                          =   ready;
 
     for (i=0;i<8;i++) begin
         data_binary_reverse[i]      = data[7-i];
@@ -108,6 +110,7 @@ always_comb begin
         S_CALCULATE: begin
             if (data_enable) begin
                 _lfsr_in         =  lfsr_out;
+                _ready           =  0;
 
                 if (data_last) begin
                     _state  =   S_FINISH;
@@ -118,6 +121,7 @@ always_comb begin
             _checksum_valid         = 1;
             _state                  = S_CALCULATE;
             _lfsr_in                = '1;
+            _ready                  = 1;
         end
     endcase
 end
@@ -128,14 +132,15 @@ always_ff @(posedge clock) begin
         checksum                    <= 0;
         checksum_valid              <= 0;
         lfsr_in                     <= '1;
+        ready                       <=  1;
     end
     else begin
         state                       <= _state;
         checksum                    <= _checksum;
         checksum_valid              <= _checksum_valid;
         lfsr_in                     <= _lfsr_in;
+        ready                       <= _ready;
     end
 end
-
 
 endmodule
