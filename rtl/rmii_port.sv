@@ -22,8 +22,8 @@ module rmii_port#(
     parameter RECEIVE_QUE_SLOTS = 1
 )(
     input   wire            clock,
+    input   wire            core_clock,
     input   wire            reset_n,
-    input   wire            enable,
     input   wire    [1:0]   rmii_receive_data,
     input   wire            rmii_receive_data_enable,
     input   wire            rmii_receive_data_error,
@@ -32,9 +32,9 @@ module rmii_port#(
     input   wire            receive_data_enable,
 
     output  wire            transmit_data_ready,
-    output  wire     [8:0]  receive_data,
+    output  wire    [8:0]   receive_data,
     output  wire            receive_data_valid,
-    output  wire     [1:0]  rmii_transmit_data,
+    output  wire    [1:0]   rmii_transmit_data,
     output  wire            rmii_transmit_data_valid
 );
 
@@ -124,7 +124,7 @@ ethernet_packet_parser(
     .packet_data            (ethernet_frame_parser_packet_data),
     .packet_data_valid      (ethernet_frame_parser_packet_data_valid),
     .good_packet            (ethernet_frame_parser_good_packet),
-    .bad_packet             (ethernet_frame_parser_bad_packet),
+    .bad_packet             (ethernet_frame_parser_bad_packet)
 );
 
 
@@ -234,6 +234,40 @@ receive_slot_arbiter(
     .push_data_valid    (receive_slot_arbiter_push_data_valid)
 );
 
+wire    [8:0]   outbound_fifo_data;
+wire            outbound_fifo_read_clock;
+wire            outbound_fifo_read_enable;
+wire            outbound_fifo_read_reset_n;
+wire            outbound_fifo_write_clock;
+wire            outbound_fifo_write_enable;
+wire            outbound_fifo_write_reset_n;
+wire            outbound_fifo_read_data_valid;
+wire            outbound_fifo_empty;
+wire            outbound_fifo_full;
+wire    [8:0]   outbound_fifo_read_data;
+
+COREFIFO_C2 outbound_fifo(
+    .DATA       (outbound_fifo_data),
+    .RCLOCK     (outbound_fifo_read_clock),
+    .RE         (outbound_fifo_read_enable),
+    .RRESET_N   (outbound_fifo_read_reset_n),
+    .WCLOCK     (outbound_fifo_write_clock),
+    .WE         (outbound_fifo_write_enable),
+    .WRESET_N   (outbound_fifo_write_reset_n),
+
+    .DVLD       (outbound_fifo_read_data_valid),
+    .EMPTY      (outbound_fifo_empty),
+    .FULL       (outbound_fifo_full),
+    .Q          (outbound_fifo_read_data)
+);
+
+
+assign  receive_data_valid                                      =   outbound_fifo_read_data_valid;
+assign  receive_data                                            =   outbound_fifo_read_data;
+assign  transmit_data_ready                                     =   0;
+assign  rmii_transmit_data                                      =   0;
+assign  rmii_transmit_data_valid                                =   0;
+
 assign  receive_slot_arbiter_clock                              =   clock;
 assign  receive_slot_arbiter_reset_n                            =   reset_n;
 assign  receive_slot_arbiter_enable                             =   que_slot_receieve_handler_ready;
@@ -249,7 +283,6 @@ generate
         assign  que_slot_receieve_handler_data_enable[i]        =   payload_fifo_read_data_valid[i];
         assign  que_slot_receieve_handler_good_packet[i]        =   ethernet_frame_parser_good_packet[i];
         assign  que_slot_receieve_handler_bad_packet[i]         =   ethernet_frame_parser_bad_packet[i];
-        assign  que_slot_receieve_handler_udp_destination[i]    =   ethernet_frame_parser_udp_destination;
     end
 endgenerate
 
@@ -258,8 +291,8 @@ generate
         assign  payload_fifo_clock[i]                           =   clock;
         assign  payload_fifo_write_data[i]                      =   ethernet_frame_parser_packet_data;
         assign  payload_fifo_write_enable[i]                    =   ethernet_frame_parser_packet_data_valid[i];
-        assign  payload_fifo_read_enable[i]                     =   udp_receieve_handler_push_data_ready[i];
-        assign  payload_fifo_reset_n[i]                         =   udp_receieve_handler_fifo_reset_n[i];
+        assign  payload_fifo_read_enable[i]                     =   que_slot_receieve_handler_push_data_ready[i];
+        assign  payload_fifo_reset_n[i]                         =   que_slot_receieve_handler_fifo_reset_n[i];
     end
 endgenerate
 
@@ -281,6 +314,9 @@ assign  ethernet_frame_parser_clock                             =   clock;
 assign  ethernet_frame_parser_reset_n                           =   reset_n;
 assign  ethernet_frame_parser_data                              =   frame_fifo_read_data;
 assign  ethernet_frame_parser_data_enable                       =   frame_fifo_read_data_valid;
+assign  ethernet_frame_parser_checksum_result                   =   frame_check_sequence_generator_checksum;
+assign  ethernet_frame_parser_checksum_result_enable            =   frame_check_sequence_generator_checksum_valid;
+assign  ethernet_frame_parser_checksum_enable                   =   frame_check_sequence_generator_ready;
 
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i=i+1) begin
@@ -288,14 +324,18 @@ generate
     end
 endgenerate
 
-assign  ethernet_frame_parser_checksum_result                   =   frame_check_sequence_generator_checksum;
-assign  ethernet_frame_parser_checksum_result_enable            =   frame_check_sequence_generator_checksum_valid;
-assign  ethernet_frame_parser_checksum_enable                   =   frame_check_sequence_generator_ready;
-
 assign  frame_check_sequence_generator_clock                    =   clock;
 assign  frame_check_sequence_generator_reset_n                  =   reset_n;
 assign  frame_check_sequence_generator_data                     =   ethernet_frame_parser_checksum_data;
 assign  frame_check_sequence_generator_data_enable              =   ethernet_frame_parser_checksum_data_valid;
 assign  frame_check_sequence_generator_data_last                =   ethernet_frame_parser_checksum_data_last;
+
+assign  outbound_fifo_data                                      =   receive_slot_arbiter_push_data;
+assign  outbound_fifo_read_clock                                =   core_clock;
+assign  outbound_fifo_read_enable                               =   receive_data_enable;
+assign  outbound_fifo_read_reset_n                              =   reset_n;
+assign  outbound_fifo_write_clock                               =   clock;
+assign  outbound_fifo_write_enable                              =   receive_slot_arbiter_push_data_valid;
+assign  outbound_fifo_write_reset_n                             =   reset_n;
 
 endmodule

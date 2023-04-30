@@ -28,6 +28,16 @@ vlog -sv -work presynth \
     "rtl/fifo/payload_fifo/COREFIFO.v" \
     "rtl/fifo/payload_fifo/corefifo_async.v" \
     "rtl/fifo/payload_fifo/COREFIFO_C1.v" \
+    "rtl/fifo/outbound_fifo/corefifo_sync_scntr.v" \
+    "rtl/fifo/outbound_fifo/corefifo_sync.v" \
+    "rtl/fifo/outbound_fifo/corefifo_NstagesSync.v" \
+    "rtl/fifo/outbound_fifo/corefifo_grayToBinConv.v" \
+    "rtl/fifo/outbound_fifo/corefifo_fwft.v" \
+    "rtl/fifo/outbound_fifo/COREFIFO_C2_COREFIFO_C2_0_LSRAM_top.v" \
+    "rtl/fifo/outbound_fifo/COREFIFO_C2_COREFIFO_C2_0_ram_wrapper.v" \
+    "rtl/fifo/outbound_fifo/COREFIFO.v" \
+    "rtl/fifo/outbound_fifo/corefifo_async.v" \
+    "rtl/fifo/outbound_fifo/COREFIFO_C2.v" \
     "rtl/rmii_byte_packager.sv" \
     "rtl/que_slot_receieve_handler.sv" \
     "rtl/receive_slot_arbiter.sv" \
@@ -36,9 +46,8 @@ vlog -sv -work presynth \
     "rtl/frame_check_sequence_generator.sv" \
     "rtl/rgmii_port.sv" \
     "rtl/rmii_port.sv" \
+    "rtl/switch_core.sv" \
     "test/testbench.sv"
-
-vlog -sv -work presynth testbench.sv
 
 vsim -L rtg4 -L presynth -work presynth -t 1ps presynth.testbench
 add log -r /*

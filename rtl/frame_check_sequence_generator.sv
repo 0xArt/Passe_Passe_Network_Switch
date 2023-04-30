@@ -111,10 +111,9 @@ always_comb begin
             if (data_enable) begin
                 _lfsr_in         =  lfsr_out;
                 _ready           =  0;
-
-                if (data_last) begin
-                    _state  =   S_FINISH;
-                end
+            end
+            if (data_last) begin
+                _state  =   S_FINISH;
             end
         end
         S_FINISH: begin

@@ -87,7 +87,7 @@ always_comb begin
                 _push_data[7:0]     =   data;
                 _push_data_valid    =   1;
 
-                if (is_first_byte) bgein
+                if (is_first_byte) begin
                     _is_first_byte  =   0;
                 end
             end
