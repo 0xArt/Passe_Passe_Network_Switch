@@ -108,7 +108,7 @@ for (i=0;i<20;i=i+1) begin
     testbench.ethernet_transmit_data          =   2'b11;
 end
 
-/*
+
 for (i=0;i<12;i=i+1) begin
     @(posedge testbench.clock);
     testbench.ethernet_transmit_data_valid    =   1;
@@ -123,7 +123,7 @@ end
 @(posedge testbench.clock);
 testbench.ethernet_transmit_data          =   0;
 testbench.ethernet_transmit_data_valid    =   0;
-*/
+
 
 for (i=0;i<72;i=i+1) begin
     @(posedge testbench.clock);

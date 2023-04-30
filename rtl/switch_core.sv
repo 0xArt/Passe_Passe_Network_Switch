@@ -75,16 +75,16 @@ generate
 endgenerate
 
 generate
-    for (i=0; i<RECEIVE_QUE_SLOTS; i=i+1) begin
+    for (i=0; i<NUMBER_OF_RMII_PORTS; i=i+1) begin
         assign  rmii_port_clock[i]                       =   clock;
         assign  rmii_port_core_clock[i]                  =   clock;
         assign  rmii_port_reset_n[i]                     =   reset_n;
         assign  rmii_port_rmii_receive_data[i]           =   rmii_phy_receive_data[i];
         assign  rmii_port_rmii_receive_data_enable[i]    =   rmii_phy_receive_data_enable[i];
         assign  rmii_port_rmii_receive_data_error[i]     =   rmii_phy_receive_data_error[i];
-        assign  rmii_port_transmit_data[i]               =   0;
-        assign  rmii_port_transmit_data_enable[i]        =   0;
-        assign  rmii_port_receive_data_enable[i]         =   0;
+        assign  rmii_port_transmit_data[i]               =   0; //todo
+        assign  rmii_port_transmit_data_enable[i]        =   0; //todo
+        assign  rmii_port_receive_data_enable[i]         =   0; //todo
     end
 endgenerate
 
