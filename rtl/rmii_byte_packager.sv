@@ -19,7 +19,12 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-module rmii_byte_packager(
+module rmii_byte_packager#(
+    parameter               RECEIVE_QUE_SLOTS       = 1,
+    parameter logic [1:0]   SPEED_CODE_GIGABIT      = 2,
+    parameter logic [1:0]   SPEED_CODE_100_MEGABIT  = 1,
+    parameter logic [1:0]   SPEED_CODE_1_MEGABIT    = 0
+)(
     input   wire            clock,
     input   wire            reset_n,
     input   wire    [1:0]   data,
@@ -27,7 +32,8 @@ module rmii_byte_packager(
     input   wire            data_error,
 
     output  reg     [8:0]   packaged_data,
-    output  reg             packaged_data_valid
+    output  reg             packaged_data_valid,
+    output  reg     [1:0]   speed_code
 );
 
 
@@ -57,6 +63,7 @@ reg             data_error_delayed;
 logic           _data_error_delayed;
 logic           _is_first_byte;
 reg             is_first_byte;
+logic   [1:0]   _speed_code;
 
 
 always_comb  begin
@@ -69,6 +76,7 @@ always_comb  begin
     _data_delayed           =   data;
     _is_first_byte          =   is_first_byte;
     _packaged_data[8]       =   is_first_byte;
+    _speed_code             =   speed_code;
     _packaged_data_valid    =   0;
 
     case (state)
@@ -100,6 +108,7 @@ always_comb  begin
                     _packaged_data[7:6] =   data_delayed;
                     _packaged_data[5:0] =   packaged_data[7:2];
                     _state              =   S_PACK_100;
+                    _speed_code         =   SPEED_CODE_100_MEGABIT;
                 end
                 else if (data_delayed == 2'b01) begin
                     //10Mb preamble
@@ -167,6 +176,7 @@ always_comb  begin
                     _state          =   S_PACK_10;
                     _sample_counter =   0;
                     _counter        =   0;
+                    _speed_code     =   SPEED_CODE_100_MEGABIT;
                 end
                 else begin
                     _sample_counter     =   sample_counter + 1;
@@ -219,6 +229,7 @@ always_ff @(posedge clock) begin
         data_delayed        <=  0;
         data_error_delayed  <=  0;
         is_first_byte       <=  0;
+        speed_code          <=  0;
     end
     else begin
         state               <=  _state;
@@ -230,6 +241,7 @@ always_ff @(posedge clock) begin
         data_delayed        <=  _data_delayed;
         data_error_delayed  <=  _data_error_delayed;
         is_first_byte       <=  _is_first_byte;
+        speed_code          <=  _speed_code;
     end
 end
 

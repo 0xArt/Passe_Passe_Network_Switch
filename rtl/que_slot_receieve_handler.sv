@@ -27,6 +27,7 @@ module que_slot_receieve_handler(
     input   wire            data_enable,
     input   wire            good_packet,
     input   wire            bad_packet,
+    input   wire            push_data_enable,
 
     output  reg             fifo_reset_n,
     output  reg             ready,
@@ -39,7 +40,9 @@ typedef enum
 {
     S_IDLE,
     S_ADVERTISTE,
-    S_PUSH_DATA
+    S_PUSH_DATA,
+    S_WAIT_WITH_PUSH,
+    S_WAIT
 } state_type;
 
 state_type          _state;
@@ -51,6 +54,8 @@ logic               _push_data_valid;
 logic               _fifo_reset_n;
 logic               _is_first_byte;
 reg                 is_first_byte;
+logic   [8:0]       _wait_data;
+reg     [8:0]       wait_data;
 
 always_comb begin
     _state                          =   state;
@@ -59,6 +64,7 @@ always_comb begin
     _ready                          =   ready;
     _push_data[7:0]                 =   push_data[7:0];
     _push_data[8]                   =   is_first_byte;
+    _wait_data                      =   wait_data;
     _push_data_valid                =   0;
     _fifo_reset_n                   =   1;
 
@@ -77,23 +83,55 @@ always_comb begin
         S_ADVERTISTE:  begin
             _ready  =   1;
 
-            if (enable) begin
+            if (enable && push_data_enable) begin
                 _state              =   S_PUSH_DATA;
                 _push_data_ready    =   1;
             end
         end
         S_PUSH_DATA: begin
-            if (data_enable) begin
-                _push_data[7:0]     =   data;
-                _push_data_valid    =   1;
+            if (push_data_enable) begin
+                if (enable) begin
+                    _push_data_ready    =   1;
+                    if (data_enable) begin
+                        _push_data[7:0]     =   data;
+                        _push_data_valid    =   1;
 
-                if (is_first_byte) begin
-                    _is_first_byte  =   0;
+                        if (is_first_byte) begin
+                            _is_first_byte  =   0;
+                        end
+                    end
+                    else begin
+                        _state              =   S_IDLE;
+                        _push_data_ready    =   0;
+                    end
+                end
+                else begin
+                    _push_data_ready    =   0;
                 end
             end
             else begin
-                _state              =   S_IDLE;
                 _push_data_ready    =   0;
+                if (data_enable) begin
+                    _wait_data  =   data;
+                    _state      =   S_WAIT_WITH_PUSH;
+                end
+                else begin
+                    _state      =   S_WAIT;
+                end
+            end
+        end
+        S_WAIT_WITH_PUSH: begin
+            if (push_data_enable) begin
+                _push_data_ready    =   1;
+                _push_data[7:0]     =   wait_data;
+                _push_data_valid    =   1;
+                _state              =   S_PUSH_DATA;
+            end
+        end
+        S_WAIT: begin
+            if (push_data_enable) begin
+                _push_data_ready    =   1;
+                _state              =   S_PUSH_DATA;
             end
         end
     endcase
@@ -108,6 +146,7 @@ always_ff @(posedge clock) begin
         push_data_ready             <=  0;
         ready                       <=  0;
         is_first_byte               <=  0;
+        wait_data                   <=  0;
     end
     else begin
         state                       <=  _state;
@@ -117,6 +156,7 @@ always_ff @(posedge clock) begin
         push_data_ready             <=  _push_data_ready;
         ready                       <=  _ready;
         is_first_byte               <=  _is_first_byte;
+        wait_data                   <=  _wait_data;
     end
 end
 

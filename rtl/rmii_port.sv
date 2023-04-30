@@ -46,6 +46,7 @@ wire            rmii_byte_packager_reset_n;
 wire    [1:0]   rmii_byte_packager_data;
 wire            rmii_byte_packager_data_enable;
 wire    [8:0]   rmii_byte_packager_packaged_data;
+wire    [1:0]   rmii_byte_packager_speed_code;
 wire            rmii_byte_packager_packaged_data_valid;
 wire            rmii_byte_packager_data_error;
 
@@ -56,6 +57,7 @@ rmii_byte_packager rmii_byte_packager(
     .data_enable            (rmii_byte_packager_data_enable),
     .data_error             (rmii_byte_packager_data_error),
 
+    .speed_code             (rmii_byte_packager_speed_code),
     .packaged_data          (rmii_byte_packager_packaged_data),
     .packaged_data_valid    (rmii_byte_packager_packaged_data_valid)
 );
@@ -97,6 +99,7 @@ wire    [31:0]                      ethernet_frame_parser_checksum_result;
 wire                                ethernet_frame_parser_checksum_result_enable;
 wire                                ethernet_frame_parser_checksum_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_frame_parser_recieve_slot_enable;
+wire    [1:0]                       ethernet_packet_parser_speed_code;
 wire                                ethernet_frame_parser_data_ready;
 wire    [7:0]                       ethernet_frame_parser_checksum_data;
 wire                                ethernet_frame_parser_checksum_data_valid;
@@ -116,6 +119,7 @@ ethernet_packet_parser(
     .checksum_result_enable (ethernet_frame_parser_checksum_result_enable),
     .checksum_enable        (ethernet_frame_parser_checksum_enable),
     .recieve_slot_enable    (ethernet_frame_parser_recieve_slot_enable),
+    .speed_code             (ethernet_packet_parser_speed_code),
 
     .data_ready             (ethernet_frame_parser_data_ready),
     .checksum_data          (ethernet_frame_parser_checksum_data),
@@ -184,6 +188,7 @@ wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0][7:0]   que_slot_receieve_handler_data;
 wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_data_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_good_packet;
+wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_push_data_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_bad_packet;
 wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_fifo_reset_n;
 wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_ready;
@@ -201,6 +206,7 @@ generate
             .data_enable        (que_slot_receieve_handler_data_enable[i]),
             .good_packet        (que_slot_receieve_handler_good_packet[i]),
             .bad_packet         (que_slot_receieve_handler_bad_packet[i]),
+            .push_data_enable   (que_slot_receieve_handler_push_data_enable[i]),
 
             .fifo_reset_n       (que_slot_receieve_handler_fifo_reset_n[i]),
             .ready              (que_slot_receieve_handler_ready[i]),
@@ -217,6 +223,7 @@ wire                                    receive_slot_arbiter_reset_n;
 wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_arbiter_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0][8:0]    receive_slot_arbiter_data;
 wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_arbiter_data_enable;
+wire                                    receive_slot_arbiter_push_data_ready;
 wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_arbiter_ready;
 wire    [8:0]                           receive_slot_arbiter_push_data;
 wire                                    receive_slot_arbiter_push_data_valid;
@@ -283,6 +290,7 @@ generate
         assign  que_slot_receieve_handler_data_enable[i]        =   payload_fifo_read_data_valid[i];
         assign  que_slot_receieve_handler_good_packet[i]        =   ethernet_frame_parser_good_packet[i];
         assign  que_slot_receieve_handler_bad_packet[i]         =   ethernet_frame_parser_bad_packet[i];
+        assign  que_slot_receieve_handler_push_data_enable[i]    =  !outbound_fifo_full;
     end
 endgenerate
 
@@ -317,6 +325,7 @@ assign  ethernet_frame_parser_data_enable                       =   frame_fifo_r
 assign  ethernet_frame_parser_checksum_result                   =   frame_check_sequence_generator_checksum;
 assign  ethernet_frame_parser_checksum_result_enable            =   frame_check_sequence_generator_checksum_valid;
 assign  ethernet_frame_parser_checksum_enable                   =   frame_check_sequence_generator_ready;
+assign  ethernet_packet_parser_speed_code                       =   rmii_byte_packager_speed_code;
 
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i=i+1) begin

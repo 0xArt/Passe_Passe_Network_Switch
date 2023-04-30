@@ -20,7 +20,10 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module ethernet_packet_parser#(
-    parameter RECEIVE_QUE_SLOTS = 1
+    parameter               RECEIVE_QUE_SLOTS       = 1,
+    parameter logic [1:0]   SPEED_CODE_GIGABIT      = 2,
+    parameter logic [1:0]   SPEED_CODE_100_MEGABIT  = 1,
+    parameter logic [1:0]   SPEED_CODE_1_MEGABIT    = 0
 )(
     input   wire                            clock,
     input   wire                            reset_n,
@@ -30,6 +33,7 @@ module ethernet_packet_parser#(
     input   wire                            checksum_result_enable,
     input   wire                            checksum_enable,
     input   wire    [RECEIVE_QUE_SLOTS-1:0] recieve_slot_enable,
+    input   wire    [1:0]                   speed_code,
 
     output  reg                             data_ready,
     output  reg     [7:0]                   checksum_data,
@@ -58,8 +62,10 @@ state_type                              _state;
 state_type                              state;
 reg     [7:0]                           process_counter;
 logic   [7:0]                           _process_counter;
-reg     [7:0]                           process_counter_two;
-logic   [7:0]                           _process_counter_two;
+reg     [7:0]                           timeout_counter;
+logic   [7:0]                           _timeout_counter;
+reg     [7:0]                           timeout_counter_limit;
+logic   [7:0]                           _timeout_counter_limit;
 reg     [12:0][8:0]                     delayed_data;
 logic   [12:0][8:0]                     _delayed_data;
 logic   [7:0]                           _checksum_data;
@@ -78,7 +84,8 @@ logic                                   _data_ready;
 always_comb begin
     _state                              =   state;
     _process_counter                    =   process_counter;
-    _process_counter_two                =   process_counter_two;
+    _timeout_counter                    =   timeout_counter;
+    _timeout_counter_limit              =   timeout_counter_limit;
     _delayed_data[12:1]                 =   delayed_data[11:0];
     _delayed_data[0]                    =   data;
     _que_slot_select                    =   que_slot_select;
@@ -90,11 +97,26 @@ always_comb begin
     _good_packet                        =   0;
     _bad_packet                         =   0;
 
+    case (speed_code)
+        SPEED_CODE_1_MEGABIT: begin
+            _timeout_counter_limit = 40;
+        end
+        SPEED_CODE_100_MEGABIT: begin
+            _timeout_counter_limit = 4;
+        end
+        SPEED_CODE_GIGABIT: begin
+            _timeout_counter_limit = 1;
+        end
+        default: begin
+            _timeout_counter_limit = 0;
+        end
+    endcase
+
     case (state)
         S_IDLE: begin
             _data_ready                      = 1;
             _process_counter                 = 0;
-            _process_counter_two             = 0;
+            _timeout_counter                 = 0;
 
             for (j=0;i<RECEIVE_QUE_SLOTS;j=j+1) begin
                 if (recieve_slot_enable[j] == 1) begin
@@ -116,19 +138,18 @@ always_comb begin
             end
         end
         S_PARSE_DATA: begin
-
             if (data_enable) begin
-                _process_counter    =   0;
+                _timeout_counter    =   0;
 
-                if(process_counter_two < 3) begin
-                    _process_counter_two    = process_counter_two + 1;
+                if(process_counter < 3) begin
+                    _process_counter    = process_counter + 1;
                 end
                 else begin
                     _checksum_data_valid    =   1;
                 end
             end
             else begin
-                _process_counter    =   process_counter + 1;
+                _timeout_counter    =   timeout_counter + 1;
             end
 
             if (data_enable) begin
@@ -139,7 +160,7 @@ always_comb begin
                 _packet_data_valid[que_slot_select]     =   1;
             end
 
-            if ( (data_enable && data[8] == 1'b1) || process_counter == 4) begin
+            if ( (data_enable && data[8] == 1'b1) || (timeout_counter >= timeout_counter_limit) )  begin
                 _checksum_data_last     =   1;
                 _state                  =   S_CHECK_CRC;
                 _data_ready             =   0;
@@ -169,7 +190,7 @@ always_comb begin
         S_RESTART: begin
             _data_ready             =   1;
             _process_counter        =   0;
-            _process_counter_two    =   0;
+            _timeout_counter        =   0;
 
             for (j=0;i<RECEIVE_QUE_SLOTS;j=j+1) begin
                 if (recieve_slot_enable[j] == 1) begin
@@ -191,7 +212,6 @@ end
 always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                           <=  S_IDLE;
-        process_counter                 <=  0;
         for (i=0;i< 13;i++) begin
             delayed_data[i]             <=  0;
         end
@@ -206,7 +226,8 @@ always_ff @(posedge clock) begin
         bad_packet                      <=  0;
         data_ready                      <=  0;
         process_counter                 <=  0;
-        process_counter_two             <=  0;
+        timeout_counter                 <=  0;
+        timeout_counter_limit           <=  0;
     end
     else begin
         state                           <=  _state;
@@ -222,7 +243,8 @@ always_ff @(posedge clock) begin
         bad_packet                      <=  _bad_packet;
         data_ready                      <=  _data_ready;
         process_counter                 <=  _process_counter;
-        process_counter_two             <=  _process_counter_two;
+        timeout_counter                 <=  _timeout_counter;
+        timeout_counter_limit           <=  _timeout_counter_limit;
     end
 end
 
