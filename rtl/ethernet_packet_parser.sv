@@ -23,7 +23,7 @@ module ethernet_packet_parser#(
     parameter               RECEIVE_QUE_SLOTS       = 1,
     parameter logic [1:0]   SPEED_CODE_GIGABIT      = 2,
     parameter logic [1:0]   SPEED_CODE_100_MEGABIT  = 1,
-    parameter logic [1:0]   SPEED_CODE_1_MEGABIT    = 0
+    parameter logic [1:0]   SPEED_CODE_10_MEGABIT   = 0
 )(
     input   wire                            clock,
     input   wire                            reset_n,
@@ -98,7 +98,7 @@ always_comb begin
     _bad_packet                         =   0;
 
     case (speed_code)
-        SPEED_CODE_1_MEGABIT: begin
+        SPEED_CODE_10_MEGABIT: begin
             _timeout_counter_limit = 40;
         end
         SPEED_CODE_100_MEGABIT: begin

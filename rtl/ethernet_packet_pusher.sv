@@ -29,9 +29,9 @@ module ethernet_packet_pusher#(
     input   wire    [RECEIVE_QUE_SLOTS-1:0][7:0]    packet_data,
     input   wire    [RECEIVE_QUE_SLOTS-1:0]         packet_data_enable,
 
-    output  reg             packet_data_ready,
-    output  reg     [8:0]   pushed_data,
-    output  reg             pushed_data_valid
+    output  reg                                     packet_data_ready,
+    output  reg     [8:0]                           pushed_data,
+    output  reg                                     pushed_data_valid
 
 );
 

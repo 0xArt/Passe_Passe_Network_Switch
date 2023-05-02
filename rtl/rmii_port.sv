@@ -91,44 +91,44 @@ COREFIFO_C0 frame_fifo(
 );
 
 
-wire                                ethernet_frame_parser_clock;
-wire                                ethernet_frame_parser_reset_n;
-wire    [8:0]                       ethernet_frame_parser_data;
-wire                                ethernet_frame_parser_data_enable;
-wire    [31:0]                      ethernet_frame_parser_checksum_result;
-wire                                ethernet_frame_parser_checksum_result_enable;
-wire                                ethernet_frame_parser_checksum_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_frame_parser_recieve_slot_enable;
+wire                                ethernet_packet_parser_clock;
+wire                                ethernet_packet_parser_reset_n;
+wire    [8:0]                       ethernet_packet_parser_data;
+wire                                ethernet_packet_parser_data_enable;
+wire    [31:0]                      ethernet_packet_parser_checksum_result;
+wire                                ethernet_packet_parser_checksum_result_enable;
+wire                                ethernet_packet_parser_checksum_enable;
+wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_packet_parser_recieve_slot_enable;
 wire    [1:0]                       ethernet_packet_parser_speed_code;
-wire                                ethernet_frame_parser_data_ready;
-wire    [7:0]                       ethernet_frame_parser_checksum_data;
-wire                                ethernet_frame_parser_checksum_data_valid;
-wire                                ethernet_frame_parser_checksum_data_last;
-wire    [7:0]                       ethernet_frame_parser_packet_data;
-wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_frame_parser_packet_data_valid;
-wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_frame_parser_good_packet;
-wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_frame_parser_bad_packet;
+wire                                ethernet_packet_parser_data_ready;
+wire    [7:0]                       ethernet_packet_parser_checksum_data;
+wire                                ethernet_packet_parser_checksum_data_valid;
+wire                                ethernet_packet_parser_checksum_data_last;
+wire    [7:0]                       ethernet_packet_parser_packet_data;
+wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_packet_parser_packet_data_valid;
+wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_packet_parser_good_packet;
+wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_packet_parser_bad_packet;
 
 ethernet_packet_parser   #(.RECEIVE_QUE_SLOTS(RECEIVE_QUE_SLOTS))
 ethernet_packet_parser(
-    .clock                  (ethernet_frame_parser_clock),
-    .reset_n                (ethernet_frame_parser_reset_n),
-    .data                   (ethernet_frame_parser_data),
-    .data_enable            (ethernet_frame_parser_data_enable),
-    .checksum_result        (ethernet_frame_parser_checksum_result),
-    .checksum_result_enable (ethernet_frame_parser_checksum_result_enable),
-    .checksum_enable        (ethernet_frame_parser_checksum_enable),
-    .recieve_slot_enable    (ethernet_frame_parser_recieve_slot_enable),
+    .clock                  (ethernet_packet_parser_clock),
+    .reset_n                (ethernet_packet_parser_reset_n),
+    .data                   (ethernet_packet_parser_data),
+    .data_enable            (ethernet_packet_parser_data_enable),
+    .checksum_result        (ethernet_packet_parser_checksum_result),
+    .checksum_result_enable (ethernet_packet_parser_checksum_result_enable),
+    .checksum_enable        (ethernet_packet_parser_checksum_enable),
+    .recieve_slot_enable    (ethernet_packet_parser_recieve_slot_enable),
     .speed_code             (ethernet_packet_parser_speed_code),
 
-    .data_ready             (ethernet_frame_parser_data_ready),
-    .checksum_data          (ethernet_frame_parser_checksum_data),
-    .checksum_data_valid    (ethernet_frame_parser_checksum_data_valid),
-    .checksum_data_last     (ethernet_frame_parser_checksum_data_last),
-    .packet_data            (ethernet_frame_parser_packet_data),
-    .packet_data_valid      (ethernet_frame_parser_packet_data_valid),
-    .good_packet            (ethernet_frame_parser_good_packet),
-    .bad_packet             (ethernet_frame_parser_bad_packet)
+    .data_ready             (ethernet_packet_parser_data_ready),
+    .checksum_data          (ethernet_packet_parser_checksum_data),
+    .checksum_data_valid    (ethernet_packet_parser_checksum_data_valid),
+    .checksum_data_last     (ethernet_packet_parser_checksum_data_last),
+    .packet_data            (ethernet_packet_parser_packet_data),
+    .packet_data_valid      (ethernet_packet_parser_packet_data_valid),
+    .good_packet            (ethernet_packet_parser_good_packet),
+    .bad_packet             (ethernet_packet_parser_bad_packet)
 );
 
 
@@ -288,17 +288,17 @@ generate
         assign  que_slot_receieve_handler_enable[i]             =   receive_slot_arbiter_ready[i];
         assign  que_slot_receieve_handler_data[i]               =   payload_fifo_read_data[i];
         assign  que_slot_receieve_handler_data_enable[i]        =   payload_fifo_read_data_valid[i];
-        assign  que_slot_receieve_handler_good_packet[i]        =   ethernet_frame_parser_good_packet[i];
-        assign  que_slot_receieve_handler_bad_packet[i]         =   ethernet_frame_parser_bad_packet[i];
-        assign  que_slot_receieve_handler_push_data_enable[i]    =  !outbound_fifo_full;
+        assign  que_slot_receieve_handler_good_packet[i]        =   ethernet_packet_parser_good_packet[i];
+        assign  que_slot_receieve_handler_bad_packet[i]         =   ethernet_packet_parser_bad_packet[i];
+        assign  que_slot_receieve_handler_push_data_enable[i]   =  !outbound_fifo_full;
     end
 endgenerate
 
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
         assign  payload_fifo_clock[i]                           =   clock;
-        assign  payload_fifo_write_data[i]                      =   ethernet_frame_parser_packet_data;
-        assign  payload_fifo_write_enable[i]                    =   ethernet_frame_parser_packet_data_valid[i];
+        assign  payload_fifo_write_data[i]                      =   ethernet_packet_parser_packet_data;
+        assign  payload_fifo_write_enable[i]                    =   ethernet_packet_parser_packet_data_valid[i];
         assign  payload_fifo_read_enable[i]                     =   que_slot_receieve_handler_push_data_ready[i];
         assign  payload_fifo_reset_n[i]                         =   que_slot_receieve_handler_fifo_reset_n[i];
     end
@@ -306,7 +306,7 @@ endgenerate
 
 assign  frame_fifo_data                                         =   rmii_byte_packager_packaged_data;
 assign  frame_fifo_read_clock                                   =   clock;
-assign  frame_fifo_read_enable                                  =   ethernet_frame_parser_data_ready;
+assign  frame_fifo_read_enable                                  =   ethernet_packet_parser_data_ready;
 assign  frame_fifo_read_reset_n                                 =   reset_n;
 assign  frame_fifo_write_clock                                  =   clock;
 assign  frame_fifo_write_enable                                 =   rmii_byte_packager_packaged_data_valid;
@@ -318,26 +318,26 @@ assign  rmii_byte_packager_data                                 =   rmii_receive
 assign  rmii_byte_packager_data_enable                          =   rmii_receive_data_enable;
 assign  rmii_byte_packager_data_error                           =   rmii_receive_data_error;
 
-assign  ethernet_frame_parser_clock                             =   clock;
-assign  ethernet_frame_parser_reset_n                           =   reset_n;
-assign  ethernet_frame_parser_data                              =   frame_fifo_read_data;
-assign  ethernet_frame_parser_data_enable                       =   frame_fifo_read_data_valid;
-assign  ethernet_frame_parser_checksum_result                   =   frame_check_sequence_generator_checksum;
-assign  ethernet_frame_parser_checksum_result_enable            =   frame_check_sequence_generator_checksum_valid;
-assign  ethernet_frame_parser_checksum_enable                   =   frame_check_sequence_generator_ready;
+assign  ethernet_packet_parser_clock                            =   clock;
+assign  ethernet_packet_parser_reset_n                          =   reset_n;
+assign  ethernet_packet_parser_data                             =   frame_fifo_read_data;
+assign  ethernet_packet_parser_data_enable                      =   frame_fifo_read_data_valid;
+assign  ethernet_packet_parser_checksum_result                  =   frame_check_sequence_generator_checksum;
+assign  ethernet_packet_parser_checksum_result_enable           =   frame_check_sequence_generator_checksum_valid;
+assign  ethernet_packet_parser_checksum_enable                  =   frame_check_sequence_generator_ready;
 assign  ethernet_packet_parser_speed_code                       =   rmii_byte_packager_speed_code;
 
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i=i+1) begin
-        assign  ethernet_frame_parser_recieve_slot_enable[i]    =    payload_fifo_empty[i];
+        assign  ethernet_packet_parser_recieve_slot_enable[i]   =    payload_fifo_empty[i];
     end
 endgenerate
 
 assign  frame_check_sequence_generator_clock                    =   clock;
 assign  frame_check_sequence_generator_reset_n                  =   reset_n;
-assign  frame_check_sequence_generator_data                     =   ethernet_frame_parser_checksum_data;
-assign  frame_check_sequence_generator_data_enable              =   ethernet_frame_parser_checksum_data_valid;
-assign  frame_check_sequence_generator_data_last                =   ethernet_frame_parser_checksum_data_last;
+assign  frame_check_sequence_generator_data                     =   ethernet_packet_parser_checksum_data;
+assign  frame_check_sequence_generator_data_enable              =   ethernet_packet_parser_checksum_data_valid;
+assign  frame_check_sequence_generator_data_last                =   ethernet_packet_parser_checksum_data_last;
 
 assign  outbound_fifo_data                                      =   receive_slot_arbiter_push_data;
 assign  outbound_fifo_read_clock                                =   core_clock;

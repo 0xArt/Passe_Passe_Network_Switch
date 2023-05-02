@@ -21,9 +21,8 @@
 //////////////////////////////////////////////////////////////////////////////////
 module rmii_byte_packager#(
     parameter               RECEIVE_QUE_SLOTS       = 1,
-    parameter logic [1:0]   SPEED_CODE_GIGABIT      = 2,
     parameter logic [1:0]   SPEED_CODE_100_MEGABIT  = 1,
-    parameter logic [1:0]   SPEED_CODE_1_MEGABIT    = 0
+    parameter logic [1:0]   SPEED_CODE_10_MEGABIT   = 0
 )(
     input   wire            clock,
     input   wire            reset_n,
@@ -176,7 +175,7 @@ always_comb  begin
                     _state          =   S_PACK_10;
                     _sample_counter =   0;
                     _counter        =   0;
-                    _speed_code     =   SPEED_CODE_100_MEGABIT;
+                    _speed_code     =   SPEED_CODE_10_MEGABIT;
                 end
                 else begin
                     _sample_counter     =   sample_counter + 1;
