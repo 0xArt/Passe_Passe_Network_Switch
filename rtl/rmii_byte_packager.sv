@@ -20,7 +20,6 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 module rmii_byte_packager#(
-    parameter               RECEIVE_QUE_SLOTS       = 1,
     parameter logic [1:0]   SPEED_CODE_100_MEGABIT  = 1,
     parameter logic [1:0]   SPEED_CODE_10_MEGABIT   = 0
 )(

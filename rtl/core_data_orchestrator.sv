@@ -23,7 +23,7 @@ module core_data_orchestrator#(
     parameter NUMBER_OF_VIRTUAL_PORTS = 0
 )(
     input   wire                                        clock,
-    input   wire                                        reset_n
+    input   wire                                        reset_n,
     input   wire    [NUMBER_OF_RMII_PORTS-1:0]          port_recieve_data_enable,
     input   wire    [NUMBER_OF_RMII_PORTS-1:0][8:0]     port_recieve_data,
     input   wire    [NUMBER_OF_RMII_PORTS-1:0]          port_transmit_data_enable,

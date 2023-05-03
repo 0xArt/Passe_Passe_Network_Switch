@@ -38,14 +38,18 @@ vlog -sv -work presynth \
     "rtl/fifo/outbound_fifo/COREFIFO.v" \
     "rtl/fifo/outbound_fifo/corefifo_async.v" \
     "rtl/fifo/outbound_fifo/COREFIFO_C2.v" \
+    "rtl/block_ram/cam_table/RTG4TPSRAM_C0_RTG4TPSRAM_C0_0_RTG4TPSRAM.v" \
+    "rtl/block_ram/cam_table/RTG4TPSRAM_C0.v" \
     "rtl/rmii_byte_packager.sv" \
     "rtl/que_slot_receieve_handler.sv" \
     "rtl/receive_slot_arbiter.sv" \
     "rtl/ethernet_packet_generator.sv" \
     "rtl/ethernet_packet_parser.sv" \
     "rtl/frame_check_sequence_generator.sv" \
+    "rtl/rmii_byte_shipper.sv" \
     "rtl/rgmii_port.sv" \
     "rtl/rmii_port.sv" \
+    "rtl/core_data_orchestrator.sv" \
     "rtl/switch_core.sv" \
     "test/testbench.sv"
 

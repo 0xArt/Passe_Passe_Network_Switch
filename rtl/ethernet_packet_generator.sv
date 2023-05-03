@@ -25,10 +25,10 @@ module ethernet_packet_generator(
     input   wire            enable,
     input   wire    [7:0]   payload_data,
     input   wire            payload_data_enable,
-    input   wire            pll_lock,
 
-    output  wire    [7:0]   transmit_data,
-    output  wire            transmit_data_valid
+    output  reg             payload_data_ready,
+    output  reg    [7:0]    transmit_data,
+    output  reg             transmit_data_valid
 );
 
 

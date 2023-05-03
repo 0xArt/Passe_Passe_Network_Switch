@@ -31,7 +31,6 @@ module rmii_port#(
     input   wire            transmit_data_enable,
     input   wire            receive_data_enable,
 
-    output  wire            transmit_data_ready,
     output  wire    [8:0]   receive_data,
     output  wire            receive_data_valid,
     output  wire    [1:0]   rmii_transmit_data,
@@ -241,7 +240,7 @@ receive_slot_arbiter(
     .push_data_valid    (receive_slot_arbiter_push_data_valid)
 );
 
-wire    [8:0]   outbound_fifo_data;
+wire    [8:0]   outbound_fifo_write_data;
 wire            outbound_fifo_read_clock;
 wire            outbound_fifo_read_enable;
 wire            outbound_fifo_read_reset_n;
@@ -254,7 +253,7 @@ wire            outbound_fifo_full;
 wire    [8:0]   outbound_fifo_read_data;
 
 COREFIFO_C2 outbound_fifo(
-    .DATA       (outbound_fifo_data),
+    .DATA       (outbound_fifo_write_data),
     .RCLOCK     (outbound_fifo_read_clock),
     .RE         (outbound_fifo_read_enable),
     .RRESET_N   (outbound_fifo_read_reset_n),
@@ -269,11 +268,73 @@ COREFIFO_C2 outbound_fifo(
 );
 
 
+wire            rmii_byte_shipper_clock;
+wire            rmii_byte_shipper_reset_n;
+wire    [8:0]   rmii_byte_shipper_data;
+wire            rmii_byte_shipper_data_enable;
+wire    [1:0]   rmii_byte_shipper_speed_code;
+wire    [1:0]   rmii_byte_shipper_shipped_data;
+wire            rmii_byte_shipper_shipped_data_valid;
+wire            rmii_byte_shipper_data_ready;
+
+rmii_byte_shipper rmii_byte_shipper(
+    .clock              (rmii_byte_shipper_clock),
+    .reset_n            (rmii_byte_shipper_reset_n),
+    .data               (rmii_byte_shipper_data),
+    .data_enable        (rmii_byte_shipper_data_enable),
+    .speed_code         (rmii_byte_shipper_speed_code),
+
+    .shipped_data       (rmii_byte_shipper_shipped_data),
+    .shipped_data_valid (rmii_byte_shipper_shipped_data_valid),
+    .data_ready         (rmii_byte_shipper_data_ready)
+);
+
+
+wire    [8:0]   inbound_fifo_write_data;
+wire            inbound_fifo_read_clock;
+wire            inbound_fifo_read_enable;
+wire            inbound_fifo_read_reset_n;
+wire            inbound_fifo_write_clock;
+wire            inbound_fifo_write_enable;
+wire            inbound_fifo_write_reset_n;
+wire            inbound_fifo_read_data_valid;
+wire            inbound_fifo_empty;
+wire            inbound_fifo_full;
+wire    [8:0]   inbound_fifo_read_data;
+
+COREFIFO_C2 inbound_fifo(
+    .DATA       (inbound_fifo_write_data),
+    .RCLOCK     (inbound_fifo_read_clock),
+    .RE         (inbound_fifo_read_enable),
+    .RRESET_N   (inbound_fifo_read_reset_n),
+    .WCLOCK     (inbound_fifo_write_clock),
+    .WE         (inbound_fifo_write_enable),
+    .WRESET_N   (inbound_fifo_write_reset_n),
+
+    .DVLD       (inbound_fifo_read_data_valid),
+    .EMPTY      (inbound_fifo_empty),
+    .FULL       (inbound_fifo_full),
+    .Q          (inbound_fifo_read_data)
+);
+
+
 assign  receive_data_valid                                      =   outbound_fifo_read_data_valid;
 assign  receive_data                                            =   outbound_fifo_read_data;
-assign  transmit_data_ready                                     =   0;
-assign  rmii_transmit_data                                      =   0;
-assign  rmii_transmit_data_valid                                =   0;
+assign  rmii_transmit_data                                      =   rmii_byte_shipper_shipped_data;
+assign  rmii_transmit_data_valid                                =   rmii_byte_shipper_shipped_data_valid;
+
+assign  inbound_fifo_write_data                                 =   transmit_data;
+assign  inbound_fifo_read_clock                                 =   clock;
+assign  inbound_fifo_read_enable                                =   rmii_byte_shipper_data_ready;
+assign  inbound_fifo_read_reset_n                               =   reset_n;
+assign  inbound_fifo_write_clock                                =   clock;
+assign  inbound_fifo_write_enable                               =   transmit_data_enable;
+assign  inbound_fifo_write_reset_n                              =   reset_n;
+
+assign  rmii_byte_shipper_clock                                 =   clock;
+assign  rmii_byte_shipper_reset_n                               =   reset_n;
+assign  rmii_byte_shipper_data                                  =   inbound_fifo_read_data;
+assign  rmii_byte_shipper_data_enable                           =   inbound_fifo_read_data_valid;
 
 assign  receive_slot_arbiter_clock                              =   clock;
 assign  receive_slot_arbiter_reset_n                            =   reset_n;
@@ -339,7 +400,7 @@ assign  frame_check_sequence_generator_data                     =   ethernet_pac
 assign  frame_check_sequence_generator_data_enable              =   ethernet_packet_parser_checksum_data_valid;
 assign  frame_check_sequence_generator_data_last                =   ethernet_packet_parser_checksum_data_last;
 
-assign  outbound_fifo_data                                      =   receive_slot_arbiter_push_data;
+assign  outbound_fifo_write_data                                =   receive_slot_arbiter_push_data;
 assign  outbound_fifo_read_clock                                =   core_clock;
 assign  outbound_fifo_read_enable                               =   receive_data_enable;
 assign  outbound_fifo_read_reset_n                              =   reset_n;
