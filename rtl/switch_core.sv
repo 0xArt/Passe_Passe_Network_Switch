@@ -136,7 +136,7 @@ generate
         assign  rmii_port_rmii_receive_data_error[i]        =   rmii_phy_receive_data_error[i];
         assign  rmii_phy_transmit_data[i]                   =   rmii_port_transmit_data[i];
         assign  rmii_phy_transmit_data_vaid[i]              =   rmii_port_rmii_transmit_data_valid[i];
-        assign  rmii_port_receive_data_enable[i]            =   0; //todo
+        assign  rmii_port_receive_data_enable[i]            =   core_data_orchestrator_port_receive_data_ready[i];
     end
 endgenerate
 

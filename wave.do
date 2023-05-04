@@ -101,7 +101,7 @@ add wave -noupdate -group que_slot_1 {/testbench/switch_core/genblk1[0]/rmii_por
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/clock
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/reset_n
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/port_recieve_data_enable
-add wave -noupdate -expand -group core_data_orch -radix hexadecimal -expand /testbench/switch_core/core_data_orchestrator/port_recieve_data
+add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/port_recieve_data
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/port_transmit_data_enable
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/cam_table_read_data
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/port_receive_data_ready
@@ -111,6 +111,7 @@ add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_dat
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/cam_table_write_address
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/cam_table_write_data
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/cam_table_write_data_valid
+add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/i
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/_state
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/state
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/_port_receive_data_ready
@@ -120,8 +121,16 @@ add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_dat
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/_cam_table_write_address
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/_cam_table_write_data
 add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/_cam_table_write_data_valid
+add wave -noupdate -expand -group core_data_orch -radix hexadecimal /testbench/switch_core/core_data_orchestrator/_mac_destination
+add wave -noupdate -expand -group core_data_orch -radix hexadecimal /testbench/switch_core/core_data_orchestrator/mac_destination
+add wave -noupdate -expand -group core_data_orch -radix hexadecimal /testbench/switch_core/core_data_orchestrator/_mac_source
+add wave -noupdate -expand -group core_data_orch -radix hexadecimal /testbench/switch_core/core_data_orchestrator/mac_source
+add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/_port_select
+add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/port_select
+add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/_process_counter
+add wave -noupdate -expand -group core_data_orch /testbench/switch_core/core_data_orchestrator/process_counter
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {30605312 ps} 0}
+WaveRestoreCursors {{Cursor 1} {9932912 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 219
 configure wave -valuecolwidth 102
@@ -137,4 +146,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {71696384 ps}
+WaveRestoreZoom {9869936 ps} {10430064 ps}
