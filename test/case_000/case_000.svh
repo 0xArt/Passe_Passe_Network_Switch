@@ -104,41 +104,41 @@ testbench.ethernet_message[71]  = 8'h21;
 
 for (i=0;i<20;i=i+1) begin
     @(posedge testbench.clock);
-    testbench.ethernet_transmit_data_valid    =   1;
-    testbench.ethernet_transmit_data          =   2'b11;
+    testbench.ethernet_transmit_data_valid[0]       =   1;
+    testbench.ethernet_transmit_data[0]             =   2'b11;
 end
 
 
 for (i=0;i<12;i=i+1) begin
     @(posedge testbench.clock);
-    testbench.ethernet_transmit_data_valid    =   1;
-    testbench.ethernet_transmit_data          =   testbench.ethernet_message[i][1:0];
+    testbench.ethernet_transmit_data_valid[0]       =   1;
+    testbench.ethernet_transmit_data[0]             =   testbench.ethernet_message[i][1:0];
     @(posedge testbench.clock);
-    testbench.ethernet_transmit_data          =   testbench.ethernet_message[i][3:2];
+    testbench.ethernet_transmit_data[0]             =   testbench.ethernet_message[i][3:2];
     @(posedge testbench.clock);
-    testbench.ethernet_transmit_data          =   testbench.ethernet_message[i][5:4];
+    testbench.ethernet_transmit_data[0]             =   testbench.ethernet_message[i][5:4];
     @(posedge testbench.clock);
-    testbench.ethernet_transmit_data          =   testbench.ethernet_message[i][7:6];
+    testbench.ethernet_transmit_data[0]             =   testbench.ethernet_message[i][7:6];
 end
 @(posedge testbench.clock);
-testbench.ethernet_transmit_data          =   0;
-testbench.ethernet_transmit_data_valid    =   0;
+testbench.ethernet_transmit_data[0]          =   0;
+testbench.ethernet_transmit_data_valid[0]    =   0;
 
 
 for (i=0;i<72;i=i+1) begin
     @(posedge testbench.clock);
-    testbench.ethernet_transmit_data_valid    =   1;
-    testbench.ethernet_transmit_data          =   testbench.ethernet_message[i][1:0];
+    testbench.ethernet_transmit_data_valid[0]       =   1;
+    testbench.ethernet_transmit_data[0]             =   testbench.ethernet_message[i][1:0];
     @(posedge testbench.clock);
-    testbench.ethernet_transmit_data          =   testbench.ethernet_message[i][3:2];
+    testbench.ethernet_transmit_data[0]             =   testbench.ethernet_message[i][3:2];
     @(posedge testbench.clock);
-    testbench.ethernet_transmit_data          =   testbench.ethernet_message[i][5:4];
+    testbench.ethernet_transmit_data[0]             =   testbench.ethernet_message[i][5:4];
     @(posedge testbench.clock);
-    testbench.ethernet_transmit_data          =   testbench.ethernet_message[i][7:6];
+    testbench.ethernet_transmit_data[0]             =   testbench.ethernet_message[i][7:6];
 end
 @(posedge testbench.clock);
-testbench.ethernet_transmit_data          =   0;
-testbench.ethernet_transmit_data_valid    =   0;
+testbench.ethernet_transmit_data[0]          =   0;
+testbench.ethernet_transmit_data_valid[0]    =   0;
 
 #100;
 

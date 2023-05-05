@@ -335,6 +335,7 @@ assign  rmii_byte_shipper_clock                                 =   clock;
 assign  rmii_byte_shipper_reset_n                               =   reset_n;
 assign  rmii_byte_shipper_data                                  =   inbound_fifo_read_data;
 assign  rmii_byte_shipper_data_enable                           =   inbound_fifo_read_data_valid;
+assign  rmii_byte_shipper_speed_code                            =   rmii_byte_packager_speed_code;
 
 assign  receive_slot_arbiter_clock                              =   clock;
 assign  receive_slot_arbiter_reset_n                            =   reset_n;

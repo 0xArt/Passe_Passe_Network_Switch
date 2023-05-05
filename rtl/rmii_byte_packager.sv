@@ -227,7 +227,7 @@ always_ff @(posedge clock) begin
         data_delayed        <=  0;
         data_error_delayed  <=  0;
         is_first_byte       <=  0;
-        speed_code          <=  0;
+        speed_code          <=  SPEED_CODE_100_MEGABIT;
     end
     else begin
         state               <=  _state;

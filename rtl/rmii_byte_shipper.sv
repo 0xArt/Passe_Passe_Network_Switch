@@ -46,8 +46,8 @@ typedef enum
 
 state_type      state;
 state_type      _state;
-reg     [7:0]   counter;
-logic   [7:0]   _counter;
+reg     [15:0]  counter;
+logic   [15:0]  _counter;
 reg     [7:0]   sample_counter;
 logic   [7:0]   _sample_counter;
 logic   [1:0]   _shipped_data;
@@ -56,8 +56,11 @@ logic   [7:0]   _byte_to_ship;
 reg     [7:0]   byte_to_ship;
 reg     [7:0]   sample_counter_limit;
 logic   [7:0]   _sample_counter_limit;
+reg     [15:0]  preamble_count_limit;
+logic   [15:0]  _preamble_count_limit;
 reg             _data_ready;
-
+reg     [1:0]   saved_speed_code;
+logic   [1:0]   _saved_speed_code;
 
 always_comb  begin
     _state                  =   state;
@@ -67,37 +70,44 @@ always_comb  begin
     _shipped_data           =   shipped_data;
     _shipped_data_valid     =   shipped_data_valid;
     _sample_counter_limit   =   sample_counter_limit;
-    _data_ready             =   data_ready;
+    _preamble_count_limit   =   preamble_count_limit;
+    _saved_speed_code       =   saved_speed_code;
+    _data_ready             =   0;
 
-    case (speed_code)
+    case (saved_speed_code)
         SPEED_CODE_100_MEGABIT: begin
             _sample_counter_limit   =   0;
+            _preamble_count_limit   =   29;
         end
         SPEED_CODE_10_MEGABIT: begin
             _sample_counter_limit   =   9;
+            _preamble_count_limit   =   290;
         end
         default : begin
             _sample_counter_limit   =   0;
+            _preamble_count_limit   =   29;
         end
     endcase
 
     case (state)
         S_IDLE: begin
-            _data_ready =   1;
+            _data_ready         =   1;
+            _shipped_data_valid =   0;
+            _saved_speed_code   =   speed_code;
 
             if (data_enable) begin
                 if (data[8]) begin
                     _data_ready         =   0;
                     _byte_to_ship       =   data[7:0];
                     _counter            =   0;
-                    _state              =   S_SEND_PREMABLE;
                     _shipped_data       =   2'b01;
                     _shipped_data_valid =   1;
+                    _state              =   S_SEND_PREMABLE;
                 end
             end
         end
         S_SEND_PREMABLE: begin
-            if (counter < 224) begin
+            if (counter < preamble_count_limit) begin
                 _counter = counter + 1;
             end
             else begin
@@ -113,38 +123,49 @@ always_comb  begin
             end
         end
         S_SEND_START_OF_FRAME: begin
-            if (counter == 3) begin
-                _shipped_data      =   2'b11;
-            end
-            if (counter < 4) begin
-                _counter = counter + 1;
+            _counter           =   0;
+            _shipped_data      =   2'b11;
+
+            if (sample_counter == sample_counter_limit) begin
+                _sample_counter =   0;
+                _state          =   S_SEND_DATA;
             end
             else begin
-                _counter    =   0;
-
-                if (sample_counter == sample_counter_limit) begin
-                    _sample_counter =   0;
-                    _state          =   S_SEND_DATA;
-                end
-                else begin
-                    _sample_counter =   sample_counter + 1;
-                end
+                _sample_counter =   sample_counter + 1;
             end
         end
         S_SEND_DATA: begin
-            if (counter < 4) begin
-                _counter = counter + 1;
-            end
-            else begin
-                _counter    =   0;
+            _shipped_data   =   byte_to_ship[1:0];
 
-                if (sample_counter == sample_counter_limit) begin
-                    _sample_counter =   0;
-                    _state          =   S_SEND_DATA;
+            if (sample_counter >= sample_counter_limit) begin
+
+                _sample_counter =   0;
+                _byte_to_ship   =   {2'b00,byte_to_ship[7:2]};
+
+                if (counter < 4) begin
+                    _counter        = counter + 1;
                 end
                 else begin
-                    _sample_counter =   sample_counter + 1;
+                    _counter        =   1;
                 end
+
+                if (counter == 3) begin
+                    if (data_enable) begin
+                        if (data[8]) begin
+                            _state          =   S_IDLE;
+                        end
+                        else begin
+                            _byte_to_ship   =   data[7:0];
+                            _data_ready     =   1;
+                        end
+                    end
+                    else begin
+                        _state              =   S_IDLE;
+                    end
+                end
+            end
+            else begin
+                _sample_counter =   sample_counter + 1;
             end
         end
     endcase
@@ -160,6 +181,8 @@ always_ff @(posedge clock) begin
         sample_counter          <=  0;
         sample_counter_limit    <=  0;
         data_ready              <=  0;
+        preamble_count_limit    <=  0;
+        saved_speed_code        <=  0;
     end
     else begin
         state                   <=  _state;
@@ -170,6 +193,8 @@ always_ff @(posedge clock) begin
         shipped_data_valid      <=  _shipped_data_valid;
         byte_to_ship            <=  _byte_to_ship;
         data_ready              <=  _data_ready;
+        preamble_count_limit    <=  _preamble_count_limit;
+        saved_speed_code        <=  _saved_speed_code;
     end
 end
 

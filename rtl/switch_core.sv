@@ -128,23 +128,24 @@ RTG4TPSRAM_C0   cam_table(
 
 generate
     for (i=0; i<NUMBER_OF_RMII_PORTS; i=i+1) begin
-        assign  rmii_port_clock[i]                          =   clock;
-        assign  rmii_port_core_clock[i]                     =   clock;
-        assign  rmii_port_reset_n[i]                        =   reset_n;
-        assign  rmii_port_rmii_receive_data[i]              =   rmii_phy_receive_data[i];
-        assign  rmii_port_rmii_receive_data_enable[i]       =   rmii_phy_receive_data_enable[i];
-        assign  rmii_port_rmii_receive_data_error[i]        =   rmii_phy_receive_data_error[i];
-        assign  rmii_phy_transmit_data[i]                   =   rmii_port_transmit_data[i];
-        assign  rmii_phy_transmit_data_vaid[i]              =   rmii_port_rmii_transmit_data_valid[i];
-        assign  rmii_port_receive_data_enable[i]            =   core_data_orchestrator_port_receive_data_ready[i];
+        assign  rmii_port_clock[i]                                  =   clock;
+        assign  rmii_port_core_clock[i]                             =   clock;
+        assign  rmii_port_reset_n[i]                                =   reset_n;
+        assign  rmii_port_rmii_receive_data[i]                      =   rmii_phy_receive_data[i];
+        assign  rmii_port_rmii_receive_data_enable[i]               =   rmii_phy_receive_data_enable[i];
+        assign  rmii_port_rmii_receive_data_error[i]                =   rmii_phy_receive_data_error[i];
+        assign  rmii_phy_transmit_data[i]                           =   rmii_port_rmii_transmit_data[i];
+        assign  rmii_phy_transmit_data_vaid[i]                      =   rmii_port_rmii_transmit_data_valid[i];
+        assign  rmii_port_receive_data_enable[i]                    =   core_data_orchestrator_port_receive_data_ready[i];
+        assign  rmii_port_transmit_data_enable[i]                   =   core_data_orchestrator_port_transmit_data_valid[i];
+        assign  rmii_port_transmit_data[i]                          =   core_data_orchestrator_port_transmit_data;
+        assign  core_data_orchestrator_port_recieve_data_enable[i]  =   rmii_port_receive_data_valid[i];
+        assign  core_data_orchestrator_port_recieve_data[i]         =   rmii_port_receive_data[i];
     end
 endgenerate
 
-
 assign  core_data_orchestrator_clock                        =   clock;
 assign  core_data_orchestraotr_reset_n                      =   reset_n;
-assign  core_data_orchestrator_port_recieve_data_enable     =   rmii_port_receive_data_valid;
-assign  core_data_orchestrator_port_recieve_data            =   rmii_port_receive_data;
 assign  core_data_orchestrator_cam_table_read_data          =   cam_table_read_data;
 
 assign  cam_table_clock                                     =   clock;

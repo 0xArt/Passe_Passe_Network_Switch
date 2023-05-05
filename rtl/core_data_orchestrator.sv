@@ -143,24 +143,38 @@ always_comb begin
             _cam_table_read_address     =   0;
         end
         S_LOOKUP_DESTINATION_PORT: begin
-            if (cam_table_read_data == mac_destination) begin
-                _port_transmit_data_valid[cam_table_read_address] = 1;
-                _port_transmit_data         =  {1'b1,mac_destination[47:40]};
-                _mac_destination            =  {mac_destination[39:0],8'h00};
-                _state                      =  S_TRANSMIT_MAC_DESTINATION;
-            end
-            else begin
-                if (cam_table_read_address < NUMBER_OF_RMII_PORTS) begin
-                    _cam_table_read_address = cam_table_read_address + 1;
+            case (process_counter)
+                0: begin
+                    if (cam_table_read_address < NUMBER_OF_RMII_PORTS) begin
+                        _process_counter = 1;
+                    end
+                    else begin
+                        //not in table...transmit out of all ports
+                        _process_counter            =   0;
+                        _port_transmit_data_valid   =   '1;
+                        _port_transmit_data         =   {1'b1,mac_destination[47:40]};
+                        _mac_destination            =   {mac_destination[39:0],8'h00};
+                        _state                      =   S_TRANSMIT_MAC_DESTINATION;
+                    end
                 end
-                else begin
-                    //not in table...transmit out of all ports
-                    _port_transmit_data_valid   = '1;
-                    _port_transmit_data         =  {1'b1,mac_destination[47:40]};
-                    _mac_destination            =  {mac_destination[39:0],8'h00};
-                    _state                      =  S_TRANSMIT_MAC_DESTINATION;
+                1: begin
+                    //pipeline delay
+                    _process_counter    =   2;
                 end
-            end
+                2: begin
+                    _process_counter    =   0;
+
+                    if (cam_table_read_data == mac_destination) begin
+                        _port_transmit_data_valid[cam_table_read_address] = 1;
+                        _port_transmit_data         =  {1'b1,mac_destination[47:40]};
+                        _mac_destination            =  {mac_destination[39:0],8'h00};
+                        _state                      =  S_TRANSMIT_MAC_DESTINATION;
+                    end
+                    else begin
+                        _cam_table_read_address = cam_table_read_address + 1;
+                    end
+                end
+            endcase
         end
         S_TRANSMIT_MAC_DESTINATION: begin
             _port_transmit_data         =  {1'b0,mac_destination[47:40]};
@@ -168,22 +182,34 @@ always_comb begin
             _process_counter            =  process_counter - 1;
 
             if(process_counter == 0) begin
-                _process_counter    = 6;
+                _process_counter    = 5;
                 _state              = S_TRANSMIT_MAC_SOURCE;
             end
         end
-        S_TRANSMIT_SOURCE: begin
+        S_TRANSMIT_MAC_SOURCE: begin
             _port_transmit_data         =  {1'b0,mac_source[47:40]};
             _mac_source                 =  {mac_source[39:0],8'h00};
             _process_counter            =  process_counter - 1;
 
-            if(process_counter == 0) begin
-                _process_counter    = 6;
-                _state              = S_TRANSMIT_DATA;
+            if (process_counter == 0) begin
+                _state                                  = S_TRANSMIT_DATA;
+                _port_receive_data_ready[port_select]   = 1;
             end
         end
         S_TRANSMIT_DATA: begin
-
+            if (port_recieve_data_enable[port_select]) begin
+                if (port_recieve_data[port_select][8]) begin
+                    _state                  =   S_IDLE;
+                end
+                else begin
+                    _port_transmit_data     =  {1'b0,port_recieve_data[port_select][7:0]};
+                end
+            end
+            else begin
+                _port_transmit_data_valid   =   0;
+                _port_select                =   port_select + 1;
+                _state                      =   S_IDLE;
+            end
         end
     endcase
 end
