@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company:  www.circuitden.com
 // Engineer: Artin Isagholian
@@ -90,14 +91,15 @@ always_comb begin
             _process_counter    =   5;
 
             if (port_recieve_data_enable[port_select]) begin
-                _port_receive_data_ready[port_select]   = 1;
-                _state                                  = S_GET_MAC_DESTINATION;
+                _state                                  = S_FIND_START_BIT;
             end
             else begin
                 _port_select    =   port_select + 1;
             end
         end
         S_FIND_START_BIT: begin
+            _port_receive_data_ready[port_select]   = 1;
+
             if (port_recieve_data_enable[port_select]) begin
                 if (port_recieve_data[port_select][8]) begin
                     _mac_destination[47:8]  =   mac_destination[39:0];
