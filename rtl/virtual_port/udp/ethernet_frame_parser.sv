@@ -176,7 +176,6 @@ always_comb begin
 
     case (state)
         S_IDLE: begin
-
             _calculated_frame_check_sequence = 0;
             _data_ready                      = 1;
 
@@ -211,7 +210,6 @@ always_comb begin
                     _state                              =   S_MAC_SOURCE;
                     _process_counter                    =   5;
                 end
-
                 if (data[8]) begin
                     _state                          =   S_RESTART;
                     _bad_packet[que_slot_select]    =   1;
@@ -363,6 +361,7 @@ always_comb begin
                 _checksum_data              =   data;
                 _checksum_data_valid        =   1;
                 _state                      =   S_IPV4_PROTOCOL;
+
                 if (data[8]) begin
                     _state                          =   S_RESTART;
                     _bad_packet[que_slot_select]    =   1;
@@ -378,6 +377,7 @@ always_comb begin
                 _checksum_data              =   data;
                 _checksum_data_valid        =   1;
                 _state                      =   S_IPV4_HEADER_CHECKSUM;
+
                 if (data[8]) begin
                     _state                          =   S_RESTART;
                     _bad_packet[que_slot_select]    =   1;
