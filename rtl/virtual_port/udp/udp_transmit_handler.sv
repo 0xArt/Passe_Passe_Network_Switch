@@ -32,6 +32,8 @@ module udp_transmit_handler(
     output  reg     [31:0]  ipv4_destination,
     output  reg     [15:0]  udp_destination,
     output  reg     [15:0]  udp_source,
+    output  reg     [15:0]  ipv4_identification,
+    output  reg     [15:0]  ipv4_flags,
     output  reg     [15:0]  udp_data_size,
     output  reg     [7:0]   udp_data,
     output  reg             udp_data_valid,
@@ -39,7 +41,8 @@ module udp_transmit_handler(
     output  reg             ready
 );
 
-localparam logic [15:0] TIMEOUT_LIMIT   = 16'h00FF;
+localparam logic [15:0] TIMEOUT_LIMIT       = 16'h00FF;
+localparam logic [15:0] MAX_PAYLOAD_SIZE    = 16'd1472;
 
 
 wire            timeout_cycle_timer_clock;
@@ -69,6 +72,7 @@ typedef enum
     S_GET_UDP_DESTINATION,
     S_GET_UDP_SOURCE,
     S_GET_UDP_DATA_SIZE,
+    S_SET_FRAGMENT_SETTINGS,
     S_ENABLE_TRANSMIT,
     S_WAIT_UDP_DATA_REQUEST,
     S_PUSH_UDP_DATA,
@@ -85,11 +89,15 @@ logic       [31:0]  _ipv4_destination;
 logic       [15:0]  _udp_destination;
 logic       [15:0]  _udp_source;
 logic       [15:0]  _udp_data_size;
+logic       [15:0]  _number_of_udp_bytes_left;
+reg         [15:0]  number_of_udp_bytes_left;
 logic       [7:0]   _udp_data;
 logic               _udp_data_valid;
 logic               _data_ready;
 logic               _ready;
 logic               _transmit_valid;
+logic       [15:0]  _ipv4_identification;
+logic       [15:0]  _ipv4_flags;
 
 assign  timeout_cycle_timer_clock       =   clock;
 assign  timeout_cycle_timer_reset_n     =   reset_n;
@@ -107,6 +115,9 @@ always_comb begin
     _data_ready                     =   data_ready;
     _ready                          =   ready;
     _process_counter                =   process_counter;
+    _ipv4_flags                     =   ipv4_flags;
+    _ipv4_identification            =   ipv4_identification;
+    _number_of_udp_bytes_left       =   number_of_udp_bytes_left;
     _udp_data_valid                 =   0;
     _transmit_valid                 =   0;
     timeout_cycle_timer_load_count  =   0;
@@ -116,6 +127,7 @@ always_comb begin
             _data_ready                     =   1;
             _process_counter                =   4;
             _ready                          =   1;
+            _ipv4_flags                     =   0;
             timeout_cycle_timer_load_count  =   1;
 
             if (data_enable) begin
@@ -181,7 +193,7 @@ always_comb begin
                     _process_counter    =   1;
                 end
                 if (data[8]) begin
-                    _data_ready             = 0;
+                    _data_ready             =   0;
                     _mac_destination[47:8]  =   mac_destination[39:0];
                     _mac_destination[7:0]   =   data[7:0];
                     _state                  =   S_RESTART;
@@ -217,14 +229,14 @@ always_comb begin
         end
         S_GET_UDP_DATA_SIZE: begin
             if (data_enable) begin
-                _udp_data_size[15:8]            =   udp_data_size[7:0];
-                _udp_data_size[7:0]             =   data[7:0];
+                _number_of_udp_bytes_left[15:8] =   number_of_udp_bytes_left[7:0];
+                _number_of_udp_bytes_left[7:0]  =   data[7:0];
                 _process_counter                =   process_counter - 1;
                 timeout_cycle_timer_load_count  =   1;
 
                 if  (process_counter == 0) begin
                     _data_ready         =   0;
-                    _state              =   S_ENABLE_TRANSMIT;
+                    _state              =   S_SET_FRAGMENT_SETTINGS;
                 end
                 if (data[8]) begin
                     _data_ready             = 0;
@@ -237,6 +249,20 @@ always_comb begin
                 _data_ready = 0;
                 _state      = S_IDLE;
             end
+        end
+        S_SET_FRAGMENT_SETTINGS: begin
+            if (number_of_udp_bytes_left > MAX_PAYLOAD_SIZE) begin
+                _udp_data_size              = MAX_PAYLOAD_SIZE;
+                _number_of_udp_bytes_left   = number_of_udp_bytes_left - MAX_PAYLOAD_SIZE;
+                _ipv4_flags[15:13]          = 3'b001;
+            end
+            else begin
+                _ipv4_flags[15:13]          = 3'b000;
+                _udp_data_size              = number_of_udp_bytes_left;
+                _number_of_udp_bytes_left   = 0;
+            end
+
+            _state                          = S_ENABLE_TRANSMIT;
         end
         S_ENABLE_TRANSMIT: begin
             if (enable) begin
@@ -283,7 +309,13 @@ always_comb begin
                 _data_ready = 0;
             end
             if (process_counter == 0) begin
-                _state      = S_IDLE;
+                if (number_of_udp_bytes_left == 0) begin
+                    ipv4_identification = _ipv4_identification + 1;
+                end
+                else begin
+                    _ipv4_flags[12:0]   = ipv4_flags[12:0] + 184;
+                    _state              = S_SET_FRAGMENT_SETTINGS;
+                end
                 _data_ready =   0;
             end
             if (timeout_cycle_timer_expired) begin
@@ -314,6 +346,9 @@ always_ff @(posedge clock) begin
         data_ready                  <=  0;
         transmit_valid              <=  0;
         ready                       <=  0;
+        ipv4_flags                  <=  0;
+        ipv4_identification         <=  0;
+        number_of_udp_bytes_left    <=  0;
     end
     else begin
         state                       <=  _state;
@@ -328,6 +363,9 @@ always_ff @(posedge clock) begin
         data_ready                  <=  _data_ready;
         transmit_valid              <=  _transmit_valid;
         ready                       <=  _ready;
+        ipv4_flags                  <=  _ipv4_flags;
+        ipv4_identification         <=  _ipv4_identification;
+        number_of_udp_bytes_left    <=  _number_of_udp_bytes_left;
     end
 end
 
