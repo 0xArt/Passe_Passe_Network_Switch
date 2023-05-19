@@ -218,6 +218,46 @@ COREFIFO_C2 outbound_fifo(
 );
 
 
+wire            udp_transmit_handler_clock;
+wire            udp_transmit_handler_reset_n;
+wire            udp_transmit_handler_enable;
+wire            udp_transmit_handler_data_enable;
+wire            udp_transmit_handler_udp_data_enable;
+wire            udp_transmit_handler_data_ready;
+wire    [47:0]  udp_transmit_handler_mac_destination;
+wire    [31:0]  udp_transmit_handler_ipv4_destination;
+wire    [15:0]  udp_transmit_handler_udp_destination;
+wire    [15:0]  udp_transmit_handler_udp_source;
+wire    [15:0]  udp_transmit_handler_ipv4_identification;
+wire    [15:0]  udp_transmit_handler_ipv4_flags;
+wire    [15:0]  udp_transmit_handler_udp_data_size;
+wire    [7:0]   udp_transmit_handler_udp_data;
+wire            udp_transmit_handler_udp_data_valid;
+wire            udp_transmit_handler_transmit_valid;
+wire            udp_transmit_handler_ready;
+
+udp_transmit_handler udp_transmit_handler(
+    .clock                  (udp_transmit_handler_clock),
+    .reset_n                (udp_transmit_handler_reset_n),
+    .enable                 (udp_transmit_handler_enable),
+    .data_enable            (udp_transmit_handler_data_enable),
+    .udp_data_enable        (udp_transmit_handler_udp_data_enable),
+
+    .data_ready             (udp_transmit_handler_data_ready),
+    .mac_destination        (udp_transmit_handler_mac_destination),
+    .ipv4_destination       (udp_transmit_handler_ipv4_destination),
+    .udp_destination        (udp_transmit_handler_udp_destination),
+    .udp_source             (udp_transmit_handler_udp_source),
+    .ipv4_identification    (udp_transmit_handler_ipv4_identification),
+    .ipv4_flags             (udp_transmit_handler_ipv4_flags),
+    .udp_data_size          (udp_transmit_handler_udp_data_size),
+    .udp_data               (udp_transmit_handler_udp_data),
+    .udp_data_valid         (udp_transmit_handler_udp_data_valid),
+    .transmit_valid         (udp_transmit_handler_transmit_valid),
+    .ready                  (udp_transmit_handler_ready)
+);
+
+
 assign  receive_data_valid                                      =   outbound_fifo_read_data_valid;
 assign  receive_data                                            =   outbound_fifo_read_data;
 assign  transmit_data_ready                                     =   0;
@@ -280,5 +320,12 @@ assign  outbound_fifo_read_reset_n                              =   reset_n;
 assign  outbound_fifo_write_clock                               =   clock;
 assign  outbound_fifo_write_enable                              =   receive_slot_arbiter_push_data_valid;
 assign  outbound_fifo_write_reset_n                             =   reset_n;
+
+assign  udp_transmit_handler_clock                              =   clock;
+assign  udp_transmit_handler_reset_n                            =   reset_n;
+assign  udp_transmit_handler_enable                             =   0; //TODO ready from frame pusher
+assign  udp_transmit_handler_data_enable                        =   transmit_data_enable;
+assign  udp_transmit_handler_data                               =   transmit_data;
+assign  udp_transmit_handler_udp_data_enable                    =   0; //TODO from frame pusher
 
 endmodule

@@ -310,7 +310,7 @@ always_comb begin
             end
             if (process_counter == 0) begin
                 if (number_of_udp_bytes_left == 0) begin
-                    ipv4_identification = _ipv4_identification + 1;
+                    _ipv4_identification = ipv4_identification + 1;
                 end
                 else begin
                     _ipv4_flags[12:0]   = ipv4_flags[12:0] + 184;
