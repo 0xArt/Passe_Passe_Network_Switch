@@ -63,31 +63,30 @@ rmii_byte_packager rmii_byte_packager(
 );
 
 
-wire    [8:0]   frame_fifo_data;
-wire            frame_fifo_read_clock;
+wire            frame_fifo_clock;
+wire            frame_fifo_reset_n;
 wire            frame_fifo_read_enable;
-wire            frame_fifo_read_reset_n;
-wire            frame_fifo_write_clock;
+wire    [8:0]   frame_fifo_write_data;
 wire            frame_fifo_write_enable;
-wire            frame_fifo_write_reset_n;
-wire            frame_fifo_read_data_valid;
-wire            frame_fifo_empty;
-wire            frame_fifo_full;
 wire    [8:0]   frame_fifo_read_data;
+wire            frame_fifo_read_data_valid;
+wire            frame_fifo_full;
+wire            frame_fifo_empty;
 
-COREFIFO_C0 frame_fifo(
-    .DATA       (frame_fifo_data),
-    .RCLOCK     (frame_fifo_read_clock),
-    .RE         (frame_fifo_read_enable),
-    .RRESET_N   (frame_fifo_read_reset_n),
-    .WCLOCK     (frame_fifo_write_clock),
-    .WE         (frame_fifo_write_enable),
-    .WRESET_N   (frame_fifo_write_reset_n),
+synchronous_fifo
+#(.DATA_WIDTH   (9),
+  .DATA_DEPTH   (1500)
+) frame_fifo(
+    .clock              (frame_fifo_clock),
+    .reset_n            (frame_fifo_reset_n),
+    .read_enable        (frame_fifo_read_enable),
+    .write_enable       (frame_fifo_write_enable),
+    .write_data         (frame_fifo_write_data),
 
-    .DVLD       (frame_fifo_read_data_valid),
-    .EMPTY      (frame_fifo_empty),
-    .FULL       (frame_fifo_full),
-    .Q          (frame_fifo_read_data)
+    .read_data          (frame_fifo_read_data),
+    .read_data_valid    (frame_fifo_read_data_valid),
+    .full               (frame_fifo_full),
+    .empty              (frame_fifo_empty)
 );
 
 
@@ -155,28 +154,32 @@ frame_check_sequence_generator  frame_check_sequence_generator(
 
 
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_clock;
+wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_reset_n;
 wire    [RECEIVE_QUE_SLOTS-1:0][7:0]   payload_fifo_write_data;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_read_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_reset_n;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_write_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_read_data_valid;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_empty;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_full;
 wire    [RECEIVE_QUE_SLOTS-1:0][7:0]   payload_fifo_read_data;
 
+
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
-        COREFIFO_C1 payload_fifo(
-            .CLK        (payload_fifo_clock[i]),
-            .DATA       (payload_fifo_write_data[i]),
-            .RE         (payload_fifo_read_enable[i]),
-            .RESET_N    (payload_fifo_reset_n[i]),
-            .WE         (payload_fifo_write_enable[i]),
+        synchronous_fifo
+        #(  .DATA_WIDTH   (8),
+            .DATA_DEPTH   (1024)
+        ) payload_fifo(
+            .clock              (payload_fifo_clock[i]),
+            .reset_n            (payload_fifo_reset_n[i]),
+            .read_enable        (payload_fifo_read_enable[i]),
+            .write_enable       (payload_fifo_write_enable[i]),
+            .write_data         (payload_fifo_write_data[i]),
 
-            .DVLD       (payload_fifo_read_data_valid[i]),
-            .EMPTY      (payload_fifo_empty[i]),
-            .FULL       (payload_fifo_full[i]),
-            .Q          (payload_fifo_read_data[i])
+            .read_data          (payload_fifo_read_data[i]),
+            .read_data_valid    (payload_fifo_read_data_valid[i]),
+            .full               (payload_fifo_full[i]),
+            .empty              (payload_fifo_empty[i])
         );
     end
 endgenerate
@@ -367,13 +370,12 @@ generate
     end
 endgenerate
 
-assign  frame_fifo_data                                         =   rmii_byte_packager_packaged_data;
 assign  frame_fifo_read_clock                                   =   clock;
+assign  frame_fifo_reset_n                                      =   reset_n;
+assign  frame_fifo_data                                         =   rmii_byte_packager_packaged_data;
 assign  frame_fifo_read_enable                                  =   ethernet_packet_parser_data_ready;
-assign  frame_fifo_read_reset_n                                 =   reset_n;
 assign  frame_fifo_write_clock                                  =   clock;
 assign  frame_fifo_write_enable                                 =   rmii_byte_packager_packaged_data_valid;
-assign  frame_fifo_write_reset_n                                =   reset_n;
 
 assign  rmii_byte_packager_clock                                =   clock;
 assign  rmii_byte_packager_reset_n                              =   reset_n;
