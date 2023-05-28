@@ -4,7 +4,7 @@ quit -sim
 file delete -force presynth
 vlib presynth
 vmap presynth presynth
-vmap rtg4 "C:/Microchip/Libero_SoC_v2022.3/Designer/lib/modelsimpro/precompiled/vlog/rtg4"
+#vmap rtg4 "C:/Microchip/Libero_SoC_v2022.3/Designer/lib/modelsimpro/precompiled/vlog/rtg4"
 vmap intel "C:/intelFPGA_lite/22.1std/questa_fse/modelsim_lib"
 
 

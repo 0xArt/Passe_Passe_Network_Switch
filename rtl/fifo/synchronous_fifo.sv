@@ -42,13 +42,11 @@ reg     [DATA_DEPTH-1:0]                write_pointer;
 logic   [DATA_DEPTH-1:0]                _write_pointer;
 logic   [DATA_WIDTH-1:0]                _read_data;
 logic                                   _read_data_valid;
-
-
-reg     [DATA_WIDTH-1:0]                memory  [DATA_DEPTH-1:0];
+reg     [DATA_WIDTH-1:0]                memory   [DATA_DEPTH-1:0];
 logic   [DATA_WIDTH-1:0]                _memory  [DATA_DEPTH-1:0];
+integer                                 i;
+integer                                 j;
 
-integer i;
-integer j;
 
 always_comb begin
     _read_data          =   read_data;
@@ -108,21 +106,7 @@ always_comb begin
             _read_data       =   write_data;
             _read_data_valid =   1;
         end
-        else if (full) begin
-            _read_data       =   memory[read_pointer];
-            _read_data_valid =   1;
-
-            if (read_pointer == (DATA_DEPTH -1)) begin
-                _read_pointer  =   0;
-            end
-            else begin
-                _read_pointer  = read_pointer + 1;
-            end
-
-            _memory[write_pointer] = write_data;
-        end
         else begin
-
             _read_data          =   memory[read_pointer];
             _read_data_valid    =   1;
 
@@ -144,7 +128,6 @@ always_comb begin
         end
     end
 end
-
 
 always_ff @(posedge clock) begin
     if (!reset_n) begin
