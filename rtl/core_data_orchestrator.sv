@@ -66,8 +66,8 @@ logic       [47:0]                              _mac_destination;
 reg         [47:0]                              mac_destination;
 logic       [47:0]                              _mac_source;
 reg         [47:0]                              mac_source;
-logic       [$clog2(NUMBER_OF_RMII_PORTS)-1:0]  _port_select;
-reg         [$clog2(NUMBER_OF_RMII_PORTS)-1:0]  port_select;
+logic       [$clog2(NUMBER_OF_RMII_PORTS):0]    _port_select;
+reg         [$clog2(NUMBER_OF_RMII_PORTS):0]    port_select;
 logic       [7:0]                               _process_counter;
 reg         [7:0]                               process_counter;
 

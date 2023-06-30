@@ -54,7 +54,7 @@ always_comb begin
     _read_pointer       =   read_pointer;
     _write_pointer      =   write_pointer;
     full                =   0;
-    empty               =   (write_pointer == read_pointer) ? 1 : 0;
+    empty               =   ( (write_pointer == read_pointer) && !full ) ? 1 : 0;
 
     for (i=0; i<DATA_DEPTH; i=i+1) begin
         _memory[i]      =   memory[i];

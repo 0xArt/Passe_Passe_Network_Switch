@@ -4,7 +4,7 @@ quit -sim
 file delete -force presynth
 vlib presynth
 vmap presynth presynth
-vmap intel "C:/intelFPGA_lite/22.1std/questa_fse/modelsim_lib"
+vmap intel "home/artin/intelFPGA_lite/22.1std/questa_fse/modelsim_lib"
 
 
 vlog -sv -work presynth \

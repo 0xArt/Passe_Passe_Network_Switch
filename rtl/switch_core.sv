@@ -113,8 +113,8 @@ wire                                            cam_table_clock;
 wire                                            cam_table_reset_n;
 wire                                            cam_table_write_enable;
 wire    [47:0]                                  cam_table_write_data;
-wire    [$clog2(NUMBER_OF_RMII_PORTS)-1:0]      cam_table_write_address;
-wire    [$clog2(NUMBER_OF_RMII_PORTS)-1:0]      cam_table_read_address;
+wire    [$clog2(NUMBER_OF_RMII_PORTS):0]        cam_table_write_address;
+wire    [$clog2(NUMBER_OF_RMII_PORTS):0]        cam_table_read_address;
 wire    [47:0]                                  cam_table_read_data;
 
 generic_block_ram
