@@ -91,13 +91,13 @@ always_comb  begin
 
     case (state)
         S_IDLE: begin
-            _data_ready         =   1;
             _shipped_data_valid =   0;
             _saved_speed_code   =   speed_code;
 
             if (data_enable) begin
+                _data_ready             =   1;
+
                 if (data[8]) begin
-                    _data_ready         =   0;
                     _byte_to_ship       =   data[7:0];
                     _counter            =   0;
                     _shipped_data       =   2'b01;

@@ -232,48 +232,48 @@ add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii
 add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_good_packet}
 add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_bad_packet}
 add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_data_ready}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_clock}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_reset_n}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/write_clock}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/write_reset_n}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_enable}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/write_enable}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/write_data}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_data}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_data_valid}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/full}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/empty}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_clock}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_read_clock}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_read_reset_n}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_reset_n}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_enable}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_data}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_address}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_read_address}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_read_data}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_clock}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_reset_n}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_enable}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_write_pointer_gray}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_write_enable}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_memory_read_data}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_data}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_data_valid}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_memory_read_address}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_pointer_gray}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_empty}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_clock}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_reset_n}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_write_enable}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_read_pointer_gray}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_read_enable}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_write_data}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_data}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_data_valid}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_address}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_pointer_gray}
-add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_full}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_clock}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_reset_n}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/write_clock}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/write_reset_n}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_enable}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/write_enable}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/write_data}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_data}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_data_valid}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/full}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/empty}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_clock}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_read_clock}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_read_reset_n}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_reset_n}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_enable}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_data}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_address}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_read_address}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_read_data}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_clock}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_reset_n}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_enable}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_write_pointer_gray}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_write_enable}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_memory_read_data}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_data}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_data_valid}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_memory_read_address}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_pointer_gray}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_empty}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_clock}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_reset_n}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_write_enable}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_read_pointer_gray}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_read_enable}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_write_data}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_data}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_data_valid}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_address}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_pointer_gray}
+add wave -noupdate -expand -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_full}
 add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/read_clock}
 add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/read_reset_n}
 add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/write_clock}
@@ -445,8 +445,35 @@ add wave -noupdate -group outbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmi
 add wave -noupdate -group outbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/outbound_fifo/asynchronous_fifo_write_controller_memory_write_address}
 add wave -noupdate -group outbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/outbound_fifo/asynchronous_fifo_write_controller_memory_write_pointer_gray}
 add wave -noupdate -group outbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/outbound_fifo/asynchronous_fifo_write_controller_full}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/clock}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/reset_n}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/read_enable}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/write_pointer_gray}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/write_enable}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/memory_read_data}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/read_data}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/read_data_valid}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/memory_read_address}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/read_pointer_gray}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/empty}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/read_pointer}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/_read_pointer}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/write_pointer}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/_write_pointer}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/write_enable_sync}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/_write_enable_sync}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/_read_data}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/_read_data_valid}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/_memory_data_valid}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/memory_data_valid}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/_empty}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/_internal_full}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/internal_full}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/read_enable_delayed}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/_read_enable_delayed}
+add wave -noupdate -expand -group inbound_fifo_0_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller/i}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {10214733 ps} 0}
+WaveRestoreCursors {{Cursor 1} {10335829 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 343
 configure wave -valuecolwidth 102
@@ -462,4 +489,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {9932486 ps} {10447514 ps}
+WaveRestoreZoom {10032484 ps} {10547516 ps}

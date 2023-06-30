@@ -314,8 +314,9 @@ wire            inbound_fifo_full;
 wire            inbound_fifo_empty;
 
 asynchronous_fifo#(
-    .DATA_WIDTH(9),
-    .DATA_DEPTH(4096)
+    .DATA_WIDTH                 (9),
+    .DATA_DEPTH                 (4096),
+    .FIRST_WORD_FALL_THROUGH    (1)
 )
 inbound_fifo(
     .read_clock         (inbound_fifo_read_clock),

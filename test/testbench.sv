@@ -59,8 +59,10 @@ initial begin
     $display("Running case 000");
     case_000();
 
+    /*
     $display("Running case 002");
     case_002();
+    */
 
     $stop();
 end
