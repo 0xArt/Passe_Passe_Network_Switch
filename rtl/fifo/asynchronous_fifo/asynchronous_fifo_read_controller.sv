@@ -118,11 +118,17 @@ always_comb begin
     end
 
     if (FIRST_WORD_FALL_THROUGH) begin
-        if (!read_enable && !read_enable_delayed) begin
-            if (!_empty) begin
+        if (!read_enable && !read_enable_delayed && !memory_data_valid) begin
+            if (!empty) begin
                 _read_data          =   memory_read_data;
                 _memory_data_valid  =   1;
 
+                if (read_pointer == (DATA_DEPTH -1)) begin
+                    _read_pointer  =   0;
+                end
+                else begin
+                    _read_pointer  = read_pointer + 1;
+                end
             end
         end
     end
