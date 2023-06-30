@@ -42,10 +42,10 @@ add wave -noupdate -group packet_parser -radix hexadecimal {/testbench/switch_co
 add wave -noupdate -group receive_arbiter -radix hexadecimal {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/clock}
 add wave -noupdate -group receive_arbiter -radix hexadecimal {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/reset_n}
 add wave -noupdate -group receive_arbiter -radix hexadecimal {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/enable}
-add wave -noupdate -group receive_arbiter -radix hexadecimal {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/data}
-add wave -noupdate -group receive_arbiter -radix hexadecimal {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/data_enable}
+add wave -noupdate -group receive_arbiter -radix hexadecimal -childformat {{{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/data[1]} -radix hexadecimal} {{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/data[0]} -radix hexadecimal}} -subitemconfig {{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/data[1]} {-height 23 -radix hexadecimal} {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/data[0]} {-height 23 -radix hexadecimal}} {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/data}
+add wave -noupdate -group receive_arbiter -radix hexadecimal -childformat {{{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/data_enable[1]} -radix hexadecimal} {{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/data_enable[0]} -radix hexadecimal}} -subitemconfig {{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/data_enable[1]} {-height 23 -radix hexadecimal} {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/data_enable[0]} {-height 23 -radix hexadecimal}} {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/data_enable}
 add wave -noupdate -group receive_arbiter -radix hexadecimal {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/ready}
-add wave -noupdate -group receive_arbiter -radix hexadecimal {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data}
+add wave -noupdate -group receive_arbiter -radix hexadecimal -childformat {{{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[8]} -radix hexadecimal} {{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[7]} -radix hexadecimal} {{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[6]} -radix hexadecimal} {{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[5]} -radix hexadecimal} {{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[4]} -radix hexadecimal} {{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[3]} -radix hexadecimal} {{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[2]} -radix hexadecimal} {{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[1]} -radix hexadecimal} {{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[0]} -radix hexadecimal}} -subitemconfig {{/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[8]} {-height 23 -radix hexadecimal} {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[7]} {-height 23 -radix hexadecimal} {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[6]} {-height 23 -radix hexadecimal} {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[5]} {-height 23 -radix hexadecimal} {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[4]} {-height 23 -radix hexadecimal} {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[3]} {-height 23 -radix hexadecimal} {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[2]} {-height 23 -radix hexadecimal} {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[1]} {-height 23 -radix hexadecimal} {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data[0]} {-height 23 -radix hexadecimal}} {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data}
 add wave -noupdate -group receive_arbiter -radix hexadecimal {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/push_data_valid}
 add wave -noupdate -group receive_arbiter -radix hexadecimal {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/_state}
 add wave -noupdate -group receive_arbiter -radix hexadecimal {/testbench/switch_core/genblk1[0]/rmii_port/receive_slot_arbiter/state}
@@ -129,27 +129,6 @@ add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orches
 add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/port_select
 add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/_process_counter
 add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/process_counter
-add wave -noupdate -group inbound_fifo_port_1 -radix hexadecimal {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/DATA}
-add wave -noupdate -group inbound_fifo_port_1 -radix hexadecimal {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/WE}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/RCLOCK}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/RE}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/RRESET_N}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/WCLOCK}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/WRESET_N}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/DVLD}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/EMPTY}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/FULL}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/Q}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/DVLD_net_0}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/EMPTY_net_0}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/FULL_net_0}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/Q_net_0}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/FULL_net_1}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/EMPTY_net_1}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/DVLD_net_1}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/Q_net_1}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/GND_net}
-add wave -noupdate -group inbound_fifo_port_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/MEMRD_const_net_0}
 add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/rmii_port/rmii_byte_shipper/clock}
 add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/rmii_port/rmii_byte_shipper/reset_n}
 add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/rmii_port/rmii_byte_shipper/data}
@@ -171,35 +150,10 @@ add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/r
 add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/rmii_port/rmii_byte_shipper/sample_counter_limit}
 add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/rmii_port/rmii_byte_shipper/_sample_counter_limit}
 add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/rmii_port/rmii_byte_shipper/_data_ready}
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/clock
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/reset_n
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/data
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/data_enable
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/data_error
-add wave -noupdate -group test_bench_byte_packager -radix hexadecimal /testbench/rmii_byte_packager/packaged_data
-add wave -noupdate -group test_bench_byte_packager -radix hexadecimal /testbench/rmii_byte_packager/packaged_data_valid
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/speed_code
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/state
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/_state
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/counter
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/_counter
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/sample_counter
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/_sample_counter
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/_packaged_data
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/_packaged_data_valid
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/data_delayed
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/_data_delayed
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/data_enable_delayed
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/_data_enable_delayed
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/data_error_delayed
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/_data_error_delayed
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/_is_first_byte
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/is_first_byte
-add wave -noupdate -group test_bench_byte_packager /testbench/rmii_byte_packager/_speed_code
 add wave -noupdate -group switch_core /testbench/switch_core/clock
 add wave -noupdate -group switch_core /testbench/switch_core/reset_n
 add wave -noupdate -group switch_core /testbench/switch_core/rmii_phy_receive_data
-add wave -noupdate -group switch_core /testbench/switch_core/rmii_phy_receive_data_enable
+add wave -noupdate -group switch_core -expand /testbench/switch_core/rmii_phy_receive_data_enable
 add wave -noupdate -group switch_core /testbench/switch_core/rmii_phy_receive_data_error
 add wave -noupdate -group switch_core /testbench/switch_core/rmii_phy_transmit_data
 add wave -noupdate -group switch_core /testbench/switch_core/rmii_phy_transmit_data_vaid
@@ -208,7 +162,7 @@ add wave -noupdate -group switch_core /testbench/switch_core/rmii_port_clock
 add wave -noupdate -group switch_core /testbench/switch_core/rmii_port_core_clock
 add wave -noupdate -group switch_core /testbench/switch_core/rmii_port_reset_n
 add wave -noupdate -group switch_core /testbench/switch_core/rmii_port_enable
-add wave -noupdate -group switch_core /testbench/switch_core/rmii_port_rmii_receive_data
+add wave -noupdate -group switch_core -expand /testbench/switch_core/rmii_port_rmii_receive_data
 add wave -noupdate -group switch_core /testbench/switch_core/rmii_port_rmii_receive_data_enable
 add wave -noupdate -group switch_core /testbench/switch_core/rmii_port_rmii_receive_data_error
 add wave -noupdate -group switch_core /testbench/switch_core/rmii_port_transmit_data
@@ -237,51 +191,222 @@ add wave -noupdate -group switch_core /testbench/switch_core/cam_table_write_add
 add wave -noupdate -group switch_core /testbench/switch_core/cam_table_write_data
 add wave -noupdate -group switch_core /testbench/switch_core/cam_table_write_enable
 add wave -noupdate -group switch_core /testbench/switch_core/cam_table_read_data
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/clock}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/reset_n}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/data}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/data_enable}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_result}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_result_enable}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_enable}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/recieve_slot_enable}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/speed_code}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/data_ready}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_data}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_data_valid}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_data_last}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/packet_data}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/packet_data_valid}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/good_packet}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/bad_packet}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/i}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/j}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_state}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/state}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/process_counter}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_process_counter}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/timeout_counter}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_timeout_counter}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/timeout_counter_limit}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_timeout_counter_limit}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/delayed_data}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_delayed_data}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_checksum_data}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_packet_data_valid}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_packet_data}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_checksum_data_valid}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_checksum_data_last}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/que_slot_select}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_que_slot_select}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_frame_check_sequence}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/frame_check_sequence}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_good_packet}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_bad_packet}
-add wave -noupdate -expand -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_data_ready}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/clock}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/reset_n}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/data}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/data_enable}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_result}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_result_enable}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_enable}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/recieve_slot_enable}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/speed_code}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/data_ready}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_data}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_data_valid}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_data_last}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/packet_data}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/packet_data_valid}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/good_packet}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/bad_packet}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/i}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/j}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_state}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/state}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/process_counter}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_process_counter}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/timeout_counter}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_timeout_counter}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/timeout_counter_limit}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_timeout_counter_limit}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/delayed_data}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_delayed_data}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_checksum_data}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_packet_data_valid}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_packet_data}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_checksum_data_valid}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_checksum_data_last}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/que_slot_select}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_que_slot_select}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_frame_check_sequence}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/frame_check_sequence}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_good_packet}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_bad_packet}
+add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_data_ready}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_clock}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_reset_n}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/write_clock}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/write_reset_n}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_enable}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/write_enable}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/write_data}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_data}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_data_valid}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/full}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/empty}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_clock}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_read_clock}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_read_reset_n}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_reset_n}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_enable}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_data}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_write_address}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_read_address}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/generic_dual_port_ram_read_data}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_clock}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_reset_n}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_enable}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_write_pointer_gray}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_write_enable}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_memory_read_data}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_data}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_data_valid}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_memory_read_address}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_pointer_gray}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_empty}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_clock}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_reset_n}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_write_enable}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_read_pointer_gray}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_read_enable}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_write_data}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_data}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_data_valid}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_address}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_pointer_gray}
+add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_full}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/read_clock}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/read_reset_n}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/write_clock}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/write_reset_n}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/read_enable}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/write_enable}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/write_data}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/read_data}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/read_data_valid}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/full}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/empty}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/generic_dual_port_ram_write_clock}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/generic_dual_port_ram_read_clock}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/generic_dual_port_ram_read_reset_n}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/generic_dual_port_ram_write_reset_n}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/generic_dual_port_ram_write_enable}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/generic_dual_port_ram_write_data}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/generic_dual_port_ram_write_address}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/generic_dual_port_ram_read_address}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/generic_dual_port_ram_read_data}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_clock}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_reset_n}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_enable}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_write_pointer_gray}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_write_enable}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_memory_read_data}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_data}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_data_valid}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_memory_read_address}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_read_pointer_gray}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_read_controller_empty}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_clock}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_reset_n}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_write_enable}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_read_pointer_gray}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_read_enable}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_write_data}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_data}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_data_valid}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_address}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_memory_write_pointer_gray}
+add wave -noupdate -group rmii_inbound_fifo_1 {/testbench/switch_core/genblk1[1]/rmii_port/inbound_fifo/asynchronous_fifo_write_controller_full}
+add wave -noupdate -group testbench /testbench/clock
+add wave -noupdate -group testbench /testbench/reset_n
+add wave -noupdate -group testbench /testbench/ethernet_transmit_data
+add wave -noupdate -group testbench /testbench/ethernet_transmit_data_valid
+add wave -noupdate -group testbench /testbench/switch_core_clock
+add wave -noupdate -group testbench /testbench/switch_core_reset_n
+add wave -noupdate -group testbench /testbench/switch_core_rmii_phy_receive_data
+add wave -noupdate -group testbench /testbench/switch_core_rmii_phy_receive_data_enable
+add wave -noupdate -group testbench /testbench/switch_core_rmii_phy_receive_data_error
+add wave -noupdate -group testbench /testbench/switch_core_rmii_phy_transmit_data
+add wave -noupdate -group testbench /testbench/switch_core_rmii_phy_transmit_data_valid
+add wave -noupdate -group testbench /testbench/switch_core_rmii_phy_reference_clock
+add wave -noupdate -group testbench /testbench/rmii_byte_packager_clock
+add wave -noupdate -group testbench /testbench/rmii_byte_packager_reset_n
+add wave -noupdate -group testbench /testbench/rmii_byte_packager_data
+add wave -noupdate -group testbench /testbench/rmii_byte_packager_data_enable
+add wave -noupdate -group testbench /testbench/rmii_byte_packager_packaged_data
+add wave -noupdate -group testbench /testbench/rmii_byte_packager_speed_code
+add wave -noupdate -group testbench /testbench/rmii_byte_packager_packaged_data_valid
+add wave -noupdate -group testbench /testbench/rmii_byte_packager_data_error
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/clock
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/reset_n
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/data
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/data_enable
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/data_error
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/packaged_data
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/packaged_data_valid
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/speed_code
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/state
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/_state
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/counter
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/_counter
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/sample_counter
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/_sample_counter
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/_packaged_data
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/_packaged_data_valid
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/data_delayed
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/_data_delayed
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/data_enable_delayed
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/_data_enable_delayed
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/data_error_delayed
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/_data_error_delayed
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/_is_first_byte
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/is_first_byte
+add wave -noupdate -group testbench_rmii_byte_packager /testbench/rmii_byte_packager/_speed_code
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/clock}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/reset_n}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/data}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/data_enable}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/data_error}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/packaged_data}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/packaged_data_valid}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/speed_code}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/state}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/_state}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/counter}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/_counter}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/sample_counter}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/_sample_counter}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/_packaged_data}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/_packaged_data_valid}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/data_delayed}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/_data_delayed}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/data_enable_delayed}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/_data_enable_delayed}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/data_error_delayed}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/_data_error_delayed}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/_is_first_byte}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/is_first_byte}
+add wave -noupdate -expand -group rmii_byte_packager_0 {/testbench/switch_core/genblk1[0]/rmii_port/rmii_byte_packager/_speed_code}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/clock}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/reset_n}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/read_enable}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/write_enable}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/write_data}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/read_data}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/read_data_valid}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/full}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/empty}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/read_pointer}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/_read_pointer}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/write_pointer}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/_write_pointer}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/_read_data}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/_read_data_valid}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/i}
+add wave -noupdate -expand -group frame_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/frame_fifo/j}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {23388669 ps} 0}
+WaveRestoreCursors {{Cursor 1} {8089140 ps} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 219
+configure wave -namecolwidth 343
 configure wave -valuecolwidth 102
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -295,4 +420,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {71696384 ps}
+WaveRestoreZoom {0 ps} {16480896 ps}

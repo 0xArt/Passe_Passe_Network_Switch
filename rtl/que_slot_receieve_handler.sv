@@ -110,7 +110,8 @@ always_comb begin
             end
         end
         S_ADVERTISTE:  begin
-            _ready  =   1;
+            _ready                          =   1;
+            timeout_cycle_timer_load_count  =   1;
 
             if (enable && push_data_enable) begin
                 _state              =   S_PUSH_DATA;
@@ -120,7 +121,7 @@ always_comb begin
         S_PUSH_DATA: begin
             if (timeout_cycle_timer_expired) begin
                 _state              =   S_IDLE;
-                _data_ready         =   0;
+                _push_data_ready    =   0;
             end
             if (push_data_enable) begin
                 if (enable) begin

@@ -244,6 +244,7 @@ receive_slot_arbiter(
     .push_data_valid    (receive_slot_arbiter_push_data_valid)
 );
 
+
 wire    [8:0]   outbound_fifo_write_data;
 wire            outbound_fifo_read_clock;
 wire            outbound_fifo_read_enable;
@@ -256,19 +257,23 @@ wire            outbound_fifo_empty;
 wire            outbound_fifo_full;
 wire    [8:0]   outbound_fifo_read_data;
 
-COREFIFO_C2 outbound_fifo(
-    .DATA       (outbound_fifo_write_data),
-    .RCLOCK     (outbound_fifo_read_clock),
-    .RE         (outbound_fifo_read_enable),
-    .RRESET_N   (outbound_fifo_read_reset_n),
-    .WCLOCK     (outbound_fifo_write_clock),
-    .WE         (outbound_fifo_write_enable),
-    .WRESET_N   (outbound_fifo_write_reset_n),
+asynchronous_fifo#(
+    .DATA_WIDTH(9),
+    .DATA_DEPTH(4096)
+)
+outbound_fifo(
+    .read_clock         (outbound_fifo_read_clock),
+    .read_reset_n       (outbound_fifo_read_reset_n),
+    .write_clock        (outbound_fifo_write_clock),
+    .write_reset_n      (outbound_fifo_write_reset_n),
+    .read_enable        (outbound_fifo_read_enable),
+    .write_enable       (outbound_fifo_write_enable),
+    .write_data         (outbound_fifo_write_data),
 
-    .DVLD       (outbound_fifo_read_data_valid),
-    .EMPTY      (outbound_fifo_empty),
-    .FULL       (outbound_fifo_full),
-    .Q          (outbound_fifo_read_data)
+    .read_data          (outbound_fifo_read_data),
+    .read_data_valid    (outbound_fifo_read_data_valid),
+    .full               (outbound_fifo_full),
+    .empty              (outbound_fifo_empty)
 );
 
 
@@ -294,31 +299,36 @@ rmii_byte_shipper rmii_byte_shipper(
 );
 
 
-wire    [8:0]   inbound_fifo_write_data;
 wire            inbound_fifo_read_clock;
-wire            inbound_fifo_read_enable;
 wire            inbound_fifo_read_reset_n;
 wire            inbound_fifo_write_clock;
-wire            inbound_fifo_write_enable;
 wire            inbound_fifo_write_reset_n;
-wire            inbound_fifo_read_data_valid;
-wire            inbound_fifo_empty;
-wire            inbound_fifo_full;
+wire            inbound_fifo_read_enable;
+wire            inbound_fifo_write_enable;
+wire    [8:0]   inbound_fifo_write_data;
+
 wire    [8:0]   inbound_fifo_read_data;
+wire            inbound_fifo_read_data_valid;
+wire            inbound_fifo_full;
+wire            inbound_fifo_empty;
 
-COREFIFO_C2 inbound_fifo(
-    .DATA       (inbound_fifo_write_data),
-    .RCLOCK     (inbound_fifo_read_clock),
-    .RE         (inbound_fifo_read_enable),
-    .RRESET_N   (inbound_fifo_read_reset_n),
-    .WCLOCK     (inbound_fifo_write_clock),
-    .WE         (inbound_fifo_write_enable),
-    .WRESET_N   (inbound_fifo_write_reset_n),
+asynchronous_fifo#(
+    .DATA_WIDTH(9),
+    .DATA_DEPTH(4096)
+)
+inbound_fifo(
+    .read_clock         (inbound_fifo_read_clock),
+    .read_reset_n       (inbound_fifo_read_reset_n),
+    .write_clock        (inbound_fifo_write_clock),
+    .write_reset_n      (inbound_fifo_write_reset_n),
+    .read_enable        (inbound_fifo_read_enable),
+    .write_enable       (inbound_fifo_write_enable),
+    .write_data         (inbound_fifo_write_data),
 
-    .DVLD       (inbound_fifo_read_data_valid),
-    .EMPTY      (inbound_fifo_empty),
-    .FULL       (inbound_fifo_full),
-    .Q          (inbound_fifo_read_data)
+    .read_data          (inbound_fifo_read_data),
+    .read_data_valid    (inbound_fifo_read_data_valid),
+    .full               (inbound_fifo_full),
+    .empty              (inbound_fifo_empty)
 );
 
 
@@ -370,11 +380,11 @@ generate
     end
 endgenerate
 
-assign  frame_fifo_read_clock                                   =   clock;
+assign  frame_fifo_clock                                        =   clock;
 assign  frame_fifo_reset_n                                      =   reset_n;
 assign  frame_fifo_data                                         =   rmii_byte_packager_packaged_data;
 assign  frame_fifo_read_enable                                  =   ethernet_packet_parser_data_ready;
-assign  frame_fifo_write_clock                                  =   clock;
+assign  frame_fifo_write_data                                   =   rmii_byte_packager_packaged_data;
 assign  frame_fifo_write_enable                                 =   rmii_byte_packager_packaged_data_valid;
 
 assign  rmii_byte_packager_clock                                =   clock;
