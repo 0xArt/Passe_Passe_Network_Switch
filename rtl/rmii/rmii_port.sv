@@ -258,8 +258,9 @@ wire            outbound_fifo_full;
 wire    [8:0]   outbound_fifo_read_data;
 
 asynchronous_fifo#(
-    .DATA_WIDTH(9),
-    .DATA_DEPTH(4096)
+    .DATA_WIDTH                 (9),
+    .DATA_DEPTH                 (4096),
+    .FIRST_WORD_FALL_THROUGH    (1)
 )
 outbound_fifo(
     .read_clock         (outbound_fifo_read_clock),

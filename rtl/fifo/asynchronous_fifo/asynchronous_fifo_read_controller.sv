@@ -20,8 +20,9 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 module asynchronous_fifo_read_controller#(
-    parameter DATA_WIDTH = 16,
-    parameter DATA_DEPTH = 4096
+    parameter DATA_WIDTH                = 16,
+    parameter DATA_DEPTH                = 4096,
+    parameter FIRST_WORD_FALL_THROUGH   = 1
 )(
     input   wire                                clock,
     input   wire                                reset_n,
@@ -66,7 +67,7 @@ always_comb begin
     _read_pointer                               =   read_pointer;
     memory_read_address                         =   read_pointer;
     _read_enable_delayed                        =   read_enable;
-    _memory_data_valid                          =   0;
+    _memory_data_valid                          =   memory_data_valid;
     _internal_full                              =   0;
     _empty                                      =   ( (write_pointer == read_pointer) && !internal_full) ? 1 : 0;
     read_pointer_gray[$clog2(DATA_DEPTH)-1:0]   =   read_pointer[$clog2(DATA_DEPTH)-1:0] ^ {1'b0, read_pointer[$clog2(DATA_DEPTH)-1:1]};
@@ -115,6 +116,17 @@ always_comb begin
             _read_data          =   memory_read_data;
         end
     end
+
+    if (FIRST_WORD_FALL_THROUGH) begin
+        if (!read_enable && !read_enable_delayed) begin
+            if (!_empty) begin
+                _read_data          =   memory_read_data;
+                _memory_data_valid  =   1;
+
+            end
+        end
+    end
+
 end
 
 
