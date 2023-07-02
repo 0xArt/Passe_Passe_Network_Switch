@@ -23,19 +23,147 @@ module virutal_port_udp#(
 )(
     input   wire            clock,
     input   wire            reset_n,
-    input   wire    [8:0]   virtual_port_receive_data,
-    input   wire            virtual_port_receive_data_enable,
-    input   wire    [8:0]   transmit_data,
-    input   wire            transmit_data_enable,
-    input   wire            receive_data_enable,
+    input   wire    [8:0]   receive_data,                       //from switch data orch
+    input   wire            receive_data_enable,                //from switch data orch
+    input   wire            transmit_data_enable,               //from switch data orch
+    input   wire            module_clock,                       //clock domain of frabic modules
+    input   wire    [8:0]   module_transmit_data,               //from fabric modules
+    input   wire            module_transmit_data_enable,        //from fabric modules
 
     output  wire            transmit_data_ready,
-    output  wire     [8:0]  receive_data,
-    output  wire            receive_data_valid,
+    output  wire     [8:0]  transmit_data,                      //to switch data orch
+    output  wire            transmit_data_valid                 //to switch data orch
+);
+
+genvar i;
+
+
+wire            inbound_fifo_read_clock;
+wire            inbound_fifo_read_reset_n;
+wire            inbound_fifo_write_clock;
+wire            inbound_fifo_write_reset_n;
+wire            inbound_fifo_read_enable;
+wire            inbound_fifo_write_enable;
+wire    [8:0]   inbound_fifo_write_data;
+
+wire    [8:0]   inbound_fifo_read_data;
+wire            inbound_fifo_read_data_valid;
+wire            inbound_fifo_full;
+wire            inbound_fifo_empty;
+
+asynchronous_fifo#(
+    .DATA_WIDTH                 (9),
+    .DATA_DEPTH                 (4096),
+    .FIRST_WORD_FALL_THROUGH    (1)
+)
+inbound_fifo(
+    .read_clock         (inbound_fifo_read_clock),
+    .read_reset_n       (inbound_fifo_read_reset_n),
+    .write_clock        (inbound_fifo_write_clock),
+    .write_reset_n      (inbound_fifo_write_reset_n),
+    .read_enable        (inbound_fifo_read_enable),
+    .write_enable       (inbound_fifo_write_enable),
+    .write_data         (inbound_fifo_write_data),
+
+    .read_data          (inbound_fifo_read_data),
+    .read_data_valid    (inbound_fifo_read_data_valid),
+    .full               (inbound_fifo_full),
+    .empty              (inbound_fifo_empty)
 );
 
 
-genvar i;
+wire            udp_transmit_handler_clock;
+wire            udp_transmit_handler_reset_n;
+wire            udp_transmit_handler_enable;
+wire    [7:0]   udp_transmit_handler_data;
+wire            udp_transmit_handler_data_enable;
+wire    [31:0]  udp_transmit_handler_ipv4_source;
+
+wire            udp_transmit_handler_data_ready;
+wire    [47:0]  udp_transmit_handler_mac_destination;
+wire    [31:0]  udp_transmit_handler_ipv4_destination;
+wire    [15:0]  udp_transmit_handler_udp_destination;
+wire    [15:0]  udp_transmit_handler_udp_source;
+wire    [15:0]  udp_transmit_handler_ipv4_identification;
+wire    [15:0]  udp_transmit_handler_ipv4_flags;
+wire    [15:0]  udp_transmit_handler_udp_data_size;
+wire    [15:0]  udp_transmit_handler_udp_buffer_write_address;
+wire    [7:0]   udp_transmit_handler_udp_buffer_data;
+wire            udp_transmit_handler_udp_buffer_data_valid;
+wire    [7:0]   udp_transmit_handler_udp_checksum_data;
+wire            udp_transmit_handler_udp_checksum_data_valid;
+wire            udp_transmit_handler_udp_checksum_data_last;
+wire            udp_transmit_handler_transmit_valid;
+
+udp_transmit_handler udp_transmit_handler(
+    .clock                      (udp_transmit_handler_clock),
+    .reset_n                    (udp_transmit_handler_reset_n),
+    .enable                     (udp_transmit_handler_enable),
+    .data                       (udp_transmit_handler_data),
+    .data_enable                (udp_transmit_handler_data_enable),
+    .ipv4_source                (udp_transmit_handler_ipv4_source),
+
+    .data_ready                 (udp_transmit_handler_data_ready),
+    .mac_destination            (udp_transmit_handler_mac_destination),
+    .ipv4_destination           (udp_transmit_handler_ipv4_destination),
+    .udp_destination            (udp_transmit_handler_udp_destination),
+    .udp_source                 (udp_transmit_handler_udp_source),
+    .ipv4_identification        (udp_transmit_handler_ipv4_identification),
+    .ipv4_flags                 (udp_transmit_handler_ipv4_flags),
+    .udp_data_size              (udp_transmit_handler_udp_data_size),
+    .udp_buffer_write_address   (udp_transmit_handler_udp_buffer_write_address),
+    .udp_buffer_data            (udp_transmit_handler_udp_buffer_data),
+    .udp_buffer_data_valid      (udp_transmit_handler_udp_buffer_data_valid),
+    .udp_checksum_data          (udp_transmit_handler_udp_checksum_data),
+    .udp_checksum_data_valid    (udp_transmit_handler_udp_checksum_data_valid),
+    .udp_checksum_data_last     (udp_transmit_handler_udp_checksum_data_last),
+    .transmit_valid             (udp_transmit_handler_transmit_valid)
+);
+
+
+wire            udp_checksum_calculator_clock;
+wire            udp_checksum_calculator_reset_n;
+wire    [7:0]   udp_checksum_calculator_data;
+wire            udp_checksum_calculator_data_enable;
+wire            udp_checksum_calculator_data_last;
+
+wire    [15:0]  udp_checksum_calculator_result;
+wire            udp_checksum_calculator_result_valid;
+wire            udp_checksum_calculator_ready;
+
+internet_checksum_calculator    udp_checksum_calculator(
+    .clock                      (udp_checksum_calculator_clock),
+    .reset_n                    (udp_checksum_calculator_reset_n),
+    .data                       (udp_checksum_calculator_data),
+    .data_enable                (udp_checksum_calculator_data_enable),
+    .data_last                  (udp_checksum_calculator_data_last),
+
+    .result                     (udp_checksum_calculator_result),
+    .result_valid               (udp_checksum_calculator_result_valid),
+    .ready                      (udp_checksum_calculator_ready)
+);
+
+
+wire            udp_data_buffer_clock;
+wire            udp_data_buffer_reset_n;
+wire            udp_data_buffer_write_enable;
+wire    [7:0]   udp_data_buffer_write_data;
+wire    [15:0]  udp_data_buffer_write_address;
+wire    [15:0]  udp_data_buffer_read_address;
+
+wire    [7:0]   udp_data_buffer_read_data;
+
+generic_block_ram   udp_data_buffer(
+    .clock                  (udp_data_buffer_clock),
+    .reset_n                (udp_data_buffer_reset_n),
+    .write_enable           (udp_data_buffer_write_enable),
+    .write_data             (udp_data_buffer_write_data),
+    .write_address          (udp_data_buffer_write_address),
+    .read_address           (udp_data_buffer_read_address),
+
+    .read_data              (udp_data_buffer_read_data)
+);
+
 
 
 wire                                ethernet_frame_parser_clock;
@@ -102,28 +230,32 @@ frame_check_sequence_generator  frame_check_sequence_generator(
 
 
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_clock;
+wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_reset_n;
 wire    [RECEIVE_QUE_SLOTS-1:0][7:0]   payload_fifo_write_data;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_read_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_reset_n;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_write_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_read_data_valid;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_empty;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_full;
 wire    [RECEIVE_QUE_SLOTS-1:0][7:0]   payload_fifo_read_data;
 
+
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
-        COREFIFO_C1 payload_fifo(
-            .CLK        (payload_fifo_clock[i]),
-            .DATA       (payload_fifo_write_data[i]),
-            .RE         (payload_fifo_read_enable[i]),
-            .RESET_N    (payload_fifo_reset_n[i]),
-            .WE         (payload_fifo_write_enable[i]),
+        synchronous_fifo
+        #(  .DATA_WIDTH   (8),
+            .DATA_DEPTH   (1024)
+        ) payload_fifo(
+            .clock              (payload_fifo_clock[i]),
+            .reset_n            (payload_fifo_reset_n[i]),
+            .read_enable        (payload_fifo_read_enable[i]),
+            .write_enable       (payload_fifo_write_enable[i]),
+            .write_data         (payload_fifo_write_data[i]),
 
-            .DVLD       (payload_fifo_read_data_valid[i]),
-            .EMPTY      (payload_fifo_empty[i]),
-            .FULL       (payload_fifo_full[i]),
-            .Q          (payload_fifo_read_data[i])
+            .read_data          (payload_fifo_read_data[i]),
+            .read_data_valid    (payload_fifo_read_data_valid[i]),
+            .full               (payload_fifo_full[i]),
+            .empty              (payload_fifo_empty[i])
         );
     end
 endgenerate
@@ -202,6 +334,7 @@ wire            outbound_fifo_empty;
 wire            outbound_fifo_full;
 wire    [8:0]   outbound_fifo_read_data;
 
+/*
 COREFIFO_C2 outbound_fifo(
     .DATA       (outbound_fifo_data),
     .RCLOCK     (outbound_fifo_read_clock),
@@ -216,47 +349,7 @@ COREFIFO_C2 outbound_fifo(
     .FULL       (outbound_fifo_full),
     .Q          (outbound_fifo_read_data)
 );
-
-
-wire            udp_transmit_handler_clock;
-wire            udp_transmit_handler_reset_n;
-wire            udp_transmit_handler_enable;
-wire            udp_transmit_handler_data_enable;
-wire            udp_transmit_handler_udp_data_enable;
-wire            udp_transmit_handler_data_ready;
-wire    [47:0]  udp_transmit_handler_mac_destination;
-wire    [31:0]  udp_transmit_handler_ipv4_destination;
-wire    [15:0]  udp_transmit_handler_udp_destination;
-wire    [15:0]  udp_transmit_handler_udp_source;
-wire    [15:0]  udp_transmit_handler_ipv4_identification;
-wire    [15:0]  udp_transmit_handler_ipv4_flags;
-wire    [15:0]  udp_transmit_handler_udp_data_size;
-wire    [7:0]   udp_transmit_handler_udp_data;
-wire            udp_transmit_handler_udp_data_valid;
-wire            udp_transmit_handler_transmit_valid;
-wire            udp_transmit_handler_ready;
-
-udp_transmit_handler udp_transmit_handler(
-    .clock                  (udp_transmit_handler_clock),
-    .reset_n                (udp_transmit_handler_reset_n),
-    .enable                 (udp_transmit_handler_enable),
-    .data_enable            (udp_transmit_handler_data_enable),
-    .udp_data_enable        (udp_transmit_handler_udp_data_enable),
-
-    .data_ready             (udp_transmit_handler_data_ready),
-    .mac_destination        (udp_transmit_handler_mac_destination),
-    .ipv4_destination       (udp_transmit_handler_ipv4_destination),
-    .udp_destination        (udp_transmit_handler_udp_destination),
-    .udp_source             (udp_transmit_handler_udp_source),
-    .ipv4_identification    (udp_transmit_handler_ipv4_identification),
-    .ipv4_flags             (udp_transmit_handler_ipv4_flags),
-    .udp_data_size          (udp_transmit_handler_udp_data_size),
-    .udp_data               (udp_transmit_handler_udp_data),
-    .udp_data_valid         (udp_transmit_handler_udp_data_valid),
-    .transmit_valid         (udp_transmit_handler_transmit_valid),
-    .ready                  (udp_transmit_handler_ready)
-);
-
+*/
 
 assign  receive_data_valid                                      =   outbound_fifo_read_data_valid;
 assign  receive_data                                            =   outbound_fifo_read_data;
@@ -279,7 +372,7 @@ generate
         assign  udp_receieve_handler_good_packet[i]             =   ethernet_frame_parser_good_packet[i];
         assign  udp_receieve_handler_bad_packet[i]              =   ethernet_frame_parser_bad_packet[i];
         assign  udp_receieve_handler_udp_destination[i]         =   ethernet_frame_parser_udp_destination;
-        assign  udp_receieve_handler_push_data_enable           =   !outbound_fifo_full
+        assign  udp_receieve_handler_push_data_enable[i]        =   !outbound_fifo_full;
     end
 endgenerate
 
@@ -295,8 +388,8 @@ endgenerate
 
 assign  ethernet_frame_parser_clock                             =   clock;
 assign  ethernet_frame_parser_reset_n                           =   reset_n;
-assign  ethernet_frame_parser_data                              =   virtual_port_receive_data;
-assign  ethernet_frame_parser_data_enable                       =   virtual_port_receive_data_enable;
+assign  ethernet_frame_parser_data                              =   receive_data;
+assign  ethernet_frame_parser_data_enable                       =   receive_data_enable;
 assign  ethernet_frame_parser_checksum_result                   =   frame_check_sequence_generator_checksum;
 assign  ethernet_frame_parser_checksum_result_enable            =   frame_check_sequence_generator_checksum_valid;
 assign  ethernet_frame_parser_checksum_enable                   =   frame_check_sequence_generator_ready;
@@ -324,8 +417,28 @@ assign  outbound_fifo_write_reset_n                             =   reset_n;
 assign  udp_transmit_handler_clock                              =   clock;
 assign  udp_transmit_handler_reset_n                            =   reset_n;
 assign  udp_transmit_handler_enable                             =   0; //TODO ready from frame pusher
-assign  udp_transmit_handler_data_enable                        =   transmit_data_enable;
-assign  udp_transmit_handler_data                               =   transmit_data;
+assign  udp_transmit_handler_data_enable                        =   inbound_fifo_read_data_valid;
+assign  udp_transmit_handler_data                               =   inbound_fifo_read_data;
 assign  udp_transmit_handler_udp_data_enable                    =   0; //TODO from frame pusher
+
+assign  inbound_fifo_read_clock                                 =   clock;
+assign  inbound_fifo_read_reset_n                               =   reset_n;
+assign  inbound_fifo_write_clock                                =   module_clock;
+assign  inbound_fifo_write_reset_n                              =   reset_n;
+assign  inbound_fifo_read_enable                                =   udp_transmit_handler_data_ready;
+assign  inbound_fifo_write_enable                               =   module_transmit_data_enable;
+assign  inbound_fifo_write_data                                 =   module_transmit_data;
+
+assign  udp_data_buffer_clock                                   =   clock;
+assign  udp_data_buffer_reset_n                                 =   reset_n;
+assign  udp_data_buffer_write_enable                            =   udp_transmit_handler_udp_buffer_data_valid;
+assign  udp_data_buffer_write_data                              =   udp_transmit_handler_udp_buffer_data;
+assign  udp_data_buffer_write_address                           =   udp_transmit_handler_udp_buffer_write_address;
+
+assign  udp_checksum_calculator_clock                           =   clock;
+assign  udp_checksum_calculator_reset_n                         =   reset_n;
+assign  udp_checksum_calculator_data                            =   udp_transmit_handler_udp_checksum_data;
+assign  udp_checksum_calculator_data_enable                     =   udp_transmit_handler_udp_checksum_data_valid;
+assign  udp_checksum_calculator_data_last                       =   udp_transmit_handler_udp_checksum_data_last;
 
 endmodule

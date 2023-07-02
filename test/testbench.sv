@@ -27,7 +27,7 @@ module testbench;
 localparam  CLOCK_FREQUENCY             =   50_000_000;
 localparam  CLOCK_PERIOD                =   1e9/CLOCK_FREQUENCY;
 localparam  NUMBER_OF_RMII_PORTS        =   2;
-localparam  NUMBER_OF_VIRTUAL_PORTS     =   0;
+localparam  NUMBER_OF_VIRTUAL_PORTS     =   1;
 localparam  RECEIVE_QUE_SLOTS           =   2;
 
 logic                                           clock                           =   0;
@@ -59,10 +59,8 @@ initial begin
     $display("Running case 000");
     case_000();
 
-    /*
     $display("Running case 002");
     case_002();
-    */
 
     $stop();
 end
@@ -127,10 +125,10 @@ assign  switch_core_rmii_phy_receive_data[1]            =   ethernet_transmit_da
 assign  switch_core_rmii_phy_receive_data_enable[1]     =   ethernet_transmit_data_valid[1];
 assign  switch_core_rmii_phy_receive_data_error[1]      =   0;
 
-assign  rmii_byte_packager_clock        =   clock;
-assign  rmii_byte_packager_reset_n      =   reset_n;
-assign  rmii_byte_packager_data         =   switch_core_rmii_phy_transmit_data[0];
-assign  rmii_byte_packager_data_enable  =   switch_core_rmii_phy_transmit_data_valid[0];
-assign  rmii_byte_packager_data_error   =   0;
+assign  rmii_byte_packager_clock                        =   clock;
+assign  rmii_byte_packager_reset_n                      =   reset_n;
+assign  rmii_byte_packager_data                         =   switch_core_rmii_phy_transmit_data[0];
+assign  rmii_byte_packager_data_enable                  =   switch_core_rmii_phy_transmit_data_valid[0];
+assign  rmii_byte_packager_data_error                   =   0;
 
 endmodule

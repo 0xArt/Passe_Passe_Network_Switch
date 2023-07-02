@@ -158,6 +158,7 @@ wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_reset_n;
 wire    [RECEIVE_QUE_SLOTS-1:0][7:0]   payload_fifo_write_data;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_read_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_write_enable;
+
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_read_data_valid;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_empty;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_full;

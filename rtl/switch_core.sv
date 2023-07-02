@@ -77,6 +77,42 @@ generate
     end
 endgenerate
 
+
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_clock;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_reset_n;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][7:0]      virutal_port_udp_receive_data;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_receive_data_enable;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_transmit_data_enable;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_module_clock;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]      virutal_port_udp_module_transmit_data;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_module_transmit_data_enable;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_receive_data_enable;
+
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_transmit_data_ready;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]      virutal_port_udp_transmit_data;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_transmit_data_valid;
+
+generate
+    for (i=0; i<NUMBER_OF_VIRTUAL_PORTS; i =i+1) begin
+        virutal_port_udp #(.RECEIVE_QUE_SLOTS(RECEIVE_QUE_SLOTS))
+        virutal_port_udp(
+            .clock                              (virutal_port_udp_clock[i]),
+            .reset_n                            (virutal_port_udp_reset_n[i]),
+            .receive_data                       (virutal_port_udp_receive_data[i]),
+            .receive_data_enable                (virutal_port_udp_receive_data_enable[i]),
+            .transmit_data_enable               (virutal_port_udp_receive_data_enable[i]),
+            .module_clock                       (virutal_port_udp_module_clock[i]),
+            .module_transmit_data               (virutal_port_udp_module_transmit_data[i]),
+            .module_transmit_data_enable        (virutal_port_udp_module_transmit_data_enable[i]),
+
+            .transmit_data_ready                (virutal_port_udp_transmit_data_ready[i]),
+            .transmit_data                      (virutal_port_udp_transmit_data[i]),
+            .transmit_data_valid                (virutal_port_udp_transmit_data_valid[i])
+        );
+    end
+endgenerate
+
+
 wire                                    core_data_orchestrator_clock;
 wire                                    core_data_orchestraotr_reset_n;
 wire    [NUMBER_OF_RMII_PORTS-1:0]      core_data_orchestrator_port_recieve_data_enable;

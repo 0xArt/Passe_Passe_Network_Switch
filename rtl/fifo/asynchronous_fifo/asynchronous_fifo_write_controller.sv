@@ -62,7 +62,7 @@ always_comb begin
     _memory_write_data                          =   write_data;
     _memory_write_data_valid                    =   0;
     _full                                       =   0;
-    internal_empty                              =    ( (write_pointer == read_pointer) && !full) ? 1 : 0;
+    internal_empty                              =   ( (write_pointer == read_pointer) && !full) ? 1 : 0;
     write_pointer_gray[$clog2(DATA_DEPTH)-1:0]  =   write_pointer[$clog2(DATA_DEPTH)-1:0] ^ {1'b0, write_pointer[$clog2(DATA_DEPTH)-1:1]};
 
     if (write_pointer == (DATA_DEPTH - 1)) begin
@@ -81,7 +81,6 @@ always_comb begin
         end
     end
 
-
     if (write_enable) begin
         if (!full) begin
             _memory_write_data_valid = 1;
@@ -94,7 +93,6 @@ always_comb begin
             end
         end
     end
-
 end
 
 

@@ -24,6 +24,11 @@ vlog -sv -work presynth \
     "rtl/rmii/rmii_port.sv" \
     "rtl/rgmii/rgmii_byte_packager.sv" \
     "rtl/rgmii/rgmii_port.sv" \
+    "rtl/virtual_port/udp/internet_checksum_calculator.sv" \
+    "rtl/virtual_port/udp/ethernet_frame_parser.sv" \
+    "rtl/virtual_port/udp/udp_receieve_handler.sv" \
+    "rtl/virtual_port/udp/udp_transmit_handler.sv" \
+    "rtl/virtual_port/udp/virtual_port_udp.sv" \
     "rtl/core_data_orchestrator.sv" \
     "rtl/switch_core.sv" \
     "test/testbench.sv"

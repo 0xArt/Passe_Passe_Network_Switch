@@ -89,12 +89,10 @@ always_comb begin
     end
 
     if (read_enable) begin
-
         if(_empty && !empty)begin
             _read_data          =   memory_read_data;
             _memory_data_valid  =   1;
         end
-
         if(!_empty) begin
             _read_data          =   memory_read_data;
             _memory_data_valid  =   1;
@@ -132,7 +130,6 @@ always_comb begin
             end
         end
     end
-
 end
 
 

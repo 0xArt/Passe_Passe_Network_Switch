@@ -38,14 +38,14 @@ testbench.ethernet_message[22]  = 8'h45;
 testbench.ethernet_message[23]  = 8'h00;
 //ipv4 total length
 testbench.ethernet_message[24]  = 8'h00;
-testbench.ethernet_message[25]  = 8'h2A;
+testbench.ethernet_message[25]  = 8'h2A; //42
 //ipv4 id
 testbench.ethernet_message[26]  = 8'h83;
 testbench.ethernet_message[27]  = 8'h4F;
 //ipv4 flags
 testbench.ethernet_message[28]  = 8'h40;
 testbench.ethernet_message[29]  = 8'h00;
-//ipv4 tl
+//ipv4 ttl
 testbench.ethernet_message[30]  = 8'h40;
 //ipv4 protocol
 testbench.ethernet_message[31]  = 8'h11;
@@ -69,8 +69,8 @@ testbench.ethernet_message[43]  = 8'h44;
 testbench.ethernet_message[44]  = 8'h44;
 testbench.ethernet_message[45]  = 8'h44;
 //udp length
-testbench.ethernet_message[46]  = 8'h00;
-testbench.ethernet_message[47]  = 8'h16;
+testbench.ethernet_message[46]  = 8'h00; //22
+testbench.ethernet_message[47]  = 8'h16; //this is udp payload bytes + 8 for udp header size
 //udp checksum
 testbench.ethernet_message[48]  = 8'h4E;
 testbench.ethernet_message[49]  = 8'h59;
