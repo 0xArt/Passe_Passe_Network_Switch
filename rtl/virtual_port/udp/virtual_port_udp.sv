@@ -23,6 +23,7 @@ module virutal_port_udp#(
 )(
     input   wire            clock,
     input   wire            reset_n,
+    input   wire    [47:0]  mac_source,
     input   wire    [8:0]   receive_data,                       //from switch data orch
     input   wire            receive_data_enable,                //from switch data orch
     input   wire            transmit_data_enable,               //from switch data orch
@@ -30,8 +31,8 @@ module virutal_port_udp#(
     input   wire    [8:0]   module_transmit_data,               //from fabric modules
     input   wire            module_transmit_data_enable,        //from fabric modules
 
-    output  wire            transmit_data_ready,
-    output  wire     [8:0]  transmit_data,                      //to switch data orch
+    output  wire            receive_data_ready,
+    output  wire    [8:0]   transmit_data,                      //to switch data orch
     output  wire            transmit_data_valid                 //to switch data orch
 );
 
@@ -153,7 +154,12 @@ wire    [15:0]  udp_data_buffer_read_address;
 
 wire    [7:0]   udp_data_buffer_read_data;
 
-generic_block_ram   udp_data_buffer(
+generic_block_ram
+#(.DATA_WIDTH       (8),
+  .DATA_DEPTH       (65535),
+  .PIPELINED_OUTPUT (1)
+)
+udp_data_buffer(
     .clock                  (udp_data_buffer_clock),
     .reset_n                (udp_data_buffer_reset_n),
     .write_enable           (udp_data_buffer_write_enable),
@@ -164,6 +170,114 @@ generic_block_ram   udp_data_buffer(
     .read_data              (udp_data_buffer_read_data)
 );
 
+
+wire            ethernet_frame_generator_clock;
+wire            ethernet_frame_generator_reset_n;
+wire            ethernet_frame_generator_enable;
+wire    [31:0]  ethenret_frame_generator_checksum_result;
+wire            ethernet_frame_generator_checksum_result_enable;
+wire    [15:0]  ethernet_frame_generator_ipv4_checksum_result;
+wire            ethernet_frame_generator_ipv4_checksum_result_enable;
+wire    [7:0]   ethernet_frame_generator_udp_buffer_read_data;
+wire    [47:0]  ethernet_frame_generator_mac_destination;
+wire    [47:0]  ethernet_frame_generator_mac_source;
+wire    [31:0]  ethernet_frame_generator_ipv4_destination;
+wire    [31:0]  ethernet_frame_generator_ipv4_source;
+wire    [15:0]  ethernet_frame_generator_udp_checksum;
+wire    [15:0]  ethernet_frame_generator_udp_destination;
+wire    [15:0]  ethernet_frame_generator_udp_source;
+wire    [15:0]  ethernet_frame_generator_udp_data_number_of_bytes;
+wire    [15:0]  ethernet_frame_generator_ipv4_flags;
+wire    [15:0]  ethernet_frame_generator_ipv4_identification;
+
+wire    [7:0]   ethernet_frame_generator_checksum_data;
+wire            ethernet_frame_generator_checksum_data_valid;
+wire            ethernet_frame_generator_checksum_data_last;
+wire    [7:0]   ethernet_frame_generator_frame_data;
+wire            ethernet_frame_generator_frame_data_valid;
+wire    [7:0]   ethernet_frame_generator_ipv4_checksum_data;
+wire            ethernet_frame_generator_ipv4_checksum_data_valid;
+wire            ethernet_frame_generator_ipv4_checksum_data_last;
+wire    [15:0]  ethernet_frame_generator_udp_buffer_read_address;
+wire            ethernet_frame_generator_ready;
+
+
+ethernet_frame_generator    ethernet_frame_generator(
+    .clock                          (ethernet_frame_generator_clock),
+    .reset_n                        (ethernet_frame_generator_reset_n),
+    .enable                         (ethernet_frame_generator_enable),
+    .checksum_result                (ethenret_frame_generator_checksum_result),
+    .checksum_result_enable         (ethernet_frame_generator_checksum_result_enable),
+    .ipv4_checksum_result           (ethernet_frame_generator_ipv4_checksum_result),
+    .ipv4_checksum_result_enable    (ethernet_frame_generator_ipv4_checksum_result_enable),
+    .udp_buffer_read_data           (ethernet_frame_generator_udp_buffer_read_data),
+    .mac_destination                (ethernet_frame_generator_mac_destination),
+    .mac_source                     (ethernet_frame_generator_mac_source),
+    .ipv4_destination               (ethernet_frame_generator_ipv4_destination),
+    .ipv4_source                    (ethernet_frame_generator_ipv4_source),
+    .udp_checksum                   (ethernet_frame_generator_udp_checksum),
+    .udp_destination                (ethernet_frame_generator_udp_destination),
+    .udp_source                     (ethernet_frame_generator_udp_source),
+    .udp_data_number_of_bytes       (ethernet_frame_generator_udp_data_number_of_bytes),
+    .ipv4_flags                     (ethernet_frame_generator_ipv4_flags),
+    .ipv4_identification            (ethernet_frame_generator_ipv4_identification),
+
+    .checksum_data                  (ethernet_frame_generator_checksum_data),
+    .checksum_data_valid            (ethernet_frame_generator_checksum_data_valid),
+    .checksum_data_last             (ethernet_frame_generator_checksum_data_last),
+    .frame_data                     (ethernet_frame_generator_frame_data),
+    .frame_data_valid               (ethernet_frame_generator_frame_data_valid),
+    .ipv4_checksum_data             (ethernet_frame_generator_ipv4_checksum_data),
+    .ipv4_checksum_data_valid       (ethernet_frame_generator_ipv4_checksum_data_valid),
+    .ipv4_checksum_data_last        (ethernet_frame_generator_ipv4_checksum_data_last),
+    .udp_buffer_read_address        (ethernet_frame_generator_udp_buffer_read_address),
+    .ready                          (ethernet_frame_generator_ready)
+);
+
+wire            ipv4_checksum_calculator_clock;
+wire            ipv4_checksum_calculator_reset_n;
+wire    [7:0]   ipv4_checksum_calculator_data;
+wire            ipv4_checksum_calculator_data_enable;
+wire            ipv4_checksum_calculator_data_last;
+
+wire    [15:0]  ipv4_checksum_calculator_result;
+wire            ipv4_checksum_calculator_result_valid;
+wire            ipv4_checksum_calculator_ready;
+
+internet_checksum_calculator    ipv4_checksum_calculator(
+    .clock                      (ipv4_checksum_calculator_clock),
+    .reset_n                    (ipv4_checksum_calculator_reset_n),
+    .data                       (ipv4_checksum_calculator_data),
+    .data_enable                (ipv4_checksum_calculator_data_enable),
+    .data_last                  (ipv4_checksum_calculator_data_last),
+
+    .result                     (ipv4_checksum_calculator_result),
+    .result_valid               (ipv4_checksum_calculator_result_valid),
+    .ready                      (ipv4_checksum_calculator_ready)
+);
+
+
+
+wire            frame_check_sequence_generator_clock;
+wire            frame_check_sequence_generator_reset_n;
+wire    [7:0]   frame_check_sequence_generator_data;
+wire            frame_check_sequence_generator_data_enable;
+wire            frame_check_sequence_generator_data_last;
+wire            frame_check_sequence_generator_ready;
+wire    [31:0]  frame_check_sequence_generator_checksum;
+wire            frame_check_sequence_generator_checksum_valid;
+
+frame_check_sequence_generator  frame_check_sequence_generator(
+    .clock                  (frame_check_sequence_generator_clock),
+    .reset_n                (frame_check_sequence_generator_reset_n),
+    .data                   (frame_check_sequence_generator_data),
+    .data_enable            (frame_check_sequence_generator_data_enable),
+    .data_last              (frame_check_sequence_generator_data_last),
+
+    .ready                  (frame_check_sequence_generator_ready),
+    .checksum               (frame_check_sequence_generator_checksum),
+    .checksum_valid         (frame_check_sequence_generator_checksum_valid)
+);
 
 
 wire                                ethernet_frame_parser_clock;
@@ -204,28 +318,6 @@ ethernet_frame_parser(
     .good_packet            (ethernet_frame_parser_good_packet),
     .bad_packet             (ethernet_frame_parser_bad_packet),
     .udp_destination        (ethernet_frame_parser_udp_destination)
-);
-
-
-wire            frame_check_sequence_generator_clock;
-wire            frame_check_sequence_generator_reset_n;
-wire    [7:0]   frame_check_sequence_generator_data;
-wire            frame_check_sequence_generator_data_enable;
-wire            frame_check_sequence_generator_data_last;
-wire            frame_check_sequence_generator_ready;
-wire    [31:0]  frame_check_sequence_generator_checksum;
-wire            frame_check_sequence_generator_checksum_valid;
-
-frame_check_sequence_generator  frame_check_sequence_generator(
-    .clock                  (frame_check_sequence_generator_clock),
-    .reset_n                (frame_check_sequence_generator_reset_n),
-    .data                   (frame_check_sequence_generator_data),
-    .data_enable            (frame_check_sequence_generator_data_enable),
-    .data_last              (frame_check_sequence_generator_data_last),
-
-    .ready                  (frame_check_sequence_generator_ready),
-    .checksum               (frame_check_sequence_generator_checksum),
-    .checksum_valid         (frame_check_sequence_generator_checksum_valid)
 );
 
 
@@ -353,7 +445,7 @@ COREFIFO_C2 outbound_fifo(
 
 assign  receive_data_valid                                      =   outbound_fifo_read_data_valid;
 assign  receive_data                                            =   outbound_fifo_read_data;
-assign  transmit_data_ready                                     =   0;
+assign  receive_data_ready                                      =   0;
 
 assign  receive_slot_arbiter_clock                              =   clock;
 assign  receive_slot_arbiter_reset_n                            =   reset_n;
@@ -396,15 +488,9 @@ assign  ethernet_frame_parser_checksum_enable                   =   frame_check_
 
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i=i+1) begin
-        assign  ethernet_frame_parser_recieve_slot_enable[i]    =    payload_fifo_empty[i];
+        assign  ethernet_frame_parser_recieve_slot_enable[i]    =   payload_fifo_empty[i];
     end
 endgenerate
-
-assign  frame_check_sequence_generator_clock                    =   clock;
-assign  frame_check_sequence_generator_reset_n                  =   reset_n;
-assign  frame_check_sequence_generator_data                     =   ethernet_frame_parser_checksum_data;
-assign  frame_check_sequence_generator_data_enable              =   ethernet_frame_parser_checksum_data_valid;
-assign  frame_check_sequence_generator_data_last                =   ethernet_frame_parser_checksum_data_last;
 
 assign  outbound_fifo_data                                      =   receive_slot_arbiter_push_data;
 assign  outbound_fifo_read_clock                                =   clock;
@@ -416,10 +502,9 @@ assign  outbound_fifo_write_reset_n                             =   reset_n;
 
 assign  udp_transmit_handler_clock                              =   clock;
 assign  udp_transmit_handler_reset_n                            =   reset_n;
-assign  udp_transmit_handler_enable                             =   0; //TODO ready from frame pusher
+assign  udp_transmit_handler_enable                             =   ethernet_frame_generator_ready;
 assign  udp_transmit_handler_data_enable                        =   inbound_fifo_read_data_valid;
 assign  udp_transmit_handler_data                               =   inbound_fifo_read_data;
-assign  udp_transmit_handler_udp_data_enable                    =   0; //TODO from frame pusher
 
 assign  inbound_fifo_read_clock                                 =   clock;
 assign  inbound_fifo_read_reset_n                               =   reset_n;
@@ -440,5 +525,36 @@ assign  udp_checksum_calculator_reset_n                         =   reset_n;
 assign  udp_checksum_calculator_data                            =   udp_transmit_handler_udp_checksum_data;
 assign  udp_checksum_calculator_data_enable                     =   udp_transmit_handler_udp_checksum_data_valid;
 assign  udp_checksum_calculator_data_last                       =   udp_transmit_handler_udp_checksum_data_last;
+
+assign  ethernet_frame_generator_clock                          =   clock;
+assign  ethernet_frame_generator_reset_n                        =   reset_n;
+assign  ethernet_frame_generator_enable                         =   udp_transmit_handler_transmit_valid;
+assign  ethenret_frame_generator_checksum_result                =   frame_check_sequence_generator_checksum;
+assign  ethernet_frame_generator_checksum_result_enable         =   frame_check_sequence_generator_checksum_valid;
+assign  ethernet_frame_generator_ipv4_checksum_result           =   ipv4_checksum_calculator_result;
+assign  ethernet_frame_generator_ipv4_checksum_result_enable    =   ipv4_checksum_calculator_result_valid;
+assign  ethernet_frame_generator_udp_buffer_read_data           =   udp_data_buffer_read_data;
+assign  ethernet_frame_generator_mac_destination                =   udp_transmit_handler_mac_destination;
+assign  ethernet_frame_generator_mac_source                     =   mac_source;
+assign  ethernet_frame_generator_ipv4_destination               =   udp_transmit_handler_ipv4_destination;
+assign  ethernet_frame_generator_ipv4_source                    =   udp_transmit_handler_ipv4_source;
+assign  ethernet_frame_generator_udp_checksum                   =   udp_checksum_calculator_result;
+assign  ethernet_frame_generator_udp_destination                =   udp_transmit_handler_udp_destination;
+assign  ethernet_frame_generator_udp_source                     =   udp_transmit_handler_udp_source;
+assign  ethernet_frame_generator_udp_data_number_of_bytes       =   udp_transmit_handler_udp_data_size;
+assign  ethernet_frame_generator_ipv4_flags                     =   udp_transmit_handler_ipv4_flags;
+assign  ethernet_frame_generator_ipv4_identification            =   udp_transmit_handler_ipv4_identification;
+
+assign  ivp4_checksum_calculator_clock                          =   clock;
+assign  ivp4_checksum_calculator_reset_n                        =   reset_n;
+assign  ivp4_checksum_calculator_data                           =   ethernet_frame_generator_ipv4_checksum_data;
+assign  ivp4_checksum_calculator_data_enable                    =   ethernet_frame_generator_ipv4_checksum_data_valid;
+assign  ivp4_checksum_calculator_data_last                      =   ethernet_frame_generator_ipv4_checksum_data_last;
+
+assign  frame_check_sequence_generator_clock                    =   clock;
+assign  frame_check_sequence_generator_reset_n                  =   reset_n;
+assign  frame_check_sequence_generator_data                     =   ethernet_frame_generator_checksum_data;
+assign  frame_check_sequence_generator_data_enable              =   ethernet_frame_generator_checksum_data_valid;
+assign  frame_check_sequence_generator_data_last                =   ethernet_frame_generator_checksum_data_last;
 
 endmodule
