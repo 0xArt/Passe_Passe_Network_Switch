@@ -186,7 +186,8 @@ wire    [31:0]  ethernet_frame_generator_ipv4_source;
 wire    [15:0]  ethernet_frame_generator_udp_checksum;
 wire    [15:0]  ethernet_frame_generator_udp_destination;
 wire    [15:0]  ethernet_frame_generator_udp_source;
-wire    [15:0]  ethernet_frame_generator_udp_data_number_of_bytes;
+wire    [15:0]  ethernet_frame_generator_udp_payload_size;
+wire    [15:0]  ethernet_frame_generator_udp_fragment_size;
 wire    [15:0]  ethernet_frame_generator_ipv4_flags;
 wire    [15:0]  ethernet_frame_generator_ipv4_identification;
 
@@ -218,7 +219,8 @@ ethernet_frame_generator    ethernet_frame_generator(
     .udp_checksum                   (ethernet_frame_generator_udp_checksum),
     .udp_destination                (ethernet_frame_generator_udp_destination),
     .udp_source                     (ethernet_frame_generator_udp_source),
-    .udp_data_number_of_bytes       (ethernet_frame_generator_udp_data_number_of_bytes),
+    .udp_payload_size               (ethernet_frame_generator_udp_payload_size),
+    .udp_fragment_size              (ethernet_frame_generator_udp_fragment_size),
     .ipv4_flags                     (ethernet_frame_generator_ipv4_flags),
     .ipv4_identification            (ethernet_frame_generator_ipv4_identification),
 
@@ -233,6 +235,7 @@ ethernet_frame_generator    ethernet_frame_generator(
     .udp_buffer_read_address        (ethernet_frame_generator_udp_buffer_read_address),
     .ready                          (ethernet_frame_generator_ready)
 );
+
 
 wire            ipv4_checksum_calculator_clock;
 wire            ipv4_checksum_calculator_reset_n;
@@ -255,7 +258,6 @@ internet_checksum_calculator    ipv4_checksum_calculator(
     .result_valid               (ipv4_checksum_calculator_result_valid),
     .ready                      (ipv4_checksum_calculator_ready)
 );
-
 
 
 wire            frame_check_sequence_generator_clock;
@@ -330,7 +332,6 @@ wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_read_data_valid;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_empty;
 wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_full;
 wire    [RECEIVE_QUE_SLOTS-1:0][7:0]   payload_fifo_read_data;
-
 
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
@@ -541,7 +542,8 @@ assign  ethernet_frame_generator_ipv4_source                    =   udp_transmit
 assign  ethernet_frame_generator_udp_checksum                   =   udp_checksum_calculator_result;
 assign  ethernet_frame_generator_udp_destination                =   udp_transmit_handler_udp_destination;
 assign  ethernet_frame_generator_udp_source                     =   udp_transmit_handler_udp_source;
-assign  ethernet_frame_generator_udp_data_number_of_bytes       =   udp_transmit_handler_udp_data_size;
+assign  ethernet_frame_generator_udp_payload_size               =   0; //todo
+assign  ethernet_frame_generator_udp_fragment_size              =   udp_transmit_handler_udp_data_size;
 assign  ethernet_frame_generator_ipv4_flags                     =   udp_transmit_handler_ipv4_flags;
 assign  ethernet_frame_generator_ipv4_identification            =   udp_transmit_handler_ipv4_identification;
 
