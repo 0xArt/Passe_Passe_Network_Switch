@@ -140,10 +140,8 @@ typedef enum
     S_UDP_CHECKSUM_MSB,
     S_UDP_CHECKSUM_LSB,
     S_UDP_DATA,
-    S_PUSH_FRAME,
     S_PUSH_CRC,
-    S_PAD,
-    S_ERROR
+    S_PAD
 } state_type;
 
 state_type                              _state;
@@ -342,7 +340,7 @@ always_comb begin
             _ipv4_checksum_data         =   saved_ipv4_destination[7:0];
             _ipv4_checksum_data_valid   =   1;
             _ipv4_checksum_data_last    =   1;
-            _state                      =   S_CHECKSUM_IPV4_DESTINATION_ADDRESS_3;
+            _state                      =   S_MAC_DESINTATION;
         end
         S_MAC_DESINTATION: begin
             if (ipv4_checksum_result_enable) begin
@@ -504,13 +502,8 @@ always_comb begin
             _state                          =   S_UDP_DATA;
         end
         S_UDP_DATA: begin
-
             _frame_data                    =   udp_buffer_read_data;
             _udp_buffer_read_address       =   udp_buffer_read_address + 1;
-
-            if (timeout_cycle_timer_expired) begin
-                _state  =    S_ERROR;
-            end
 
             if (process_cycle_timer_expired) begin
                 if (saved_udp_fragment_size < 26) begin

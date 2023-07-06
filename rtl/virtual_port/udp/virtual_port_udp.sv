@@ -87,7 +87,8 @@ wire    [15:0]  udp_transmit_handler_udp_destination;
 wire    [15:0]  udp_transmit_handler_udp_source;
 wire    [15:0]  udp_transmit_handler_ipv4_identification;
 wire    [15:0]  udp_transmit_handler_ipv4_flags;
-wire    [15:0]  udp_transmit_handler_udp_data_size;
+wire    [15:0]  udp_transmit_handler_udp_fragment_size;
+wire    [15:0]  udp_transmit_handler_udp_total_payload_size;
 wire    [15:0]  udp_transmit_handler_udp_buffer_write_address;
 wire    [7:0]   udp_transmit_handler_udp_buffer_data;
 wire            udp_transmit_handler_udp_buffer_data_valid;
@@ -111,7 +112,8 @@ udp_transmit_handler udp_transmit_handler(
     .udp_source                 (udp_transmit_handler_udp_source),
     .ipv4_identification        (udp_transmit_handler_ipv4_identification),
     .ipv4_flags                 (udp_transmit_handler_ipv4_flags),
-    .udp_data_size              (udp_transmit_handler_udp_data_size),
+    .udp_fragment_size          (udp_transmit_handler_udp_fragment_size),
+    .udp_total_payload_size     (udp_transmit_handler_udp_total_payload_size),
     .udp_buffer_write_address   (udp_transmit_handler_udp_buffer_write_address),
     .udp_buffer_data            (udp_transmit_handler_udp_buffer_data),
     .udp_buffer_data_valid      (udp_transmit_handler_udp_buffer_data_valid),
@@ -542,8 +544,8 @@ assign  ethernet_frame_generator_ipv4_source                    =   udp_transmit
 assign  ethernet_frame_generator_udp_checksum                   =   udp_checksum_calculator_result;
 assign  ethernet_frame_generator_udp_destination                =   udp_transmit_handler_udp_destination;
 assign  ethernet_frame_generator_udp_source                     =   udp_transmit_handler_udp_source;
-assign  ethernet_frame_generator_udp_payload_size               =   0; //todo
-assign  ethernet_frame_generator_udp_fragment_size              =   udp_transmit_handler_udp_data_size;
+assign  ethernet_frame_generator_udp_payload_size               =   udp_transmit_handler_udp_total_payload_size;
+assign  ethernet_frame_generator_udp_fragment_size              =   udp_transmit_handler_udp_fragment_size;
 assign  ethernet_frame_generator_ipv4_flags                     =   udp_transmit_handler_ipv4_flags;
 assign  ethernet_frame_generator_ipv4_identification            =   udp_transmit_handler_ipv4_identification;
 

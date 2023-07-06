@@ -34,7 +34,8 @@ module udp_transmit_handler(
     output  reg     [15:0]  udp_source,
     output  reg     [15:0]  ipv4_identification,
     output  reg     [15:0]  ipv4_flags,
-    output  reg     [15:0]  udp_data_size,
+    output  reg     [15:0]  udp_fragment_size,
+    output  reg     [15:0]  udp_total_payload_size,
     output  reg     [15:0]  udp_buffer_write_address,
     output  reg     [7:0]   udp_buffer_data,
     output  reg             udp_buffer_data_valid,
@@ -103,7 +104,6 @@ logic       [47:0]  _mac_destination;
 logic       [31:0]  _ipv4_destination;
 logic       [15:0]  _udp_destination;
 logic       [15:0]  _udp_source;
-logic       [15:0]  _udp_data_size;
 logic       [15:0]  _number_of_udp_bytes_left;
 reg         [15:0]  number_of_udp_bytes_left;
 logic       [7:0]   _udp_buffer_data;
@@ -119,10 +119,9 @@ logic       [15:0]  _udp_buffer_write_address;
 logic       [7:0]   _udp_checksum_data;
 logic               _udp_checksum_data_valid;
 logic       [15:0]  _udp_total_payload_size;
-reg         [15:0]  udp_total_payload_size;
-logic       [15:0]  _udp_header_size_field;
-reg         [15:0]  udp_header_size_field;
+logic       [15:0]  udp_header_size_field;
 logic               _udp_checksum_data_last;
+logic       [15:0]  _udp_fragment_size;
 
 
 assign  timeout_cycle_timer_clock       =   clock;
@@ -137,7 +136,6 @@ always_comb begin
     _saved_ipv4_source              =   saved_ipv4_source;
     _udp_destination                =   udp_destination;
     _udp_source                     =   udp_source;
-    _udp_data_size                  =   udp_data_size;
     _data_ready                     =   data_ready;
     _process_counter                =   process_counter;
     _ipv4_flags                     =   ipv4_flags;
@@ -146,7 +144,8 @@ always_comb begin
     _udp_buffer_write_address       =   udp_buffer_write_address;
     _udp_checksum_data              =   udp_checksum_data;
     _udp_total_payload_size         =   udp_total_payload_size;
-    _udp_header_size_field          =   udp_total_payload_size + UDP_HEADER_NUMBER_OF_BYTES;
+    udp_header_size_field           =   udp_total_payload_size + UDP_HEADER_NUMBER_OF_BYTES;
+    _udp_fragment_size              =   udp_fragment_size;
     _udp_checksum_data_valid        =   0;
     _transmit_valid                 =   0;
     timeout_cycle_timer_load_count  =   0;
@@ -361,13 +360,13 @@ always_comb begin
         end
         S_SET_FRAGMENT_SETTINGS: begin
             if (number_of_udp_bytes_left > MAX_PAYLOAD_SIZE) begin
-                _udp_data_size              = MAX_PAYLOAD_SIZE;
+                _udp_fragment_size          = MAX_PAYLOAD_SIZE;
                 _number_of_udp_bytes_left   = number_of_udp_bytes_left - MAX_PAYLOAD_SIZE;
                 _ipv4_flags[15:13]          = 3'b001;
             end
             else begin
                 _ipv4_flags[15:13]          = 3'b000;
-                _udp_data_size              = number_of_udp_bytes_left;
+                _udp_fragment_size          = number_of_udp_bytes_left;
                 _number_of_udp_bytes_left   = 0;
             end
 
@@ -377,7 +376,6 @@ always_comb begin
         S_ENABLE_TRANSMIT: begin
             if (enable) begin
                 _transmit_valid                 =   1;
-                _process_counter                =   udp_data_size - 1;
                 timeout_cycle_timer_load_count  =   1;
                 _state                          =   S_WAIT_TRANSMIT_BUSY;
             end
@@ -429,7 +427,6 @@ always_ff @(posedge clock) begin
         ipv4_destination            <=  0;
         udp_destination             <=  0;
         udp_source                  <=  0;
-        udp_data_size               <=  0;
         udp_buffer_data             <=  0;
         udp_buffer_data_valid       <=  0;
         data_ready                  <=  0;
@@ -442,8 +439,8 @@ always_ff @(posedge clock) begin
         udp_checksum_data           <=  0;
         udp_checksum_data_valid     <=  0;
         udp_total_payload_size      <=  0;
-        udp_header_size_field       <=  0;
         udp_checksum_data_last      <=  0;
+        udp_fragment_size           <=  0;
     end
     else begin
         state                       <=  _state;
@@ -452,7 +449,6 @@ always_ff @(posedge clock) begin
         ipv4_destination            <=  _ipv4_destination;
         udp_destination             <=  _udp_destination;
         udp_source                  <=  _udp_source;
-        udp_data_size               <=  _udp_data_size;
         udp_buffer_data             <=  _udp_buffer_data;
         udp_buffer_data_valid       <=  _udp_buffer_data_valid;
         data_ready                  <=  _data_ready;
@@ -464,9 +460,9 @@ always_ff @(posedge clock) begin
         udp_buffer_write_address    <=  _udp_buffer_write_address;
         udp_checksum_data           <=  _udp_checksum_data;
         udp_checksum_data_valid     <=  _udp_checksum_data_valid;
-        udp_total_payload_size      <=  _udp_total_payload_size;
-        udp_header_size_field       <=  _udp_header_size_field;
         udp_checksum_data_last      <=  _udp_checksum_data_last;
+        udp_total_payload_size      <=  _udp_total_payload_size;
+        udp_fragment_size           <=  _udp_fragment_size;
     end
 end
 
