@@ -20,19 +20,18 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module core_data_orchestrator#(
-    parameter NUMBER_OF_RMII_PORTS    = 2,
-    parameter NUMBER_OF_VIRTUAL_PORTS = 0
+    parameter NUMBER_OF_PORTS    = 2
 )(
     input   wire                                        clock,
     input   wire                                        reset_n,
-    input   wire    [NUMBER_OF_RMII_PORTS-1:0]          port_recieve_data_enable,
-    input   wire    [NUMBER_OF_RMII_PORTS-1:0][8:0]     port_recieve_data,
-    input   wire    [NUMBER_OF_RMII_PORTS-1:0]          port_transmit_data_enable,
+    input   wire    [NUMBER_OF_PORTS-1:0]               port_recieve_data_enable,
+    input   wire    [NUMBER_OF_PORTS-1:0][8:0]          port_recieve_data,
+    input   wire    [NUMBER_OF_PORTS-1:0]               port_transmit_data_enable,
     input   wire    [47:0]                              cam_table_read_data,
 
-    output  reg     [NUMBER_OF_RMII_PORTS-1:0]          port_receive_data_ready,
+    output  reg     [NUMBER_OF_PORTS-1:0]               port_receive_data_ready,
     output  reg     [8:0]                               port_transmit_data,
-    output  reg     [NUMBER_OF_RMII_PORTS-1:0]          port_transmit_data_valid,
+    output  reg     [NUMBER_OF_PORTS-1:0]               port_transmit_data_valid,
     output  reg     [3:0]                               cam_table_read_address,
     output  reg     [3:0]                               cam_table_write_address,
     output  reg     [47:0]                              cam_table_write_data,
@@ -55,9 +54,9 @@ typedef enum
 integer                                         i;
 state_type                                      _state;
 state_type                                      state;
-logic       [NUMBER_OF_RMII_PORTS-1:0]          _port_receive_data_ready;
+logic       [NUMBER_OF_PORTS-1:0]               _port_receive_data_ready;
 logic       [8:0]                               _port_transmit_data;
-logic       [NUMBER_OF_RMII_PORTS-1:0]          _port_transmit_data_valid;
+logic       [NUMBER_OF_PORTS-1:0]               _port_transmit_data_valid;
 logic       [3:0]                               _cam_table_read_address;
 logic       [3:0]                               _cam_table_write_address;
 logic       [47:0]                              _cam_table_write_data;
@@ -66,8 +65,8 @@ logic       [47:0]                              _mac_destination;
 reg         [47:0]                              mac_destination;
 logic       [47:0]                              _mac_source;
 reg         [47:0]                              mac_source;
-logic       [$clog2(NUMBER_OF_RMII_PORTS):0]    _port_select;
-reg         [$clog2(NUMBER_OF_RMII_PORTS):0]    port_select;
+logic       [$clog2(NUMBER_OF_PORTS)-1:0]       _port_select;
+reg         [$clog2(NUMBER_OF_PORTS)-1:0]       port_select;
 logic       [7:0]                               _process_counter;
 reg         [7:0]                               process_counter;
 
@@ -147,7 +146,7 @@ always_comb begin
         S_LOOKUP_DESTINATION_PORT: begin
             case (process_counter)
                 0: begin
-                    if (cam_table_read_address < NUMBER_OF_RMII_PORTS) begin
+                    if (cam_table_read_address < NUMBER_OF_PORTS) begin
                         _process_counter = 1;
                     end
                     else begin
@@ -216,7 +215,7 @@ always_comb begin
     endcase
 end
 
-always_ff @(posedge clock) begin
+always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
         state                       <=  S_IDLE;
         port_receive_data_ready     <=  0;

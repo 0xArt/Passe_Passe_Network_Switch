@@ -83,7 +83,7 @@ endgenerate
 
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_clock;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_reset_n;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][7:0]      virutal_port_udp_receive_data;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]      virutal_port_udp_receive_data;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_receive_data_enable;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_transmit_data_enable;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_module_clock;
@@ -129,7 +129,8 @@ wire    [3:0]                           core_data_orchestrator_cam_table_write_a
 wire    [47:0]                          core_data_orchestrator_cam_table_write_data;
 wire                                    core_data_orchestrator_cam_table_write_data_valid;
 
-core_data_orchestrator  core_data_orchestrator(
+core_data_orchestrator #(.NUMBER_OF_PORTS(NUMBER_OF_PORTS))
+core_data_orchestrator(
     .clock                      (core_data_orchestrator_clock),
     .reset_n                    (core_data_orchestraotr_reset_n),
     .port_recieve_data_enable   (core_data_orchestrator_port_recieve_data_enable),

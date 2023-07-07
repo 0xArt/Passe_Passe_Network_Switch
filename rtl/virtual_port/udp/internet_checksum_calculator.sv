@@ -115,7 +115,7 @@ always_comb begin
 end
 
 
-always_ff @(posedge clock) begin
+always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
         state                       <= S_IDLE;
         result                      <=  0;

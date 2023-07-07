@@ -139,9 +139,9 @@ assign empty                                                =   asynchronous_fif
 assign full                                                 =   asynchronous_fifo_write_controller_full;
 
 assign generic_dual_port_ram_write_clock                    =   write_clock;
+assign generic_dual_port_ram_write_reset_n                  =   write_reset_n;
 assign generic_dual_port_ram_read_clock                     =   read_clock;
 assign generic_dual_port_ram_read_reset_n                   =   read_reset_n;
-assign generic_dual_port_ram_write_reset_n                  =   write_reset_n;
 assign generic_dual_port_ram_write_enable                   =   asynchronous_fifo_write_controller_memory_write_data_valid;
 assign generic_dual_port_ram_write_data                     =   asynchronous_fifo_write_controller_memory_write_data;
 assign generic_dual_port_ram_write_address                  =   asynchronous_fifo_write_controller_memory_write_address;

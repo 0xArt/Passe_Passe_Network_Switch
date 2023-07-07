@@ -40,10 +40,11 @@ module asynchronous_fifo_read_controller#(
 
 reg     [$clog2(DATA_DEPTH)-1:0]        read_pointer;
 logic   [$clog2(DATA_DEPTH)-1:0]        _read_pointer;
-reg     [$clog2(DATA_DEPTH)-1:0]        write_pointer;
-logic   [$clog2(DATA_DEPTH)-1:0]        _write_pointer;
-reg                                     write_enable_sync;
-logic                                   _write_enable_sync;
+logic   [$clog2(DATA_DEPTH)-1:0]        write_pointer;
+reg     [$clog2(DATA_DEPTH)-1:0]        write_pointer_gray_sync_0;
+logic   [$clog2(DATA_DEPTH)-1:0]        _write_pointer_gray_sync_0;
+reg     [$clog2(DATA_DEPTH)-1:0]        write_pointer_gray_sync_1;
+logic   [$clog2(DATA_DEPTH)-1:0]        _write_pointer_gray_sync_1;
 logic   [DATA_WIDTH-1:0]                _read_data;
 logic                                   _read_data_valid;
 logic                                   _memory_data_valid;
@@ -59,9 +60,10 @@ integer i;
 always_comb begin
 
     for (i=0; i<$clog2(DATA_DEPTH); i=i+1) begin
-        _write_pointer[i] = ^(write_pointer_gray >> i);
+        write_pointer[i] = ^(write_pointer_gray_sync_1 >> i);
     end
-    _write_enable_sync                          =   write_enable;
+    _write_pointer_gray_sync_0                  =   write_pointer_gray;
+    _write_pointer_gray_sync_1                  =   write_pointer_gray_sync_0;
     _read_data                                  =   read_data;
     _read_data_valid                            =   memory_data_valid;
     _read_pointer                               =   read_pointer;
@@ -133,28 +135,28 @@ always_comb begin
 end
 
 
-always_ff @(posedge clock) begin
+always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
-        write_pointer       <=  0;
-        write_enable_sync   <=  0;
-        read_data           <=  0;
-        read_data_valid     <=  0;
-        read_pointer        <=  0;
-        empty               <=  1;
-        memory_data_valid   <=  0;
-        internal_full       <=  0;
-        read_enable_delayed <=  0;
+        read_data                   <=  0;
+        read_data_valid             <=  0;
+        read_pointer                <=  0;
+        empty                       <=  1;
+        memory_data_valid           <=  0;
+        internal_full               <=  0;
+        read_enable_delayed         <=  0;
+        write_pointer_gray_sync_0   <=  0;
+        write_pointer_gray_sync_1   <=  0;
     end
     else begin
-        write_pointer       <=  _write_pointer;
-        write_enable_sync   <=  _write_enable_sync;
-        read_data           <=  _read_data;
-        read_data_valid     <=  _read_data_valid;
-        read_pointer        <=  _read_pointer;
-        empty               <=  _empty;
-        memory_data_valid   <=  _memory_data_valid;
-        internal_full       <=  _internal_full;
-        read_enable_delayed <=  _read_enable_delayed;
+        read_data                   <=  _read_data;
+        read_data_valid             <=  _read_data_valid;
+        read_pointer                <=  _read_pointer;
+        empty                       <=  _empty;
+        memory_data_valid           <=  _memory_data_valid;
+        internal_full               <=  _internal_full;
+        read_enable_delayed         <=  _read_enable_delayed;
+        write_pointer_gray_sync_0   <= _write_pointer_gray_sync_0;
+        write_pointer_gray_sync_1   <=  _write_pointer_gray_sync_1;
     end
 end
 

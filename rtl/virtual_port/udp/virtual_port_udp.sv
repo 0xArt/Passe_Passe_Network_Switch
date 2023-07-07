@@ -76,7 +76,7 @@ inbound_fifo(
 wire            udp_transmit_handler_clock;
 wire            udp_transmit_handler_reset_n;
 wire            udp_transmit_handler_enable;
-wire    [7:0]   udp_transmit_handler_data;
+wire    [8:0]   udp_transmit_handler_data;
 wire            udp_transmit_handler_data_enable;
 wire    [31:0]  udp_transmit_handler_ipv4_source;
 

@@ -125,7 +125,7 @@ always_comb begin
     endcase
 end
 
-always_ff @(posedge clock) begin
+always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
         state                       <= S_CALCULATE;
         checksum                    <= 0;

@@ -129,7 +129,7 @@ always_comb begin
     end
 end
 
-always_ff @(posedge clock) begin
+always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
         read_data                       <=  0;
         read_data_valid                 <=  0;
