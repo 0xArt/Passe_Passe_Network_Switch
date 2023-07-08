@@ -37,6 +37,7 @@ module asynchronous_fifo_read_controller#(
     output  reg                                 empty
 );
 
+integer i;
 reg     [$clog2(DATA_DEPTH)-1:0]        read_pointer;
 logic   [$clog2(DATA_DEPTH)-1:0]        _read_pointer;
 logic   [$clog2(DATA_DEPTH)-1:0]        write_pointer;
@@ -53,23 +54,35 @@ reg                                     read_enable_delayed;
 logic                                   _read_enable_delayed;
 reg                                     internal_read_data_valid;
 logic                                   _internal_read_data_valid;
-integer i;
-
+reg                                     empty_delay_0;
+logic                                   _empty_delay_0;
+logic                                   _empty_delay_1;
+reg                                     empty_delay_1;
+reg                                     read_data_valid_delay_0;
+logic                                   _read_data_valid_delay_0;
+logic                                   _read_data_valid_delay_1;
+reg                                     read_data_valid_delay_1;
 
 always_comb begin
 
     for (i=0; i<$clog2(DATA_DEPTH); i=i+1) begin
         write_pointer[i] = ^(write_pointer_gray_sync_1 >> i);
     end
+
     _write_pointer_gray_sync_0                  =   write_pointer_gray;
     _write_pointer_gray_sync_1                  =   write_pointer_gray_sync_0;
+    _empty_delay_0                              =   empty;
+    _empty_delay_1                              =   empty_delay_0;
+    _read_data_valid_delay_0                    =   read_data_valid;
+    _read_data_valid_delay_1                    =   read_data_valid_delay_0;
     _read_data                                  =   read_data;
-    _read_data_valid                            =   internal_read_data_valid;
+    _read_data_valid                            =   read_data_valid;
     _read_pointer                               =   read_pointer;
+    _internal_read_data_valid                   =   0;
     memory_read_address                         =   _read_pointer;
     _read_enable_delayed                        =   read_enable;
     _internal_full                              =   0;
-    _empty                                      =   ( (write_pointer == read_pointer) && !internal_full) ? 1 : 0;
+    _empty                                      =   ((write_pointer == read_pointer) && !internal_full) ? 1 : 0;
     read_pointer_gray[$clog2(DATA_DEPTH)-1:0]   =   read_pointer[$clog2(DATA_DEPTH)-1:0] ^ {1'b0, read_pointer[$clog2(DATA_DEPTH)-1:1]};
 
     if (write_pointer == (DATA_DEPTH - 1)) begin
@@ -88,54 +101,45 @@ always_comb begin
         end
     end
 
+    //handshake
+    if (read_enable && read_data_valid) begin
+        _read_data_valid = 0;
+    end
 
-    if (read_data_valid && read_enable) begin
-        _internal_read_data_valid        = 0;
+    //pop data out
+    if (internal_read_data_valid) begin
+        _read_data_valid = 1;
+        _read_data       = memory_read_data;
     end
 
     if (read_enable) begin
-        if(_empty && !empty)begin
-            _read_data                  =   memory_read_data;
+        if(!empty && !_empty) begin
             _internal_read_data_valid   =   1;
-        end
-        if(!_empty) begin
-            _read_data                  =   memory_read_data;
-            _internal_read_data_valid   =   1;
-
-            if (read_pointer == (DATA_DEPTH -1)) begin
-                _read_pointer  =   0;
-            end
-            else begin
-                _read_pointer  = read_pointer + 1;
-            end
-        end
-        else begin
-            _internal_read_data_valid    =   0;
-        end
-    end
-
-    if (!read_enable && read_enable_delayed) begin
-        if (!empty) begin
-            _read_data          =   memory_read_data;
         end
     end
 
     if (FIRST_WORD_FALL_THROUGH) begin
-        if (!read_enable && !read_enable_delayed && !read_data_valid) begin
+        if (!read_enable && !read_data_valid && !internal_read_data_valid) begin
             if (!empty) begin
-                _read_data                  =   memory_read_data;
                 _internal_read_data_valid   =   1;
-
-                if (read_pointer == (DATA_DEPTH -1)) begin
-                    _read_pointer  =   0;
-                end
-                else begin
-                    _read_pointer  = read_pointer + 1;
-                end
             end
         end
     end
 
+    //account for memory delays
+    if (empty_delay_1 && read_data_valid_delay_1) begin
+        _internal_read_data_valid = 0;
+    end
+
+    //incrememnt read pointer
+    if (_internal_read_data_valid) begin
+        if (read_pointer == (DATA_DEPTH -1)) begin
+            _read_pointer  =   0;
+        end
+        else begin
+            _read_pointer  = read_pointer + 1;
+        end
+    end
 end
 
 
@@ -150,6 +154,10 @@ always_ff @(posedge clock or negedge reset_n) begin
         write_pointer_gray_sync_0   <=  0;
         write_pointer_gray_sync_1   <=  0;
         internal_read_data_valid    <=  0;
+        empty_delay_0               <=  0;
+        empty_delay_1               <=  1;
+        read_data_valid_delay_0     <=  0;
+        read_data_valid_delay_1     <=  0;
     end
     else begin
         read_data                   <=  _read_data;
@@ -161,6 +169,10 @@ always_ff @(posedge clock or negedge reset_n) begin
         write_pointer_gray_sync_0   <= _write_pointer_gray_sync_0;
         write_pointer_gray_sync_1   <=  _write_pointer_gray_sync_1;
         internal_read_data_valid    <=  _internal_read_data_valid;
+        empty_delay_0               <=  _empty_delay_0;
+        empty_delay_1               <=  _empty_delay_1;
+        read_data_valid_delay_0     <=  _read_data_valid_delay_0;
+        read_data_valid_delay_1     <=  _read_data_valid_delay_1;
     end
 end
 
