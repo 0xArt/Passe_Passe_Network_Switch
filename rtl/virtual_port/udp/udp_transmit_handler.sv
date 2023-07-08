@@ -176,8 +176,9 @@ always_comb begin
                 timeout_cycle_timer_load_count  =   1;
 
                 if  (process_counter == 0) begin
-                    _state              =   S_GET_IPV4_DESTINATION;
+                    _state              =   S_CHECKSUM_IPV4_SOURCE;
                     _process_counter    =   3;
+                    _data_ready         =   0;
                 end
                 if (data[8]) begin
                     _data_ready     =   0;
@@ -197,8 +198,9 @@ always_comb begin
             timeout_cycle_timer_load_count  =   1;
 
             if  (process_counter == 0) begin
-                _state              =   S_GET_UDP_DESTINATION;
+                _data_ready         =   1;
                 _process_counter    =   3;
+                _state              =   S_GET_IPV4_DESTINATION;
             end
         end
         S_GET_IPV4_DESTINATION: begin
@@ -211,8 +213,9 @@ always_comb begin
                 timeout_cycle_timer_load_count  =   1;
 
                 if  (process_counter == 0) begin
-                    _state              =   S_GET_UDP_DESTINATION;
+                    _state              =   S_CHECKSUM_ZEROS;
                     _process_counter    =   1;
+                    _data_ready         =   0;
                 end
                 if (data[8]) begin
                     _data_ready     = 0;
@@ -232,6 +235,7 @@ always_comb begin
         S_CHECKSUM_IPV4_PROTOCOL: begin
             _udp_checksum_data              =   IPV4_PROTOCOL_UDP;
             _udp_checksum_data_valid        =   1;
+            _process_counter                =   1;
             _state                          =   S_GET_UDP_TOTAL_PAYLOAD_SIZE;
         end
         S_GET_UDP_TOTAL_PAYLOAD_SIZE: begin

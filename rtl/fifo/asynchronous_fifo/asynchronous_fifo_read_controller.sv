@@ -28,7 +28,6 @@ module asynchronous_fifo_read_controller#(
     input   wire                                reset_n,
     input   wire                                read_enable,
     input   wire    [$clog2(DATA_DEPTH)-1:0]    write_pointer_gray, //write domain clock
-    input   wire                                write_enable,       //write domain clock
     input   wire    [DATA_WIDTH-1:0]            memory_read_data,
 
     output  reg     [DATA_WIDTH-1:0]            read_data,
@@ -47,13 +46,13 @@ reg     [$clog2(DATA_DEPTH)-1:0]        write_pointer_gray_sync_1;
 logic   [$clog2(DATA_DEPTH)-1:0]        _write_pointer_gray_sync_1;
 logic   [DATA_WIDTH-1:0]                _read_data;
 logic                                   _read_data_valid;
-logic                                   _memory_data_valid;
-reg                                     memory_data_valid;
 logic                                   _empty;
 logic                                   _internal_full;
 reg                                     internal_full;
 reg                                     read_enable_delayed;
 logic                                   _read_enable_delayed;
+reg                                     internal_read_data_valid;
+logic                                   _internal_read_data_valid;
 integer i;
 
 
@@ -65,11 +64,10 @@ always_comb begin
     _write_pointer_gray_sync_0                  =   write_pointer_gray;
     _write_pointer_gray_sync_1                  =   write_pointer_gray_sync_0;
     _read_data                                  =   read_data;
-    _read_data_valid                            =   memory_data_valid;
+    _read_data_valid                            =   internal_read_data_valid;
     _read_pointer                               =   read_pointer;
-    memory_read_address                         =   read_pointer;
+    memory_read_address                         =   _read_pointer;
     _read_enable_delayed                        =   read_enable;
-    _memory_data_valid                          =   memory_data_valid;
     _internal_full                              =   0;
     _empty                                      =   ( (write_pointer == read_pointer) && !internal_full) ? 1 : 0;
     read_pointer_gray[$clog2(DATA_DEPTH)-1:0]   =   read_pointer[$clog2(DATA_DEPTH)-1:0] ^ {1'b0, read_pointer[$clog2(DATA_DEPTH)-1:1]};
@@ -90,14 +88,19 @@ always_comb begin
         end
     end
 
+
+    if (read_data_valid && read_enable) begin
+        _internal_read_data_valid        = 0;
+    end
+
     if (read_enable) begin
         if(_empty && !empty)begin
-            _read_data          =   memory_read_data;
-            _memory_data_valid  =   1;
+            _read_data                  =   memory_read_data;
+            _internal_read_data_valid   =   1;
         end
         if(!_empty) begin
-            _read_data          =   memory_read_data;
-            _memory_data_valid  =   1;
+            _read_data                  =   memory_read_data;
+            _internal_read_data_valid   =   1;
 
             if (read_pointer == (DATA_DEPTH -1)) begin
                 _read_pointer  =   0;
@@ -107,7 +110,7 @@ always_comb begin
             end
         end
         else begin
-            _memory_data_valid  =   0;
+            _internal_read_data_valid    =   0;
         end
     end
 
@@ -118,10 +121,10 @@ always_comb begin
     end
 
     if (FIRST_WORD_FALL_THROUGH) begin
-        if (!read_enable && !read_enable_delayed && !memory_data_valid) begin
+        if (!read_enable && !read_enable_delayed && !read_data_valid) begin
             if (!empty) begin
-                _read_data          =   memory_read_data;
-                _memory_data_valid  =   1;
+                _read_data                  =   memory_read_data;
+                _internal_read_data_valid   =   1;
 
                 if (read_pointer == (DATA_DEPTH -1)) begin
                     _read_pointer  =   0;
@@ -132,6 +135,7 @@ always_comb begin
             end
         end
     end
+
 end
 
 
@@ -141,22 +145,22 @@ always_ff @(posedge clock or negedge reset_n) begin
         read_data_valid             <=  0;
         read_pointer                <=  0;
         empty                       <=  1;
-        memory_data_valid           <=  0;
         internal_full               <=  0;
         read_enable_delayed         <=  0;
         write_pointer_gray_sync_0   <=  0;
         write_pointer_gray_sync_1   <=  0;
+        internal_read_data_valid    <=  0;
     end
     else begin
         read_data                   <=  _read_data;
         read_data_valid             <=  _read_data_valid;
         read_pointer                <=  _read_pointer;
         empty                       <=  _empty;
-        memory_data_valid           <=  _memory_data_valid;
         internal_full               <=  _internal_full;
         read_enable_delayed         <=  _read_enable_delayed;
         write_pointer_gray_sync_0   <= _write_pointer_gray_sync_0;
         write_pointer_gray_sync_1   <=  _write_pointer_gray_sync_1;
+        internal_read_data_valid    <=  _internal_read_data_valid;
     end
 end
 

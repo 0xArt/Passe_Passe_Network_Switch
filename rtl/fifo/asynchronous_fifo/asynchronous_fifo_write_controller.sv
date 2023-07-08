@@ -27,7 +27,6 @@ module asynchronous_fifo_write_controller#(
     input   wire                                reset_n,
     input   wire                                write_enable,
     input   wire    [$clog2(DATA_DEPTH)-1:0]    read_pointer_gray, //read domain clock
-    input   wire                                read_enable,       //read domain clock
     input   wire    [DATA_WIDTH-1:0]            write_data,
 
     output  reg     [DATA_WIDTH-1:0]            memory_write_data,

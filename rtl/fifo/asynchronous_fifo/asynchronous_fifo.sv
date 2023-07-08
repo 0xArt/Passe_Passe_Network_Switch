@@ -72,7 +72,6 @@ wire                            asynchronous_fifo_read_controller_clock;
 wire                            asynchronous_fifo_read_controller_reset_n;
 wire                            asynchronous_fifo_read_controller_read_enable;
 wire [$clog2(DATA_DEPTH)-1:0]   asynchronous_fifo_read_controller_write_pointer_gray;
-wire                            asynchronous_fifo_read_controller_write_enable;
 wire [DATA_WIDTH-1:0]           asynchronous_fifo_read_controller_memory_read_data;
 wire [DATA_WIDTH-1:0]           asynchronous_fifo_read_controller_read_data;
 wire                            asynchronous_fifo_read_controller_read_data_valid;
@@ -90,7 +89,6 @@ asynchronous_fifo_read_controller(
     .reset_n                (asynchronous_fifo_read_controller_reset_n),
     .read_enable            (asynchronous_fifo_read_controller_read_enable),
     .write_pointer_gray     (asynchronous_fifo_read_controller_write_pointer_gray),
-    .write_enable           (asynchronous_fifo_read_controller_write_enable),
     .memory_read_data       (asynchronous_fifo_read_controller_memory_read_data),
 
     .read_data              (asynchronous_fifo_read_controller_read_data),
@@ -105,7 +103,6 @@ wire                            asynchronous_fifo_write_controller_clock;
 wire                            asynchronous_fifo_write_controller_reset_n;
 wire                            asynchronous_fifo_write_controller_write_enable;
 wire [$clog2(DATA_DEPTH)-1:0]   asynchronous_fifo_write_controller_read_pointer_gray;
-wire                            asynchronous_fifo_write_controller_read_enable;
 wire [DATA_WIDTH-1:0]           asynchronous_fifo_write_controller_write_data;
 wire [DATA_WIDTH-1:0]           asynchronous_fifo_write_controller_memory_write_data;
 wire                            asynchronous_fifo_write_controller_memory_write_data_valid;
@@ -122,7 +119,6 @@ asynchronous_fifo_write_controller(
     .reset_n                    (asynchronous_fifo_write_controller_reset_n),
     .write_enable               (asynchronous_fifo_write_controller_write_enable),
     .read_pointer_gray          (asynchronous_fifo_write_controller_read_pointer_gray),
-    .read_enable                (asynchronous_fifo_write_controller_read_enable),
     .write_data                 (asynchronous_fifo_write_controller_write_data),
 
     .memory_write_data          (asynchronous_fifo_write_controller_memory_write_data),
@@ -151,7 +147,6 @@ assign asynchronous_fifo_read_controller_clock              =   read_clock;
 assign asynchronous_fifo_read_controller_reset_n            =   read_reset_n;
 assign asynchronous_fifo_read_controller_read_enable        =   read_enable;
 assign asynchronous_fifo_read_controller_write_pointer_gray =   asynchronous_fifo_write_controller_memory_write_pointer_gray;
-assign asynchronous_fifo_read_controller_write_enable       =   write_enable;
 assign asynchronous_fifo_read_controller_memory_read_data   =   generic_dual_port_ram_read_data;
 
 assign asynchronous_fifo_write_controller_clock             =   write_clock;
@@ -159,6 +154,5 @@ assign asynchronous_fifo_write_controller_reset_n           =   write_reset_n;
 assign asynchronous_fifo_write_controller_write_data        =   write_data;
 assign asynchronous_fifo_write_controller_write_enable      =   write_enable;
 assign asynchronous_fifo_write_controller_read_pointer_gray =   asynchronous_fifo_read_controller_read_pointer_gray;
-assign asynchronous_fifo_write_controller_read_enable       =   read_enable;
 
 endmodule
