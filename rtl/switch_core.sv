@@ -83,6 +83,8 @@ endgenerate
 
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_clock;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_reset_n;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][47:0]     virutal_port_udp_mac_source;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][31:0]     virutal_port_udp_ipv4_source;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]      virutal_port_udp_receive_data;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_receive_data_enable;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_transmit_data_enable;
@@ -100,6 +102,8 @@ generate
         virutal_port_udp(
             .clock                              (virutal_port_udp_clock[i]),
             .reset_n                            (virutal_port_udp_reset_n[i]),
+            .mac_source                         (virutal_port_udp_mac_source[i]),
+            .ipv4_source                        (virutal_port_udp_ipv4_source[i]),
             .receive_data                       (virutal_port_udp_receive_data[i]),
             .receive_data_enable                (virutal_port_udp_receive_data_enable[i]),
             .transmit_data_enable               (virutal_port_udp_receive_data_enable[i]),
@@ -201,6 +205,9 @@ generate
         assign  virutal_port_udp_module_clock[i]                                        =   module_clock[i];
         assign  virutal_port_udp_module_transmit_data[i]                                =   module_transmit_data[i];
         assign  virutal_port_udp_module_transmit_data_enable[i]                         =   module_transmit_data_enable[i];
+        assign  virutal_port_udp_mac_source[i]                                          =   {40'hBE_AC_DC_EF_F0,i[7:0]};
+        assign  virutal_port_udp_ipv4_source[i]                                          =  {24'hF0_0F_B8,i[7:0]};
+
         assign  core_data_orchestrator_port_recieve_data_enable[i+NUMBER_OF_RMII_PORTS] =   virutal_port_udp_transmit_data_valid[i];
         assign  core_data_orchestrator_port_recieve_data[i+NUMBER_OF_RMII_PORTS]        =   virutal_port_udp_transmit_data[i];
     end

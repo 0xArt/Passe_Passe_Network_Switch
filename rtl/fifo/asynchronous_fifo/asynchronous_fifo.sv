@@ -82,7 +82,8 @@ wire                            asynchronous_fifo_read_controller_empty;
 asynchronous_fifo_read_controller
 #(.DATA_WIDTH               (DATA_WIDTH),
   .DATA_DEPTH               (DATA_DEPTH),
-  .FIRST_WORD_FALL_THROUGH  (FIRST_WORD_FALL_THROUGH)
+  .FIRST_WORD_FALL_THROUGH  (FIRST_WORD_FALL_THROUGH),
+  .PIPELINED_MEMORY         (PIPELINED_MEMORY)
 )
 asynchronous_fifo_read_controller(
     .clock                  (asynchronous_fifo_read_controller_clock),

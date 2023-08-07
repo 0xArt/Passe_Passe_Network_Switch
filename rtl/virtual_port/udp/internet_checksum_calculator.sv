@@ -60,7 +60,7 @@ always_comb begin
     _accumulator    =   accumulator;
     _ready          =   ready;
     _result_valid   =   0;
-    accumator_carry =   accumulator[15:0] + accumulator[15];
+    accumator_carry =   accumulator[15:0] + accumulator[16];
 
     case (state)
         S_IDLE: begin

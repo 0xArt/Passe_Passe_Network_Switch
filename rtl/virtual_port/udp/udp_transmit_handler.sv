@@ -27,7 +27,7 @@ module udp_transmit_handler(
     input   wire            data_enable,
     input   wire    [31:0]  ipv4_source,
 
-    output  reg             data_ready,
+    output  logic           data_ready,
     output  reg     [47:0]  mac_destination,
     output  reg     [31:0]  ipv4_destination,
     output  reg     [15:0]  udp_destination,
@@ -136,7 +136,6 @@ always_comb begin
     _saved_ipv4_source              =   saved_ipv4_source;
     _udp_destination                =   udp_destination;
     _udp_source                     =   udp_source;
-    _data_ready                     =   data_ready;
     _process_counter                =   process_counter;
     _ipv4_flags                     =   ipv4_flags;
     _ipv4_identification            =   ipv4_identification;
@@ -146,13 +145,15 @@ always_comb begin
     _udp_total_payload_size         =   udp_total_payload_size;
     udp_header_size_field           =   udp_total_payload_size + UDP_HEADER_NUMBER_OF_BYTES;
     _udp_fragment_size              =   udp_fragment_size;
+    _udp_checksum_data_last         =   0;
     _udp_checksum_data_valid        =   0;
+    _udp_buffer_data_valid          =   0;
     _transmit_valid                 =   0;
     timeout_cycle_timer_load_count  =   0;
+    data_ready                      =   0;
 
     case (state)
         S_IDLE: begin
-            _data_ready                     =   1;
             _process_counter                =   4;
             _ready                          =   1;
             _ipv4_flags                     =   0;
@@ -160,6 +161,8 @@ always_comb begin
             _saved_ipv4_source              =   ipv4_source;
 
             if (data_enable) begin
+                data_ready                     =   1;
+
                 if (data[8]) begin
                     _mac_destination[47:8]          =   mac_destination[39:0];
                     _mac_destination[7:0]           =   data[7:0];
@@ -174,19 +177,17 @@ always_comb begin
                 _mac_destination[7:0]           =   data[7:0];
                 _process_counter                =   process_counter - 1;
                 timeout_cycle_timer_load_count  =   1;
+                data_ready                      =   1;
 
                 if  (process_counter == 0) begin
                     _state              =   S_CHECKSUM_IPV4_SOURCE;
                     _process_counter    =   3;
-                    _data_ready         =   0;
                 end
                 if (data[8]) begin
-                    _data_ready     =   0;
                     _state          =   S_RESTART;
                 end
             end
             if (timeout_cycle_timer_expired) begin
-                _data_ready = 0;
                 _state      = S_IDLE;
             end
         end
@@ -198,13 +199,13 @@ always_comb begin
             timeout_cycle_timer_load_count  =   1;
 
             if  (process_counter == 0) begin
-                _data_ready         =   1;
                 _process_counter    =   3;
                 _state              =   S_GET_IPV4_DESTINATION;
             end
         end
         S_GET_IPV4_DESTINATION: begin
             if (data_enable) begin
+                data_ready                      =   1;
                 _ipv4_destination[31:8]         =   ipv4_destination[23:0];
                 _ipv4_destination[7:0]          =   data[7:0];
                 _udp_checksum_data              =   data[7:0];
@@ -215,15 +216,13 @@ always_comb begin
                 if  (process_counter == 0) begin
                     _state              =   S_CHECKSUM_ZEROS;
                     _process_counter    =   1;
-                    _data_ready         =   0;
                 end
                 if (data[8]) begin
-                    _data_ready     = 0;
                     _state          =   S_RESTART;
                 end
             end
             if (timeout_cycle_timer_expired) begin
-                _data_ready = 0;
+                data_ready  = 0;
                 _state      = S_IDLE;
             end
         end
@@ -240,24 +239,24 @@ always_comb begin
         end
         S_GET_UDP_TOTAL_PAYLOAD_SIZE: begin
             if (data_enable) begin
+                data_ready                      =   1;
                 _udp_total_payload_size[15:8]   =   udp_total_payload_size[7:0];
                 _udp_total_payload_size[7:0]    =   data[7:0];
                 _process_counter                =   process_counter - 1;
                 timeout_cycle_timer_load_count  =   1;
 
                 if  (process_counter == 0) begin
-                    _data_ready         =   0;
                     _state              =   S_CHECKSUM_UDP_LENGTH_0;
                 end
                 if (data[8]) begin
-                    _data_ready             = 0;
+                    data_ready              =   0;
                     _mac_destination[47:8]  =   mac_destination[39:0];
                     _mac_destination[7:0]   =   data[7:0];
                     _state                  =   S_RESTART;
                 end
             end
             if (timeout_cycle_timer_expired) begin
-                _data_ready = 0;
+                data_ready  = 0;
                 _state      = S_IDLE;
             end
         end
@@ -270,10 +269,12 @@ always_comb begin
         S_CHECKSUM_UDP_LENGTH_1: begin
             _udp_checksum_data              =   udp_header_size_field[7:0];
             _udp_checksum_data_valid        =   1;
+            _process_counter                =   1;
             _state                          =   S_GET_UDP_SOURCE;
         end
         S_GET_UDP_SOURCE: begin
             if (data_enable) begin
+                data_ready                      =   1;
                 _udp_source[15:8]               =   udp_source[7:0];
                 _udp_source[7:0]                =   data[7:0];
                 _udp_checksum_data              =   data;
@@ -286,19 +287,20 @@ always_comb begin
                     _process_counter    =   1;
                 end
                 if (data[8]) begin
-                    _data_ready             = 0;
+                    data_ready             = 0;
                     _mac_destination[47:8]  =   mac_destination[39:0];
                     _mac_destination[7:0]   =   data[7:0];
                     _state                  =   S_RESTART;
                 end
             end
             if (timeout_cycle_timer_expired) begin
-                _data_ready = 0;
+                data_ready = 0;
                 _state      = S_IDLE;
             end
         end
         S_GET_UDP_DESTINATION: begin
             if (data_enable) begin
+                data_ready                     =   1;
                 _udp_destination[15:8]          =   udp_destination[7:0];
                 _udp_destination[7:0]           =   data[7:0];
                 _udp_checksum_data              =   data;
@@ -311,14 +313,14 @@ always_comb begin
                     _process_counter    =   1;
                 end
                 if (data[8]) begin
-                    _data_ready             =   0;
+                    data_ready             =   0;
                     _mac_destination[47:8]  =   mac_destination[39:0];
                     _mac_destination[7:0]   =   data[7:0];
                     _state                  =   S_RESTART;
                 end
             end
             if (timeout_cycle_timer_expired) begin
-                _data_ready = 0;
+                data_ready = 0;
                 _state      = S_IDLE;
             end
         end
@@ -336,7 +338,7 @@ always_comb begin
         end
         S_GET_UDP_DATA: begin
             if (data_enable) begin
-                _data_ready                     =   1;
+                data_ready                     =   1;
                 _udp_checksum_data              =   data[7:0];
                 _udp_checksum_data_valid        =   1;
                 _udp_buffer_data                =   data[7:0];
@@ -345,20 +347,20 @@ always_comb begin
                 _process_counter                =   process_counter - 1;
                 timeout_cycle_timer_load_count  =   1;
 
-                if  (process_counter == 0) begin
+                if  (process_counter == 1) begin
                     _state                  =   S_SET_FRAGMENT_SETTINGS;
                     _udp_checksum_data_last =   1;
                     _process_counter        =   1;
                 end
                 if (data[8]) begin
-                    _data_ready             =   0;
+                    data_ready             =   0;
                     _mac_destination[47:8]  =   mac_destination[39:0];
                     _mac_destination[7:0]   =   data[7:0];
                     _state                  =   S_RESTART;
                 end
             end
             if (timeout_cycle_timer_expired) begin
-                _data_ready = 0;
+                data_ready = 0;
                 _state      = S_IDLE;
             end
         end
@@ -384,7 +386,7 @@ always_comb begin
                 _state                          =   S_WAIT_TRANSMIT_BUSY;
             end
             if (timeout_cycle_timer_expired) begin
-                _data_ready = 0;
+                data_ready = 0;
                 _state      = S_IDLE;
             end
         end
@@ -410,12 +412,12 @@ always_comb begin
                 end
             end
             if (timeout_cycle_timer_expired) begin
-                _data_ready = 0;
+                data_ready = 0;
                 _state      = S_IDLE;
             end
         end
         S_RESTART: begin
-            _data_ready                     =   1;
+            data_ready                     =   1;
             _process_counter                =   4;
             timeout_cycle_timer_load_count  =   1;
             _state                          =   S_GET_MAC_DESTINATION;
@@ -433,7 +435,6 @@ always_ff @(posedge clock or negedge reset_n) begin
         udp_source                  <=  0;
         udp_buffer_data             <=  0;
         udp_buffer_data_valid       <=  0;
-        data_ready                  <=  0;
         transmit_valid              <=  0;
         ipv4_flags                  <=  0;
         ipv4_identification         <=  0;
@@ -455,7 +456,6 @@ always_ff @(posedge clock or negedge reset_n) begin
         udp_source                  <=  _udp_source;
         udp_buffer_data             <=  _udp_buffer_data;
         udp_buffer_data_valid       <=  _udp_buffer_data_valid;
-        data_ready                  <=  _data_ready;
         transmit_valid              <=  _transmit_valid;
         ipv4_flags                  <=  _ipv4_flags;
         ipv4_identification         <=  _ipv4_identification;

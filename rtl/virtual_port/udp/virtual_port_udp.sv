@@ -24,6 +24,7 @@ module virutal_port_udp#(
     input   wire            clock,
     input   wire            reset_n,
     input   wire    [47:0]  mac_source,
+    input   wire    [31:0]  ipv4_source,
     input   wire    [8:0]   receive_data,                       //from switch data orch
     input   wire            receive_data_enable,                //from switch data orch
     input   wire            transmit_data_enable,               //from switch data orch
@@ -159,7 +160,7 @@ wire    [7:0]   udp_data_buffer_read_data;
 generic_block_ram
 #(.DATA_WIDTH       (8),
   .DATA_DEPTH       (65535),
-  .PIPELINED_OUTPUT (1)
+  .PIPELINED_OUTPUT (0)
 )
 udp_data_buffer(
     .clock                  (udp_data_buffer_clock),
@@ -508,6 +509,7 @@ assign  udp_transmit_handler_reset_n                            =   reset_n;
 assign  udp_transmit_handler_enable                             =   ethernet_frame_generator_ready;
 assign  udp_transmit_handler_data_enable                        =   inbound_fifo_read_data_valid;
 assign  udp_transmit_handler_data                               =   inbound_fifo_read_data;
+assign  udp_transmit_handler_ipv4_source                        =   ipv4_source;
 
 assign  inbound_fifo_read_clock                                 =   clock;
 assign  inbound_fifo_read_reset_n                               =   reset_n;
@@ -522,6 +524,7 @@ assign  udp_data_buffer_reset_n                                 =   reset_n;
 assign  udp_data_buffer_write_enable                            =   udp_transmit_handler_udp_buffer_data_valid;
 assign  udp_data_buffer_write_data                              =   udp_transmit_handler_udp_buffer_data;
 assign  udp_data_buffer_write_address                           =   udp_transmit_handler_udp_buffer_write_address;
+assign  udp_data_buffer_read_address                            =   ethernet_frame_generator_udp_buffer_read_address;
 
 assign  udp_checksum_calculator_clock                           =   clock;
 assign  udp_checksum_calculator_reset_n                         =   reset_n;
@@ -540,7 +543,7 @@ assign  ethernet_frame_generator_udp_buffer_read_data           =   udp_data_buf
 assign  ethernet_frame_generator_mac_destination                =   udp_transmit_handler_mac_destination;
 assign  ethernet_frame_generator_mac_source                     =   mac_source;
 assign  ethernet_frame_generator_ipv4_destination               =   udp_transmit_handler_ipv4_destination;
-assign  ethernet_frame_generator_ipv4_source                    =   udp_transmit_handler_ipv4_source;
+assign  ethernet_frame_generator_ipv4_source                    =   ipv4_source;
 assign  ethernet_frame_generator_udp_checksum                   =   udp_checksum_calculator_result;
 assign  ethernet_frame_generator_udp_destination                =   udp_transmit_handler_udp_destination;
 assign  ethernet_frame_generator_udp_source                     =   udp_transmit_handler_udp_source;
@@ -549,11 +552,11 @@ assign  ethernet_frame_generator_udp_fragment_size              =   udp_transmit
 assign  ethernet_frame_generator_ipv4_flags                     =   udp_transmit_handler_ipv4_flags;
 assign  ethernet_frame_generator_ipv4_identification            =   udp_transmit_handler_ipv4_identification;
 
-assign  ivp4_checksum_calculator_clock                          =   clock;
-assign  ivp4_checksum_calculator_reset_n                        =   reset_n;
-assign  ivp4_checksum_calculator_data                           =   ethernet_frame_generator_ipv4_checksum_data;
-assign  ivp4_checksum_calculator_data_enable                    =   ethernet_frame_generator_ipv4_checksum_data_valid;
-assign  ivp4_checksum_calculator_data_last                      =   ethernet_frame_generator_ipv4_checksum_data_last;
+assign  ipv4_checksum_calculator_clock                          =   clock;
+assign  ipv4_checksum_calculator_reset_n                        =   reset_n;
+assign  ipv4_checksum_calculator_data                           =   ethernet_frame_generator_ipv4_checksum_data;
+assign  ipv4_checksum_calculator_data_enable                    =   ethernet_frame_generator_ipv4_checksum_data_valid;
+assign  ipv4_checksum_calculator_data_last                      =   ethernet_frame_generator_ipv4_checksum_data_last;
 
 assign  frame_check_sequence_generator_clock                    =   clock;
 assign  frame_check_sequence_generator_reset_n                  =   reset_n;
