@@ -938,8 +938,6 @@ add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/te
 add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_ipv4_checksum}
 add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_udp_source}
 add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_udp_source}
-add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_frame_data}
-add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_frame_data_valid}
 add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_udp_payload_size}
 add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_udp_payload_size}
 add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_udp_fragment_size}
@@ -959,15 +957,17 @@ add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/te
 add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_ipv4_flags}
 add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_ipv4_identification}
 add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_ipv4_identification}
-add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_checksum_data}
-add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_checksum_data_valid}
 add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_checksum_data_last}
 add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_udp_checksum}
 add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_udp_checksum}
 add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_ipv4_checksum_data}
 add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_udp_buffer_read_address}
+add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_frame_byte}
+add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/frame_byte}
+add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_frame_byte_valid}
+add wave -noupdate -expand -group virtual_port_udp_ethernet_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/frame_byte_valid}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {10470280 ps} 0}
+WaveRestoreCursors {{Cursor 1} {10525000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 666
 configure wave -valuecolwidth 327
@@ -983,4 +983,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {9841384 ps} {12368616 ps}
+WaveRestoreZoom {6070536 ps} {16179464 ps}

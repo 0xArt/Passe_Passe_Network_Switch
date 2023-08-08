@@ -287,7 +287,7 @@ always_comb begin
                     _process_counter    =   1;
                 end
                 if (data[8]) begin
-                    data_ready             = 0;
+                    data_ready              =   0;
                     _mac_destination[47:8]  =   mac_destination[39:0];
                     _mac_destination[7:0]   =   data[7:0];
                     _state                  =   S_RESTART;
@@ -300,7 +300,7 @@ always_comb begin
         end
         S_GET_UDP_DESTINATION: begin
             if (data_enable) begin
-                data_ready                     =   1;
+                data_ready                      =   1;
                 _udp_destination[15:8]          =   udp_destination[7:0];
                 _udp_destination[7:0]           =   data[7:0];
                 _udp_checksum_data              =   data;
@@ -313,7 +313,7 @@ always_comb begin
                     _process_counter    =   1;
                 end
                 if (data[8]) begin
-                    data_ready             =   0;
+                    data_ready              =   0;
                     _mac_destination[47:8]  =   mac_destination[39:0];
                     _mac_destination[7:0]   =   data[7:0];
                     _state                  =   S_RESTART;
@@ -338,7 +338,7 @@ always_comb begin
         end
         S_GET_UDP_DATA: begin
             if (data_enable) begin
-                data_ready                     =   1;
+                data_ready                      =   1;
                 _udp_checksum_data              =   data[7:0];
                 _udp_checksum_data_valid        =   1;
                 _udp_buffer_data                =   data[7:0];
@@ -353,7 +353,7 @@ always_comb begin
                     _process_counter        =   1;
                 end
                 if (data[8]) begin
-                    data_ready             =   0;
+                    data_ready              =   0;
                     _mac_destination[47:8]  =   mac_destination[39:0];
                     _mac_destination[7:0]   =   data[7:0];
                     _state                  =   S_RESTART;
@@ -386,7 +386,7 @@ always_comb begin
                 _state                          =   S_WAIT_TRANSMIT_BUSY;
             end
             if (timeout_cycle_timer_expired) begin
-                data_ready = 0;
+                data_ready  = 0;
                 _state      = S_IDLE;
             end
         end
@@ -412,12 +412,12 @@ always_comb begin
                 end
             end
             if (timeout_cycle_timer_expired) begin
-                data_ready = 0;
+                data_ready  = 0;
                 _state      = S_IDLE;
             end
         end
         S_RESTART: begin
-            data_ready                     =   1;
+            data_ready                      =   1;
             _process_counter                =   4;
             timeout_cycle_timer_load_count  =   1;
             _state                          =   S_GET_MAC_DESTINATION;

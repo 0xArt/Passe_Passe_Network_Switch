@@ -28,7 +28,7 @@ module cycle_timer#(
     input   wire                            load_count,
     input   wire    [BIT_WIDTH-1:0]         count,
 
-    output  reg                             expired
+    output  logic                           expired
 );
 
 
@@ -37,8 +37,14 @@ logic   [BIT_WIDTH-1:0]                 _counter;
 logic                                   _expired;
 
 always_comb begin
-    _expired    =   0;
     _counter    =   counter;
+
+    if (counter == 0) begin
+        expired =   1;
+    end
+    else begin
+        expired =   0;
+    end
 
     if (enable) begin
         if (load_count) begin
@@ -46,7 +52,6 @@ always_comb begin
         end
         else begin
             if (counter == 0) begin
-                _expired = 1;
             end
             else begin
                 _counter    =   counter - 1;
@@ -59,11 +64,9 @@ end
 always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
         counter                         <=  0;
-        expired                         <=  0;
     end
     else begin
         counter                         <=  _counter;
-        expired                         <=  _expired;
     end
 end
 
