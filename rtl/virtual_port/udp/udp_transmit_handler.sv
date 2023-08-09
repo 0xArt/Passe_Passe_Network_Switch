@@ -90,10 +90,10 @@ typedef enum
     S_RESTART
 } state_type;
 
+
 localparam IPV4_PROTOCOL_UDP            = 8'h11;
 localparam UDP_HEADER_NUMBER_OF_BYTES   = 8;
 localparam IPV4_HEADER_NUMBER_OF_BYTES  = 20;
-
 
 
 state_type          _state;

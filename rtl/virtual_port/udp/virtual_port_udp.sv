@@ -32,6 +32,8 @@ module virutal_port_udp#(
     input   wire    [8:0]   module_transmit_data,               //from fabric modules
     input   wire            module_transmit_data_enable,        //from fabric modules
 
+    output  wire    [8:0]   module_receive_data,
+    output  wire            module_receive_data_valid,
     output  wire            receive_data_ready,
     output  wire    [8:0]   transmit_data,                      //to switch data orch
     output  wire            transmit_data_valid                 //to switch data orch
@@ -197,7 +199,7 @@ wire    [15:0]  ethernet_frame_generator_ipv4_identification;
 wire    [7:0]   ethernet_frame_generator_checksum_data;
 wire            ethernet_frame_generator_checksum_data_valid;
 wire            ethernet_frame_generator_checksum_data_last;
-wire    [7:0]   ethernet_frame_generator_frame_data;
+wire    [8:0]   ethernet_frame_generator_frame_data;
 wire            ethernet_frame_generator_frame_data_valid;
 wire    [7:0]   ethernet_frame_generator_ipv4_checksum_data;
 wire            ethernet_frame_generator_ipv4_checksum_data_valid;
@@ -293,6 +295,7 @@ wire    [31:0]                      ethernet_frame_parser_checksum_result;
 wire                                ethernet_frame_parser_checksum_result_enable;
 wire                                ethernet_frame_parser_checksum_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_frame_parser_recieve_slot_enable;
+
 wire                                ethernet_frame_parser_data_ready;
 wire    [7:0]                       ethernet_frame_parser_checksum_data;
 wire                                ethernet_frame_parser_checksum_data_valid;
@@ -366,6 +369,7 @@ wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_good_packet;
 wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_bad_packet;
 wire    [RECEIVE_QUE_SLOTS-1:0][15:0]  udp_receieve_handler_udp_destination;
 wire    [RECEIVE_QUE_SLOTS-1:0][15:0]  udp_receieve_handler_push_data_enable;
+
 wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_fifo_reset_n;
 wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_ready;
 wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_push_data_ready;
@@ -418,38 +422,42 @@ receive_slot_arbiter(
 );
 
 
-wire    [8:0]   outbound_fifo_data;
 wire            outbound_fifo_read_clock;
-wire            outbound_fifo_read_enable;
 wire            outbound_fifo_read_reset_n;
 wire            outbound_fifo_write_clock;
-wire            outbound_fifo_write_enable;
 wire            outbound_fifo_write_reset_n;
-wire            outbound_fifo_read_data_valid;
-wire            outbound_fifo_empty;
-wire            outbound_fifo_full;
+wire            outbound_fifo_read_enable;
+wire            outbound_fifo_write_enable;
+wire    [8:0]   outbound_fifo_write_data;
+
 wire    [8:0]   outbound_fifo_read_data;
+wire            outbound_fifo_read_data_valid;
+wire            outbound_fifo_full;
+wire            outbound_fifo_empty;
 
-/*
-COREFIFO_C2 outbound_fifo(
-    .DATA       (outbound_fifo_data),
-    .RCLOCK     (outbound_fifo_read_clock),
-    .RE         (outbound_fifo_read_enable),
-    .RRESET_N   (outbound_fifo_read_reset_n),
-    .WCLOCK     (outbound_fifo_write_clock),
-    .WE         (outbound_fifo_write_enable),
-    .WRESET_N   (outbound_fifo_write_reset_n),
+asynchronous_fifo#(
+    .DATA_WIDTH                 (9),
+    .DATA_DEPTH                 (4096),
+    .FIRST_WORD_FALL_THROUGH    (1)
+)
+outbound_fifo(
+    .read_clock         (outbound_fifo_read_clock),
+    .read_reset_n       (outbound_fifo_read_reset_n),
+    .write_clock        (outbound_fifo_write_clock),
+    .write_reset_n      (outbound_fifo_write_reset_n),
+    .read_enable        (outbound_fifo_read_enable),
+    .write_enable       (outbound_fifo_write_enable),
+    .write_data         (outbound_fifo_write_data),
 
-    .DVLD       (outbound_fifo_read_data_valid),
-    .EMPTY      (outbound_fifo_empty),
-    .FULL       (outbound_fifo_full),
-    .Q          (outbound_fifo_read_data)
+    .read_data          (outbound_fifo_read_data),
+    .read_data_valid    (outbound_fifo_read_data_valid),
+    .full               (outbound_fifo_full),
+    .empty              (outbound_fifo_empty)
 );
-*/
 
-assign  receive_data_valid                                      =   outbound_fifo_read_data_valid;
-assign  receive_data                                            =   outbound_fifo_read_data;
 assign  receive_data_ready                                      =   0;
+assign  transmit_data                                           =   outbound_fifo_read_data;
+assign  transmit_data_valid                                     =   outbound_fifo_read_data_valid;
 
 assign  receive_slot_arbiter_clock                              =   clock;
 assign  receive_slot_arbiter_reset_n                            =   reset_n;
@@ -496,12 +504,12 @@ generate
     end
 endgenerate
 
-assign  outbound_fifo_data                                      =   receive_slot_arbiter_push_data;
 assign  outbound_fifo_read_clock                                =   clock;
 assign  outbound_fifo_read_enable                               =   receive_data_enable;
 assign  outbound_fifo_read_reset_n                              =   reset_n;
 assign  outbound_fifo_write_clock                               =   clock;
-assign  outbound_fifo_write_enable                              =   receive_slot_arbiter_push_data_valid;
+assign  outbound_fifo_write_data                                =   ethernet_frame_generator_frame_data;
+assign  outbound_fifo_write_enable                              =   ethernet_frame_generator_frame_data_valid;
 assign  outbound_fifo_write_reset_n                             =   reset_n;
 
 assign  udp_transmit_handler_clock                              =   clock;

@@ -43,7 +43,7 @@ module ethernet_frame_generator(
     output  logic   [7:0]                   checksum_data,
     output  logic                           checksum_data_valid,
     output  reg                             checksum_data_last,
-    output  logic   [7:0]                   frame_data,
+    output  logic   [8:0]                   frame_data,
     output  logic                           frame_data_valid,
     output  reg     [7:0]                   ipv4_checksum_data,
     output  reg                             ipv4_checksum_data_valid,
@@ -59,24 +59,6 @@ localparam logic [7:0]  IPV4_VERSION_HEADER_LNEGTH          = 8'h45;
 localparam logic [7:0]  IPV4_DIFFERENTIATED_SERVICES_FIELD  = 8'h00;
 localparam logic [7:0]  IPV4_TIME_TO_LIVE                   = 8'h80;
 localparam logic [7:0]  IPV4_PROTOCOL_UDP                   = 8'h11;
-
-
-wire            timeout_cycle_timer_clock;
-wire            timeout_cycle_timer_reset_n;
-wire            timeout_cycle_timer_enable;
-logic           timeout_cycle_timer_load_count;
-wire  [15:0]    timeout_cycle_timer_count;
-wire            timeout_cycle_timer_expired;
-
-cycle_timer timeout_cycle_timer(
-    .clock      (timeout_cycle_timer_clock),
-    .reset_n    (timeout_cycle_timer_reset_n),
-    .enable     (timeout_cycle_timer_enable),
-    .load_count (timeout_cycle_timer_load_count),
-    .count      (timeout_cycle_timer_count),
-
-    .expired    (timeout_cycle_timer_expired)
-);
 
 
 wire            process_cycle_timer_clock;
@@ -191,10 +173,12 @@ reg     [15:0]                          _saved_udp_checksum;
 logic   [15:0]                          saved_udp_checksum;
 logic   [15:0]                          _ipv4_checksum_data;
 logic   [15:0]                          _udp_buffer_read_address;
-logic   [2:0][7:0]                      _frame_byte;
-reg     [2:0][7:0]                      frame_byte;
+logic   [2:0][8:0]                      _frame_byte;
+reg     [2:0][8:0]                      frame_byte;
 logic   [2:0]                           _frame_byte_valid;
 reg     [2:0]                           frame_byte_valid;
+logic                                   _frame_start;
+reg                                     frame_start;
 
 
 assign  process_cycle_timer_clock       =   clock;
@@ -231,7 +215,8 @@ always_comb begin
     _ipv4_checksum_data                 =   ipv4_checksum_data;
     _frame_byte[2]                      =   frame_byte[1];
     _frame_byte[1]                      =   frame_byte[0];
-    _frame_byte[0]                      =   frame_byte[0];
+    _frame_byte[0][7:0]                 =   frame_byte[0][7:0];
+    _frame_byte[0][8]                   =   frame_start;
     _frame_byte_valid[2]                =   frame_byte_valid[1];
     _frame_byte_valid[1]                =   frame_byte_valid[0];
     _frame_byte_valid[0]                =   0;
@@ -240,15 +225,15 @@ always_comb begin
     _ipv4_checksum_data_valid           =   0;
     _ipv4_checksum_data_last            =   0;
     _udp_checksum_data_last             =   0;
+    _frame_start                        =   0;
     process_cycle_timer_load_count      =   0;
     process_cycle_timer_count           =   0;
-    timeout_cycle_timer_load_count      =   0;
 
     frame_data          =   frame_byte[2];
     frame_data_valid    =   frame_byte_valid[2];
 
     if (state == S_PUSH_CRC && process_counter != 0) begin
-        frame_data          =   frame_byte[0];
+        frame_data[7:0]     =   frame_byte[0];
         frame_data_valid    =   frame_byte_valid[0];
     end
 
@@ -377,13 +362,15 @@ always_comb begin
             _ipv4_checksum_data_last        =   1;
             process_cycle_timer_count       =   5;
             process_cycle_timer_load_count  =   1;
+            _frame_start                    =   1;
             _state                          =   S_MAC_DESINTATION;
         end
         S_MAC_DESINTATION: begin
             if (ipv4_checksum_result_enable) begin
                 _saved_ipv4_checksum    =   ipv4_checksum_result;
             end
-            _frame_byte[0]          =   saved_mac_destination[47:40];
+
+            _frame_byte[0][7:0]     =   saved_mac_destination[47:40];
             _frame_byte_valid[0]    =   1;
             _saved_mac_destination  =   {saved_mac_destination[39:0],8'h00};
 
@@ -394,7 +381,7 @@ always_comb begin
             end
         end
         S_MAC_SOURCE: begin
-            _frame_byte[0]          =   saved_mac_source[47:40];
+            _frame_byte[0][7:0]     =   saved_mac_source[47:40];
             _frame_byte_valid[0]    =   1;
             _saved_mac_source       =   {saved_mac_source[39:0],8'h00};
 
@@ -403,29 +390,29 @@ always_comb begin
             end
         end
         S_ETHERNET_TYPE_MSB: begin
-            _frame_byte[0]          =   IPV4_ETHERNET_TYPE[15:8];
+            _frame_byte[0][7:0]     =   IPV4_ETHERNET_TYPE[15:8];
             _frame_byte_valid[0]    =   1;
             _state                  =   S_ETHERNET_TYPE_LSB;
         end
         S_ETHERNET_TYPE_LSB: begin
-            _frame_byte[0]          =   IPV4_ETHERNET_TYPE[7:0];
+            _frame_byte[0][7:0]     =   IPV4_ETHERNET_TYPE[7:0];
             _frame_byte_valid[0]    =   1;
             _state                  =   S_IPV4_VERSION_HEADER_LNEGTH;
         end
         S_IPV4_VERSION_HEADER_LNEGTH: begin
-            _frame_byte[0]          =   IPV4_VERSION_HEADER_LNEGTH;
+            _frame_byte[0][7:0]     =   IPV4_VERSION_HEADER_LNEGTH;
             _frame_byte_valid[0]    =   1;
             _state                  =   S_IPV4_DIFFERENTIATED_SERVICES_FIELD;
         end
         S_IPV4_DIFFERENTIATED_SERVICES_FIELD: begin
-            _frame_byte[0]                  =   IPV4_DIFFERENTIATED_SERVICES_FIELD;
+            _frame_byte[0][7:0]             =   IPV4_DIFFERENTIATED_SERVICES_FIELD;
             _frame_byte_valid[0]            =   1;
             process_cycle_timer_count       =   1;
             process_cycle_timer_load_count  =   1;
             _state                          =   S_IPV4_TOTAL_LENGTH;
         end
         S_IPV4_TOTAL_LENGTH: begin
-            _frame_byte[0]              =   ipv4_total_length[15:8];
+            _frame_byte[0][7:0]         =   ipv4_total_length[15:8];
             _frame_byte_valid[0]        =   1;
             _ipv4_total_length          =   {ipv4_total_length[7:0],8'h00};
 
@@ -434,49 +421,49 @@ always_comb begin
             end
         end
         S_IPV4_IDENTIFICATION_MSB: begin
-            _frame_byte[0]              =   saved_ipv4_identification[15:8];
+            _frame_byte[0][7:0]         =   saved_ipv4_identification[15:8];
             _frame_byte_valid[0]        =   1;
             _state                      =   S_IPV4_IDENTIFICATION_LSB;
         end
         S_IPV4_IDENTIFICATION_LSB: begin
-            _frame_byte[0]              =   saved_ipv4_identification[7:0];
+            _frame_byte[0][7:0]         =   saved_ipv4_identification[7:0];
             _frame_byte_valid[0]        =   1;
             _state                      =   S_IPV4_FLAGS_MSB;
         end
         S_IPV4_FLAGS_MSB: begin
-            _frame_byte[0]              =   saved_ipv4_flags[15:8];
+            _frame_byte[0][7:0]         =   saved_ipv4_flags[15:8];
             _frame_byte_valid[0]        =   1;
             _state                      =   S_IPV4_FLAGS_LSB;
         end
         S_IPV4_FLAGS_LSB: begin
-            _frame_byte[0]              =   saved_ipv4_flags[7:0];
+            _frame_byte[0][7:0]         =   saved_ipv4_flags[7:0];
             _frame_byte_valid[0]        =   1;
             _state                      =   S_IPV4_TIME_TO_LIVE;
         end
         S_IPV4_TIME_TO_LIVE: begin
-            _frame_byte[0]              =   IPV4_TIME_TO_LIVE;
+            _frame_byte[0][7:0]         =   IPV4_TIME_TO_LIVE;
             _frame_byte_valid[0]        =   1;
             _state                      =   S_IPV4_PROTOCOL;
         end
         S_IPV4_PROTOCOL: begin
-            _frame_byte[0]              =   IPV4_PROTOCOL_UDP;
+            _frame_byte[0][7:0]         =   IPV4_PROTOCOL_UDP;
             _frame_byte_valid[0]        =   1;
             _state                      =   S_IPV4_CHECKSUM_MSB;
         end
         S_IPV4_CHECKSUM_MSB: begin
-            _frame_byte[0]          =   saved_ipv4_checksum[15:8];
+            _frame_byte[0][7:0]     =   saved_ipv4_checksum[15:8];
             _frame_byte_valid[0]    =   1;
             _state                  =   S_IPV4_CHECKSUM_LSB;
         end
         S_IPV4_CHECKSUM_LSB: begin
-            _frame_byte[0]                  =   saved_ipv4_checksum[7:0];
+            _frame_byte[0][7:0]             =   saved_ipv4_checksum[7:0];
             _frame_byte_valid[0]            =   1;
             process_cycle_timer_count       =   4;
             process_cycle_timer_load_count  =   1;
             _state                          =   S_IPV4_SOURCE_ADDRESS;
         end
         S_IPV4_SOURCE_ADDRESS: begin
-            _frame_byte[0]              =   saved_ipv4_source[31:24];
+            _frame_byte[0][7:0]         =   saved_ipv4_source[31:24];
             _frame_byte_valid[0]        =   1;
             _saved_ipv4_source          =   {saved_ipv4_source[23:0],8'h00};
 
@@ -487,7 +474,7 @@ always_comb begin
             end
         end
         S_IPV4_DESTINATION_ADDRESS: begin
-            _frame_byte[0]              =   saved_ipv4_destination[31:24];
+            _frame_byte[0][7:0]         =   saved_ipv4_destination[31:24];
             _frame_byte_valid[0]        =   1;
             _saved_ipv4_destination     =   {saved_ipv4_destination[23:0],8'h00};
 
@@ -500,13 +487,12 @@ always_comb begin
                 end
                 else begin
                     process_cycle_timer_count       =   saved_udp_fragment_size - 1;
-                    timeout_cycle_timer_load_count  =   1;
                     _state                          =   S_UDP_DATA;
                 end
             end
         end
         S_UDP_SOURCE_PORT: begin
-            _frame_byte[0]              =   saved_udp_source[15:8];
+            _frame_byte[0][7:0]         =   saved_udp_source[15:8];
             _frame_byte_valid[0]        =   1;
             _saved_udp_source           =   {saved_udp_source[7:0],8'h00};
 
@@ -517,7 +503,7 @@ always_comb begin
             end
         end
         S_UDP_DESTINATION_PORT: begin
-            _frame_byte[0]                  =   saved_udp_destination[15:8];
+            _frame_byte[0][7:0]             =   saved_udp_destination[15:8];
             _frame_byte_valid[0]            =   1;
             _saved_udp_destination          =   {saved_udp_destination[7:0],8'h00};
             _udp_total_length               =   saved_udp_payload_size + 8;
@@ -529,7 +515,7 @@ always_comb begin
             end
         end
         S_UDP_LENGTH: begin
-            _frame_byte[0]              =   udp_total_length[15:8];
+            _frame_byte[0][7:0]         =   udp_total_length[15:8];
             _frame_byte_valid[0]        =   1;
             _udp_total_length           =   {udp_total_length[7:0],8'h00};
 
@@ -538,23 +524,23 @@ always_comb begin
             end
         end
         S_UDP_CHECKSUM_MSB: begin
-            _frame_byte[0]              =   saved_udp_checksum[15:8];
+            _frame_byte[0][7:0]         =   saved_udp_checksum[15:8];
             _frame_byte_valid[0]        =   1;
             _state                      =   S_UDP_CHECKSUM_LSB;
         end
         S_UDP_CHECKSUM_LSB: begin
-            _frame_byte[0]                  =   saved_udp_checksum[7:0];
+            _frame_byte[0][7:0]             =   saved_udp_checksum[7:0];
             _frame_byte_valid[0]            =   1;
             process_cycle_timer_count       =   saved_udp_fragment_size - 1;
             process_cycle_timer_load_count  =   1;
-            timeout_cycle_timer_load_count  =   1;
             _udp_buffer_read_address        =   udp_buffer_read_address + 1;
             _state                          =   S_UDP_DATA;
         end
         S_UDP_DATA: begin
-            _frame_byte[0]                 =   udp_buffer_read_data;
+            _frame_byte[0][7:0]            =   udp_buffer_read_data;
             _frame_byte_valid[0]           =   1;
             _udp_buffer_read_address       =   udp_buffer_read_address + 1;
+            _process_counter               =   0;
 
             if (process_cycle_timer_expired) begin
                 if (saved_udp_fragment_size < 26) begin
@@ -563,14 +549,13 @@ always_comb begin
                     _state                          =   S_PAD;
                 end
                 else begin
-                    _process_counter                =   0;
                     _checksum_data_last             =   1;
                     _state                          =   S_PUSH_CRC;
                 end
             end
         end
         S_PAD: begin
-            _frame_byte[0]                 =   0;
+            _frame_byte[0][7:0]            =   0;
             _frame_byte_valid[0]           =   1;
 
             if (process_cycle_timer_expired) begin
@@ -583,24 +568,24 @@ always_comb begin
             case (process_counter)
                 0: begin
                     if (checksum_result_enable) begin
-                        _frame_byte[0]          =   checksum_result[31:24];
+                        _frame_byte[0][7:0]     =   checksum_result[31:24];
                         _frame_byte_valid[0]    =   1;
                         _saved_checksum_result  =   checksum_result;
                         _process_counter        =   1;
                     end
                 end
                 1: begin
-                    _frame_byte[0]          =   saved_checksum_result[23:16];
+                    _frame_byte[0][7:0]     =   saved_checksum_result[23:16];
                     _frame_byte_valid[0]    =   1;
                     _process_counter        =   2;
                 end
                 2: begin
-                    _frame_byte[0]          =   saved_checksum_result[15:8];
+                    _frame_byte[0][7:0]     =   saved_checksum_result[15:8];
                     _frame_byte_valid[0]    =   1;
                     _process_counter        =   3;
                 end
                 3: begin
-                    _frame_byte[0]          =   saved_checksum_result[7:0];
+                    _frame_byte[0][7:0]     =   saved_checksum_result[7:0];
                     _frame_byte_valid[0]    =   1;
                     _process_counter        =   0;
                     _state                  =   S_IDLE;
@@ -643,6 +628,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         frame_byte_valid[1]             <=  0;
         frame_byte_valid[2]             <=  0;
         frame_byte_valid[3]             <=  0;
+        frame_start                     <=  0;
     end
     else begin
         state                           <=  _state;
@@ -675,6 +661,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         frame_byte_valid[0]             <=  _frame_byte_valid[0];
         frame_byte_valid[1]             <=  _frame_byte_valid[1];
         frame_byte_valid[2]             <=  _frame_byte_valid[2];
+        frame_start                     <=  _frame_start;
     end
 end
 
