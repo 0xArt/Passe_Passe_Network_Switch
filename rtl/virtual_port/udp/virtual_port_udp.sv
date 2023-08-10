@@ -57,7 +57,7 @@ wire            inbound_fifo_empty;
 
 asynchronous_fifo#(
     .DATA_WIDTH                 (9),
-    .DATA_DEPTH                 (4096),
+    .DATA_DEPTH                 (8192),
     .FIRST_WORD_FALL_THROUGH    (1)
 )
 inbound_fifo(
@@ -437,7 +437,7 @@ wire            outbound_fifo_empty;
 
 asynchronous_fifo#(
     .DATA_WIDTH                 (9),
-    .DATA_DEPTH                 (4096),
+    .DATA_DEPTH                 (8192),
     .FIRST_WORD_FALL_THROUGH    (1)
 )
 outbound_fifo(

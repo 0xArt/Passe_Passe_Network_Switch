@@ -168,6 +168,7 @@ always_comb begin
                         _process_counter            =   0;
                         _target_transmit_port       =   '1;
                         _port_transmit_data_valid   =   '1;
+                        _process_counter            =   4;
                         _port_transmit_data         =   {1'b1,mac_destination[47:40]};
                         _mac_destination            =   {mac_destination[39:0],8'h00};
                         _state                      =   S_TRANSMIT_MAC_DESTINATION;
@@ -185,6 +186,7 @@ always_comb begin
                         _port_transmit_data_valid                           =  1 << cam_table_read_address;
                         _port_transmit_data                                 =  {1'b1,mac_destination[47:40]};
                         _mac_destination                                    =  {mac_destination[39:0],8'h00};
+                        _process_counter                                    =  4;
                         _state                                              =  S_TRANSMIT_MAC_DESTINATION;
                     end
                     else begin

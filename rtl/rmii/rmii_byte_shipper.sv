@@ -31,7 +31,7 @@ module rmii_byte_shipper#(
 
     output  reg     [1:0]   shipped_data,
     output  reg             shipped_data_valid,
-    output  reg             data_ready
+    output  logic           data_ready
 );
 
 
@@ -58,7 +58,6 @@ reg     [7:0]   sample_counter_limit;
 logic   [7:0]   _sample_counter_limit;
 reg     [15:0]  preamble_count_limit;
 logic   [15:0]  _preamble_count_limit;
-reg             _data_ready;
 reg     [1:0]   saved_speed_code;
 logic   [1:0]   _saved_speed_code;
 
@@ -72,7 +71,7 @@ always_comb  begin
     _sample_counter_limit   =   sample_counter_limit;
     _preamble_count_limit   =   preamble_count_limit;
     _saved_speed_code       =   saved_speed_code;
-    _data_ready             =   0;
+    data_ready              =   0;
 
     case (saved_speed_code)
         SPEED_CODE_100_MEGABIT: begin
@@ -95,7 +94,7 @@ always_comb  begin
             _saved_speed_code   =   speed_code;
 
             if (data_enable) begin
-                _data_ready             =   1;
+                data_ready              =   1;
 
                 if (data[8]) begin
                     _byte_to_ship       =   data[7:0];
@@ -156,7 +155,7 @@ always_comb  begin
                         end
                         else begin
                             _byte_to_ship   =   data[7:0];
-                            _data_ready     =   1;
+                            data_ready      =   1;
                         end
                     end
                     else begin
@@ -180,7 +179,6 @@ always_ff @(posedge clock) begin
         byte_to_ship            <=  0;
         sample_counter          <=  0;
         sample_counter_limit    <=  0;
-        data_ready              <=  0;
         preamble_count_limit    <=  0;
         saved_speed_code        <=  0;
     end
@@ -192,7 +190,6 @@ always_ff @(posedge clock) begin
         shipped_data            <=  _shipped_data;
         shipped_data_valid      <=  _shipped_data_valid;
         byte_to_ship            <=  _byte_to_ship;
-        data_ready              <=  _data_ready;
         preamble_count_limit    <=  _preamble_count_limit;
         saved_speed_code        <=  _saved_speed_code;
     end

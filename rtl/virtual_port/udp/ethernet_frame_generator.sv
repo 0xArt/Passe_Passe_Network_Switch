@@ -19,7 +19,9 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-module ethernet_frame_generator(
+module ethernet_frame_generator#(
+    logic [15:0]    INTER_PACKET_GAP_CYCLES       = 16'h000F
+)(
     input   wire                            clock,
     input   wire                            reset_n,
     input   wire                            enable,
@@ -125,7 +127,8 @@ typedef enum
     S_UDP_CHECKSUM_LSB,
     S_UDP_DATA,
     S_PUSH_CRC,
-    S_PAD
+    S_PAD,
+    S_GAP
 } state_type;
 
 state_type                              _state;
@@ -585,12 +588,19 @@ always_comb begin
                     _process_counter        =   3;
                 end
                 3: begin
-                    _frame_byte[0][7:0]     =   saved_checksum_result[7:0];
-                    _frame_byte_valid[0]    =   1;
-                    _process_counter        =   0;
-                    _state                  =   S_IDLE;
+                    _frame_byte[0][7:0]             =   saved_checksum_result[7:0];
+                    _frame_byte_valid[0]            =   1;
+                    _process_counter                =   0;
+                    process_cycle_timer_count       =   INTER_PACKET_GAP_CYCLES;
+                    process_cycle_timer_load_count  =   1;
+                    _state                          =   S_GAP;
                 end
             endcase
+        end
+        S_GAP: begin
+            if (process_cycle_timer_expired) begin
+                _state                          =   S_IDLE;
+            end
         end
     endcase
 end
