@@ -22,6 +22,7 @@
 `include "./case_000/case_000.svh"
 `include "./case_002/case_002.svh"
 `include "./case_003/case_003.svh"
+`include "./case_004/case_004.svh"
 
 module testbench;
 
@@ -43,7 +44,7 @@ logic [NUMBER_OF_RMII_PORTS-1:0]                ethernet_transmit_data_valid    
 logic [8:0]                                     module_transmit_data            =   0;
 logic                                           module_transmit_data_valid      =   0;
 logic                                           module_clock                    =   0;
-logic [8:0]                                     module_transmit_buffer [0:888];
+logic [8:0]                                     module_transmit_buffer [0:8888];
 
 initial begin
     clock   =   0;
@@ -71,16 +72,10 @@ initial begin
     wait(reset_n);
 
     repeat(100) @(posedge clock);
-
-    $display("Running case 000");
     case_000();
-
-    $display("Running case 002");
     case_002();
-
-    $display("Running case 003");
     case_003();
-
+    case_004();
     $stop();
 end
 

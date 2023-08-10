@@ -106,7 +106,7 @@ generate
             .ipv4_source                        (virutal_port_udp_ipv4_source[i]),
             .receive_data                       (virutal_port_udp_receive_data[i]),
             .receive_data_enable                (virutal_port_udp_receive_data_enable[i]),
-            .transmit_data_enable               (virutal_port_udp_receive_data_enable[i]),
+            .transmit_data_enable               (virtual_port_udp_transmit_data_enable[i]),
             .module_clock                       (virutal_port_udp_module_clock[i]),
             .module_transmit_data               (virutal_port_udp_module_transmit_data[i]),
             .module_transmit_data_enable        (virutal_port_udp_module_transmit_data_enable[i]),
@@ -123,7 +123,6 @@ wire                                    core_data_orchestrator_clock;
 wire                                    core_data_orchestraotr_reset_n;
 wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_recieve_data_enable;
 wire    [NUMBER_OF_PORTS-1:0][8:0]      core_data_orchestrator_port_recieve_data;
-wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_transmit_data_enable;
 wire    [47:0]                          core_data_orchestrator_cam_table_read_data;
 wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_receive_data_ready;
 wire    [8:0]                           core_data_orchestrator_port_transmit_data;
@@ -139,7 +138,6 @@ core_data_orchestrator(
     .reset_n                    (core_data_orchestraotr_reset_n),
     .port_recieve_data_enable   (core_data_orchestrator_port_recieve_data_enable),
     .port_recieve_data          (core_data_orchestrator_port_recieve_data),
-    .port_transmit_data_enable  (core_data_orchestrator_port_transmit_data_enable),
     .cam_table_read_data        (core_data_orchestrator_cam_table_read_data),
 
     .port_receive_data_ready    (core_data_orchestrator_port_receive_data_ready),
@@ -201,7 +199,7 @@ generate
         assign  virutal_port_udp_reset_n[i]                                             =   reset_n;
         assign  virutal_port_udp_receive_data[i]                                        =   core_data_orchestrator_port_transmit_data[i+NUMBER_OF_RMII_PORTS];
         assign  virutal_port_udp_receive_data_enable[i]                                 =   core_data_orchestrator_port_transmit_data_valid[i+NUMBER_OF_RMII_PORTS];
-        assign  virtual_port_udp_transmit_data_enable[i]                                =   core_data_orchestrator_port_receive_data_ready[i];
+        assign  virtual_port_udp_transmit_data_enable[i]                                =   core_data_orchestrator_port_receive_data_ready[i+NUMBER_OF_RMII_PORTS];
         assign  virutal_port_udp_module_clock[i]                                        =   module_clock[i];
         assign  virutal_port_udp_module_transmit_data[i]                                =   module_transmit_data[i];
         assign  virutal_port_udp_module_transmit_data_enable[i]                         =   module_transmit_data_enable[i];

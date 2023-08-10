@@ -6,6 +6,8 @@ task case_002();
 automatic integer   i = 0;
 automatic integer   j = 0;
 
+$display("Running case 002");
+
 testbench.ethernet_message[0]   = 8'h55;
 testbench.ethernet_message[1]   = 8'h55;
 testbench.ethernet_message[2]   = 8'h55;

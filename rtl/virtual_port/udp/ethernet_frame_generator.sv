@@ -173,23 +173,19 @@ reg     [15:0]                          _saved_udp_checksum;
 logic   [15:0]                          saved_udp_checksum;
 logic   [15:0]                          _ipv4_checksum_data;
 logic   [15:0]                          _udp_buffer_read_address;
-logic   [2:0][8:0]                      _frame_byte;
-reg     [2:0][8:0]                      frame_byte;
-logic   [2:0]                           _frame_byte_valid;
-reg     [2:0]                           frame_byte_valid;
+logic   [1:0][8:0]                      _frame_byte;
+reg     [1:0][8:0]                      frame_byte;
+logic   [1:0]                           _frame_byte_valid;
+reg     [1:0]                           frame_byte_valid;
 logic                                   _frame_start;
 reg                                     frame_start;
+logic   [11:0]                          _fragment_offset;
+reg     [11:0]                          fragment_offset;
 
 
 assign  process_cycle_timer_clock       =   clock;
 assign  process_cycle_timer_reset_n     =   reset_n;
 assign  process_cycle_timer_enable      =   1;
-
-assign  timeout_cycle_timer_clock       =   clock;
-assign  timeout_cycle_timer_reset_n     =   reset_n;
-assign  timeout_cycle_timer_enable      =   1;
-assign  timeout_cycle_timer_count       =   TIMEOUT_LIMIT;
-
 
 always_comb begin
     _state                              =   state;
@@ -213,11 +209,10 @@ always_comb begin
     _saved_ipv4_checksum                =   saved_ipv4_checksum;
     _saved_udp_checksum                 =   saved_udp_checksum;
     _ipv4_checksum_data                 =   ipv4_checksum_data;
-    _frame_byte[2]                      =   frame_byte[1];
+    _fragment_offset                    =   fragment_offset;
     _frame_byte[1]                      =   frame_byte[0];
     _frame_byte[0][7:0]                 =   frame_byte[0][7:0];
     _frame_byte[0][8]                   =   frame_start;
-    _frame_byte_valid[2]                =   frame_byte_valid[1];
     _frame_byte_valid[1]                =   frame_byte_valid[0];
     _frame_byte_valid[0]                =   0;
     checksum_data                       =   frame_byte[0];
@@ -229,8 +224,8 @@ always_comb begin
     process_cycle_timer_load_count      =   0;
     process_cycle_timer_count           =   0;
 
-    frame_data          =   frame_byte[2];
-    frame_data_valid    =   frame_byte_valid[2];
+    frame_data          =   frame_byte[1];
+    frame_data_valid    =   frame_byte_valid[1];
 
     if (state == S_PUSH_CRC && process_counter != 0) begin
         frame_data[7:0]     =   frame_byte[0];
@@ -261,7 +256,7 @@ always_comb begin
             _saved_ipv4_flags                   =   ipv4_flags;
             _saved_ipv4_identification          =   ipv4_identification;
             _saved_udp_checksum                 =   udp_checksum;
-            _udp_buffer_read_address            =   0;
+            _fragment_offset                    =   ipv4_flags[11:0];
 
             if (enable) begin
                 process_cycle_timer_count       =   7;
@@ -271,6 +266,9 @@ always_comb begin
             end
         end
         S_CHECKSUM_IPV4_VERSION_HEADER_LNEGTH: begin
+            if (fragment_offset == 0) begin
+                _udp_buffer_read_address    =   0;
+            end
             _ipv4_checksum_data         =   IPV4_VERSION_HEADER_LNEGTH;
             _ipv4_checksum_data_valid   =   1;
             _state                      =   S_CHECKSUM_IPV4_DIFFERENTIATED_SERVICES_FIELD;
@@ -482,11 +480,12 @@ always_comb begin
                 process_cycle_timer_count       =   1;
                 process_cycle_timer_load_count  =   1;
 
-                if (saved_ipv4_flags[12:0] == 0) begin
+                if (fragment_offset == 0) begin
                     _state  =   S_UDP_SOURCE_PORT;
                 end
                 else begin
                     process_cycle_timer_count       =   saved_udp_fragment_size - 1;
+                    _udp_buffer_read_address        =   udp_buffer_read_address + 1;
                     _state                          =   S_UDP_DATA;
                 end
             end
@@ -549,6 +548,7 @@ always_comb begin
                     _state                          =   S_PAD;
                 end
                 else begin
+                    _udp_buffer_read_address        =   udp_buffer_read_address;
                     _checksum_data_last             =   1;
                     _state                          =   S_PUSH_CRC;
                 end
@@ -622,13 +622,10 @@ always_ff @(posedge clock or negedge reset_n) begin
         saved_ipv4_checksum             <=  0;
         frame_byte[0]                   <=  0;
         frame_byte[1]                   <=  0;
-        frame_byte[2]                   <=  0;
-        frame_byte[3]                   <=  0;
         frame_byte_valid[0]             <=  0;
         frame_byte_valid[1]             <=  0;
-        frame_byte_valid[2]             <=  0;
-        frame_byte_valid[3]             <=  0;
         frame_start                     <=  0;
+        fragment_offset                 <=  0;
     end
     else begin
         state                           <=  _state;
@@ -657,11 +654,10 @@ always_ff @(posedge clock or negedge reset_n) begin
         saved_ipv4_checksum             <=  _saved_ipv4_checksum;
         frame_byte[0]                   <=  _frame_byte[0];
         frame_byte[1]                   <=  _frame_byte[1];
-        frame_byte[2]                   <=  _frame_byte[2];
         frame_byte_valid[0]             <=  _frame_byte_valid[0];
         frame_byte_valid[1]             <=  _frame_byte_valid[1];
-        frame_byte_valid[2]             <=  _frame_byte_valid[2];
         frame_start                     <=  _frame_start;
+        fragment_offset                 <=  _fragment_offset;
     end
 end
 

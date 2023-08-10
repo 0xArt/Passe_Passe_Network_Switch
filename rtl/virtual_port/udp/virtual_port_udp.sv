@@ -505,7 +505,7 @@ generate
 endgenerate
 
 assign  outbound_fifo_read_clock                                =   clock;
-assign  outbound_fifo_read_enable                               =   receive_data_enable;
+assign  outbound_fifo_read_enable                               =   transmit_data_enable;
 assign  outbound_fifo_read_reset_n                              =   reset_n;
 assign  outbound_fifo_write_clock                               =   clock;
 assign  outbound_fifo_write_data                                =   ethernet_frame_generator_frame_data;

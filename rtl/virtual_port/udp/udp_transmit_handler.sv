@@ -53,7 +53,7 @@ wire            timeout_cycle_timer_clock;
 wire            timeout_cycle_timer_reset_n;
 wire            timeout_cycle_timer_enable;
 logic           timeout_cycle_timer_load_count;
-wire  [15:0]    timeout_cycle_timer_count;
+logic  [15:0]   timeout_cycle_timer_count;
 wire            timeout_cycle_timer_expired;
 
 cycle_timer timeout_cycle_timer(
@@ -127,8 +127,6 @@ logic       [15:0]  _udp_fragment_size;
 assign  timeout_cycle_timer_clock       =   clock;
 assign  timeout_cycle_timer_reset_n     =   reset_n;
 assign  timeout_cycle_timer_enable      =   1;
-assign  timeout_cycle_timer_count       =   TIMEOUT_LIMIT;
-
 always_comb begin
     _state                          =   state;
     _mac_destination                =   mac_destination;
@@ -145,6 +143,7 @@ always_comb begin
     _udp_total_payload_size         =   udp_total_payload_size;
     udp_header_size_field           =   udp_total_payload_size + UDP_HEADER_NUMBER_OF_BYTES;
     _udp_fragment_size              =   udp_fragment_size;
+    timeout_cycle_timer_count       =   TIMEOUT_LIMIT;
     _udp_checksum_data_last         =   0;
     _udp_checksum_data_valid        =   0;
     _udp_buffer_data_valid          =   0;
@@ -392,6 +391,7 @@ always_comb begin
         end
         S_WAIT_TRANSMIT_BUSY: begin
             if (!enable) begin
+                timeout_cycle_timer_count       =   16'd2222;
                 timeout_cycle_timer_load_count  =   1;
                 _state  =   S_WAIT_TRANSMIT_DONE;
             end
