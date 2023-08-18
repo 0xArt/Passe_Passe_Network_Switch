@@ -270,6 +270,7 @@ wire            frame_check_sequence_generator_reset_n;
 wire    [7:0]   frame_check_sequence_generator_data;
 wire            frame_check_sequence_generator_data_enable;
 wire            frame_check_sequence_generator_data_last;
+
 wire            frame_check_sequence_generator_ready;
 wire    [31:0]  frame_check_sequence_generator_checksum;
 wire            frame_check_sequence_generator_checksum_valid;

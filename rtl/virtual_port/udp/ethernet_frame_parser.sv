@@ -317,11 +317,13 @@ always_comb begin
         end
         S_IPV4_IDENTIFICATION: begin
             if (data_enable) begin
-                _process_counter            =   process_counter - 1;
-                _ipv4_identification[7:0]   =   data;
-                _ipv4_identification[15:8]  =   ipv4_identification[7:0];
-                _checksum_data              =   data;
-                _checksum_data_valid        =   1;
+                _process_counter                    =   process_counter - 1;
+                _ipv4_identification[7:0]           =   data;
+                _ipv4_identification[15:8]          =   ipv4_identification[7:0];
+                _packet_data                        =   data;
+                _packet_data_valid[que_slot_select] =   1;
+                _checksum_data                      =   data;
+                _checksum_data_valid                =   1;
 
                 if (process_counter == 0) begin
                     _process_counter    =   1;
@@ -337,11 +339,13 @@ always_comb begin
         end
         S_IPV4_FLAGS: begin
             if (data_enable) begin
-                _process_counter            =   process_counter - 1;
-                _ipv4_flags[7:0]            =   data;
-                _ipv4_flags[15:8]           =   ipv4_flags[7:0];
-                _checksum_data              =   data;
-                _checksum_data_valid        =   1;
+                _process_counter                    =   process_counter - 1;
+                _ipv4_flags[7:0]                    =   data;
+                _ipv4_flags[15:8]                   =   ipv4_flags[7:0];
+                _checksum_data                      =   data;
+                _checksum_data_valid                =   1;
+                _packet_data                        =   data;
+                _packet_data_valid[que_slot_select] =   1;
 
                 if(process_counter == 0) begin
                     _process_counter    =   1;
@@ -441,7 +445,14 @@ always_comb begin
 
                 if (process_counter == 0) begin
                     _process_counter    =   1;
-                    _state              =   S_UDP_SOURCE_PORT;
+
+                    if (ipv4_flags[12:0] == 0) begin
+                        _state              =   S_UDP_SOURCE_PORT;
+                    end
+                    else begin
+                        _process_counter    =   ipv4_total_length - 20;
+                        _state              =   S_UDP_PAYLOAD;
+                    end
                 end
                 if (data[8]) begin
                     _state                          =   S_RESTART;
