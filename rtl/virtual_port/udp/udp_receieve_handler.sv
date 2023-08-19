@@ -29,12 +29,16 @@ module udp_receieve_handler(
     input   wire            bad_packet,
     input   wire    [15:0]  udp_destination,
     input   wire            push_data_enable,
+    input   wire    [15:0]  ipv4_identification,
+    input   wire    [15:0]  ipv4_flags,
 
     output  reg             fifo_reset_n,
     output  reg             ready,
     output  reg             push_data_ready,
     output  reg     [8:0]   push_data,
-    output  reg             push_data_valid
+    output  reg             push_data_valid,
+    output  reg     [15:0]  packet_id,
+    output  reg             fragment
 );
 
 typedef enum
@@ -59,7 +63,8 @@ logic   [15:0]      _saved_udp_destination;
 reg     [15:0]      saved_udp_destination;
 logic   [7:0]       _wait_data;
 reg     [7:0]       wait_data;
-
+logic   [15:0]      _packet_id;
+logic   [15:0]      _fragment;
 
 always_comb begin
     _state                          =   state;
@@ -73,7 +78,9 @@ always_comb begin
 
     case (state)
         S_IDLE: begin
-            _ready  =   0;
+            _ready      =   0;
+            _packet_id  =   ipv4_identification;
+            _fragment   =   ipv4_flags[13];
 
             if (bad_packet) begin
                 _fifo_reset_n = 0;
@@ -125,6 +132,7 @@ always_comb begin
             end
             else begin
                 _push_data_ready    =   0;
+
                 if (data_enable) begin
                     _wait_data  =   data;
                     _state      =   S_WAIT_WITH_PUSH;
@@ -161,6 +169,8 @@ always_ff @(posedge clock or negedge reset_n) begin
         push_data_ready             <=  0;
         ready                       <=  0;
         wait_data                   <=  0;
+        packet_id                   <=  0;
+        fragment                    <=  0;
     end
     else begin
         state                       <=  _state;
@@ -171,6 +181,8 @@ always_ff @(posedge clock or negedge reset_n) begin
         push_data_ready             <=  _push_data_ready;
         ready                       <=  _ready;
         wait_data                   <=  _wait_data;
+        packet_id                   <=  _packet_id;
+        fragment                    <=  _fragment;
     end
 end
 
