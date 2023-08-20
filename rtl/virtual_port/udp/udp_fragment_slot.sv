@@ -22,7 +22,6 @@
 module udp_fragment_slot(
     input   wire            clock,
     input   wire            reset_n,
-    input   wire            enable,
     input   wire    [7:0]   data,
     input   wire            data_enable,
     input   wire            data_last,
@@ -30,7 +29,7 @@ module udp_fragment_slot(
     input   wire    [15:0]  fragment_id,
 
     output  reg             ready,
-    output  reg             slot_data_ready,
+    output  reg             data_ready,
     output  reg             push_data_ready,
     output  logic   [7:0]   push_data,
     output  logic           push_data_valid,
@@ -77,15 +76,17 @@ state_type          state;
 logic               _push_data_ready;
 logic               _ready;
 logic   [15:0]      _current_packet_id;
-logic               _slot_data_ready;
+logic               _data_ready;
 reg     [7:0]       buffer_data;
 logic   [7:0]       _buffer_data;
 reg                 buffer_data_valid;
 logic               _buffer_data_valid;
 
 
-assign  fragment_fifo_clock     =   clock;
-assign  fragment_fifo_reset_n   =   reset_n;
+assign  fragment_fifo_clock         =   clock;
+assign  fragment_fifo_reset_n       =   reset_n;
+assign  fragment_fifo_write_data    =   buffer_data;
+assign  fragment_fifo_write_enable  =   buffer_data_valid;
 
 always_comb begin
     _state                          =   state;
@@ -94,7 +95,7 @@ always_comb begin
     _buffer_data                    =   buffer_data;
     push_data                       =   fragment_fifo_read_data;
     push_data_valid                 =   fragment_fifo_read_data_valid;
-    _slot_data_ready                =   0;
+    _data_ready                     =   0;
     _buffer_data_valid              =   0;
     _ready                          =   0;
 
@@ -119,7 +120,7 @@ always_comb begin
             end
         end
         S_DRAIN_SLOT: begin
-            _slot_data_ready    =   1;
+            _data_ready =   1;
 
             if (fragment_fifo_empty) begin
                 _state  =   S_IDLE;
@@ -134,7 +135,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         push_data_ready             <=  0;
         ready                       <=  0;
         current_packet_id           <=  0;
-        slot_data_ready             <=  0;
+        data_ready                  <=  0;
         buffer_data                 <=  0;
         buffer_data_valid           <=  0;
     end
@@ -143,7 +144,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         push_data_ready             <=  _push_data_ready;
         ready                       <=  _ready;
         current_packet_id           <=  _current_packet_id;
-        slot_data_ready             <=  _slot_data_ready;
+        data_ready                  <=  _data_ready;
         buffer_data                 <=  _buffer_data;
         buffer_data_valid           <=  _buffer_data_valid;
     end

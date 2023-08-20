@@ -19,7 +19,8 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module virutal_port_udp#(
-    parameter RECEIVE_QUE_SLOTS = 1
+    parameter RECEIVE_QUE_SLOTS = 1,
+    parameter FRAGMENT_SLOTS    = 2
 )(
     input   wire            clock,
     input   wire            reset_n,
@@ -505,6 +506,42 @@ generate
     end
 endgenerate
 
+
+wire                                    udp_fragment_slot_clock;
+wire                                    udp_fragment_slot_reset_n;
+wire    [7:0]                           udp_fragment_slot_data;
+wire    [FRAGMENT_SLOTS-1:0]            udp_fragment_slot_data_enable;
+wire                                    udp_fragment_slot_data_last;
+wire    [FRAGMENT_SLOTS-1:0]            udp_fragment_slot_push_data_enable;
+wire    [15:0]                          udp_fragment_slot_fragment_id;
+wire    [FRAGMENT_SLOTS-1:0]            udp_fragment_slot_ready;
+wire    [FRAGMENT_SLOTS-1:0]            udp_fragment_slot_data_ready;
+wire    [FRAGMENT_SLOTS-1:0]            udp_fragment_slot_push_data_ready;
+wire    [FRAGMENT_SLOTS-1:0][7:0]       udp_fragment_slot_push_data;
+wire    [FRAGMENT_SLOTS-1:0]            udp_fragment_slot_push_data_valid;
+wire    [FRAGMENT_SLOTS-1:0][15:0]      udp_fragment_slot_push_current_packet_id;
+
+for (j=0; j<FRAGMENT_SLOTS; j=j+1) begin
+    udp_fragment_slot    udp_fragment_slot(
+        .clock              (udp_fragment_slot_clock),
+        .reset_n            (udp_fragment_slot_reset_n),
+        .data               (udp_fragment_slot_data),
+        .data_enable        (udp_fragment_slot_data_enable),
+        .data_last          (udp_fragment_slot_data_last),
+        .push_data_enable   (udp_fragment_slot_push_data_enable[j]),
+        .fragment_id        (udp_fragment_slot_fragment_id),
+
+        .ready              (udp_fragment_slot_ready[j]),
+        .data_ready         (udp_fragment_slot_data_ready[j]),
+        .push_data_ready    (udp_fragment_slot_push_data_ready[j]),
+        .push_data          (udp_fragment_slot_push_data[j]),
+        .push_data_valid    (udp_fragment_slot_push_data_valid[j]),
+        .current_packet_id  (udp_fragment_slot_push_current_packet_id[j])
+    );
+end
+
+
+
 assign  outbound_fifo_read_clock                                =   clock;
 assign  outbound_fifo_read_enable                               =   transmit_data_enable;
 assign  outbound_fifo_read_reset_n                              =   reset_n;
@@ -572,5 +609,9 @@ assign  frame_check_sequence_generator_reset_n                  =   reset_n;
 assign  frame_check_sequence_generator_data                     =   ethernet_frame_generator_checksum_data;
 assign  frame_check_sequence_generator_data_enable              =   ethernet_frame_generator_checksum_data_valid;
 assign  frame_check_sequence_generator_data_last                =   ethernet_frame_generator_checksum_data_last;
+
+assign  udp_fragment_slot_clock                                 =   clock;
+assign  udp_fragment_slot_reset_n                               =   reset_n;
+assign  udp_fragment_slot_data                                  =   udp_receieve_handler_push_data;
 
 endmodule
