@@ -41,7 +41,7 @@ module virutal_port_udp#(
 );
 
 genvar i;
-
+genvar j;
 
 wire            inbound_fifo_read_clock;
 wire            inbound_fifo_read_reset_n;
@@ -289,13 +289,36 @@ frame_check_sequence_generator  frame_check_sequence_generator(
 );
 
 
+wire            receive_frame_check_sequence_generator_clock;
+wire            receive_frame_check_sequence_generator_reset_n;
+wire    [7:0]   receive_frame_check_sequence_generator_data;
+wire            receive_frame_check_sequence_generator_data_enable;
+wire            receive_frame_check_sequence_generator_data_last;
+
+wire            receive_frame_check_sequence_generator_ready;
+wire    [31:0]  receive_frame_check_sequence_generator_checksum;
+wire            receive_frame_check_sequence_generator_checksum_valid;
+
+frame_check_sequence_generator  receive_frame_check_sequence_generator(
+    .clock                  (receive_frame_check_sequence_generator_clock),
+    .reset_n                (receive_frame_check_sequence_generator_reset_n),
+    .data                   (receive_frame_check_sequence_generator_data),
+    .data_enable            (receive_frame_check_sequence_generator_data_enable),
+    .data_last              (receive_frame_check_sequence_generator_data_last),
+
+    .ready                  (receive_frame_check_sequence_generator_ready),
+    .checksum               (receive_frame_check_sequence_generator_checksum),
+    .checksum_valid         (receive_frame_check_sequence_generator_checksum_valid)
+);
+
+
+
 wire                                ethernet_frame_parser_clock;
 wire                                ethernet_frame_parser_reset_n;
 wire    [8:0]                       ethernet_frame_parser_data;
 wire                                ethernet_frame_parser_data_enable;
 wire    [31:0]                      ethernet_frame_parser_checksum_result;
 wire                                ethernet_frame_parser_checksum_result_enable;
-wire                                ethernet_frame_parser_checksum_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_frame_parser_recieve_slot_enable;
 
 wire                                ethernet_frame_parser_data_ready;
@@ -307,6 +330,8 @@ wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_frame_parser_packet_data_valid;
 wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_frame_parser_good_packet;
 wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_frame_parser_bad_packet;
 wire    [15:0]                      ethernet_frame_parser_udp_destination;
+wire    [15:0]                      ethernet_frame_parser_ipv4_flags;
+wire    [15:0]                      ethernet_frame_parser_ipv4_identification;
 
 ethernet_frame_parser   #(.RECEIVE_QUE_SLOTS(RECEIVE_QUE_SLOTS))
 ethernet_frame_parser(
@@ -316,7 +341,6 @@ ethernet_frame_parser(
     .data_enable            (ethernet_frame_parser_data_enable),
     .checksum_result        (ethernet_frame_parser_checksum_result),
     .checksum_result_enable (ethernet_frame_parser_checksum_result_enable),
-    .checksum_enable        (ethernet_frame_parser_checksum_enable),
     .recieve_slot_enable    (ethernet_frame_parser_recieve_slot_enable),
 
     .data_ready             (ethernet_frame_parser_data_ready),
@@ -327,90 +351,141 @@ ethernet_frame_parser(
     .packet_data_valid      (ethernet_frame_parser_packet_data_valid),
     .good_packet            (ethernet_frame_parser_good_packet),
     .bad_packet             (ethernet_frame_parser_bad_packet),
-    .udp_destination        (ethernet_frame_parser_udp_destination)
+    .udp_destination        (ethernet_frame_parser_udp_destination),
+    .ipv4_flags             (ethernet_frame_parser_ipv4_flags),
+    .ipv4_identification    (ethernet_frame_parser_identification)
 );
 
 
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_clock;
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_reset_n;
-wire    [RECEIVE_QUE_SLOTS-1:0][7:0]   payload_fifo_write_data;
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_read_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_write_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_read_data_valid;
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_empty;
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_full;
-wire    [RECEIVE_QUE_SLOTS-1:0][7:0]   payload_fifo_read_data;
+wire                                    receive_slot_clock;
+wire                                    receive_slot_reset_n;
+wire                                    receive_slot_data;
+wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_data_enable;
+wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_good_packet;
+wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_bad_packet;
+wire    [15:0]                          receive_slot_ipv4_flags;
+wire    [15:0]                          receive_slot_ipv4_identification;
+wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_push_data_enable;
+
+wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_ready;
+wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_data_ready;
+wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   receive_slot_current_ipv4_flags;
+wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   receive_slot_current_ipv4_identification;
+wire    [RECEIVE_QUE_SLOTS-1:0][7:0]    receive_slot_push_data;
+wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_push_data_valid;
 
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
-        synchronous_fifo
-        #(  .DATA_WIDTH   (8),
-            .DATA_DEPTH   (1024)
-        ) payload_fifo(
-            .clock              (payload_fifo_clock[i]),
-            .reset_n            (payload_fifo_reset_n[i]),
-            .read_enable        (payload_fifo_read_enable[i]),
-            .write_enable       (payload_fifo_write_enable[i]),
-            .write_data         (payload_fifo_write_data[i]),
+        receive_slot    receive_slot(
+            .clock                          (receive_slot_clock),
+            .reset_n                        (receive_slot_reset_n),
+            .data                           (receive_slot_data),
+            .data_enable                    (receive_slot_data_enable),
+            .good_packet                    (receive_slot_good_packet),
+            .bad_packet                     (receive_slot_bad_packet),
+            .ipv4_flags                     (receive_slot_ipv4_flags),
+            .ipv4_identification            (receive_slot_ipv4_identification),
+            .push_data_enable               (receive_slot_push_data_enable),
 
-            .read_data          (payload_fifo_read_data[i]),
-            .read_data_valid    (payload_fifo_read_data_valid[i]),
-            .full               (payload_fifo_full[i]),
-            .empty              (payload_fifo_empty[i])
+            .ready                          (receive_slot_ready),
+            .data_ready                     (receive_slot_data_ready),
+            .current_ipv4_flags             (receive_slot_current_ipv4_flags),
+            .current_ipv4_identification    (receive_slot_current_ipv4_identification),
+            .push_data                      (receive_slot_push_data),
+            .push_data_valid                (receive_slot_push_data_valid)
         );
     end
 endgenerate
 
 
-wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_clock;
-wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_reset_n;
-wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0][7:0]   udp_receieve_handler_data;
-wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_data_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_good_packet;
-wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_bad_packet;
-wire    [RECEIVE_QUE_SLOTS-1:0][15:0]  udp_receieve_handler_udp_destination;
-wire    [RECEIVE_QUE_SLOTS-1:0][15:0]  udp_receieve_handler_push_data_enable;
+wire                                    udp_receieve_handler_clock;
+wire                                    udp_receieve_handler_reset_n;
+wire    [RECEIVE_QUE_SLOTS-1:0]         udp_receieve_handler_enable;
+wire    [RECEIVE_QUE_SLOTS-1:0][7:0]    udp_receieve_handler_data;
+wire    [RECEIVE_QUE_SLOTS-1:0]         udp_receieve_handler_data_enable;
+wire    [FRAGMENT_SLOTS-1:0]            udp_receieve_handler_push_data_enable;
+wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   udp_receive_handler_ipv4_identification;
+wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   udp_receive_handler_ipv4_flags;
+wire    [FRAGMENT_SLOTS-1:0]            udp_receive_handler_fragment_slot_empty;
+wire    [FRAGMENT_SLOTS-1:0]            udp_receive_handler_fragment_slot_packet_id;
 
-wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_fifo_reset_n;
-wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_ready;
-wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_push_data_ready;
-wire    [RECEIVE_QUE_SLOTS-1:0][8:0]   udp_receieve_handler_push_data;
-wire    [RECEIVE_QUE_SLOTS-1:0]        udp_receieve_handler_push_data_valid;
+wire                                    udp_receieve_handler_ready;
+wire    [RECEIVE_QUE_SLOTS-1:0]         udp_receieve_handler_push_data_ready;
+wire    [8:0]                           udp_receieve_handler_push_data;
+wire    [FRAGMENT_SLOTS-1:0]            udp_receieve_handler_push_data_valid;
+wire    [FRAGMENT_SLOTS-1:0]            udp_receieve_handler_push_data_last;
+wire    [15:0]                          udp_receieve_handler_packet_id;
+
+udp_receieve_handler#(
+            .FRAGMENT_SLOTS     (FRAGMENT_SLOTS),
+            .RECEIVE_QUE_SLOTS  (RECEIVE_QUE_SLOTS))
+udp_receieve_handler(
+    .clock                      (udp_receieve_handler_clock),
+    .reset_n                    (udp_receieve_handler_reset_n),
+    .enable                     (udp_receieve_handler_enable),
+    .data                       (udp_receieve_handler_data),
+    .data_enable                (udp_receieve_handler_data_enable),
+    .push_data_enable           (udp_receieve_handler_push_data_enable),
+    .ipv4_identification        (udp_receive_handler_ipv4_identification),
+    .ipv4_flags                 (udp_receive_handler_ipv4_flags),
+    .fragment_slot_empty        (udp_receive_handler_fragment_slot_empty),
+    .fragment_slot_packet_id    (udp_receive_handler_fragment_slot_packet_id),
+
+    .ready                      (udp_receieve_handler_ready),
+    .push_data_ready            (udp_receieve_handler_push_data_ready),
+    .push_data                  (udp_receieve_handler_push_data),
+    .push_data_valid            (udp_receieve_handler_push_data_valid),
+    .push_data_last             (udp_receieve_handler_push_data_last),
+    .packet_id                  (udp_receieve_handler_packet_id)
+);
+
+
+wire                                udp_fragment_slot_clock;
+wire                                udp_fragment_slot_reset_n;
+wire    [7:0]                       udp_fragment_slot_data;
+wire    [FRAGMENT_SLOTS-1:0]        udp_fragment_slot_data_enable;
+wire    [FRAGMENT_SLOTS-1:0]        udp_fragment_slot_data_last;
+wire    [FRAGMENT_SLOTS-1:0]        udp_fragment_slot_push_data_enable;
+wire    [15:0]                      udp_fragment_slot_fragment_id;
+
+wire    [FRAGMENT_SLOTS-1:0]        udp_fragment_slot_ready;
+wire    [FRAGMENT_SLOTS-1:0]        udp_fragment_slot_data_ready;
+wire    [FRAGMENT_SLOTS-1:0][8:0]   udp_fragment_slot_push_data;
+wire    [FRAGMENT_SLOTS-1:0]        udp_fragment_slot_push_data_valid;
+wire    [FRAGMENT_SLOTS-1:0][15:0]  udp_fragment_slot_push_current_packet_id;
 
 generate
-    for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
-        udp_receieve_handler udp_receieve_handler(
-            .clock              (udp_receieve_handler_clock[i]),
-            .reset_n            (udp_receieve_handler_reset_n[i]),
-            .enable             (udp_receieve_handler_enable[i]),
-            .data               (udp_receieve_handler_data[i]),
-            .data_enable        (udp_receieve_handler_data_enable[i]),
-            .good_packet        (udp_receieve_handler_good_packet[i]),
-            .bad_packet         (udp_receieve_handler_bad_packet[i]),
-            .udp_destination    (udp_receieve_handler_udp_destination[i]),
-            .push_data_enable   (udp_receieve_handler_push_data_enable[i]),
+    for (j=0; j<FRAGMENT_SLOTS; j = j+1) begin
+        udp_fragment_slot    udp_fragment_slot(
+            .clock              (udp_fragment_slot_clock),
+            .reset_n            (udp_fragment_slot_reset_n),
+            .data               (udp_fragment_slot_data),
+            .data_enable        (udp_fragment_slot_data_enable[j]),
+            .data_last          (udp_fragment_slot_data_last[j]),
+            .push_data_enable   (udp_fragment_slot_push_data_enable[j]),
+            .fragment_id        (udp_fragment_slot_fragment_id),
 
-            .fifo_reset_n       (udp_receieve_handler_fifo_reset_n[i]),
-            .ready              (udp_receieve_handler_ready[i]),
-            .push_data_ready    (udp_receieve_handler_push_data_ready[i]),
-            .push_data          (udp_receieve_handler_push_data[i]),
-            .push_data_valid    (udp_receieve_handler_push_data_valid[i])
+            .ready              (udp_fragment_slot_ready[j]),
+            .data_ready         (udp_fragment_slot_data_ready[j]),
+            .push_data          (udp_fragment_slot_push_data[j]),
+            .push_data_valid    (udp_fragment_slot_push_data_valid[j]),
+            .current_packet_id  (udp_fragment_slot_push_current_packet_id[j])
         );
     end
 endgenerate
+
 
 
 wire                                    receive_slot_arbiter_clock;
 wire                                    receive_slot_arbiter_reset_n;
-wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_arbiter_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0][8:0]    receive_slot_arbiter_data;
-wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_arbiter_data_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_arbiter_ready;
+wire    [FRAGMENT_SLOTS-1:0]            receive_slot_arbiter_enable;
+wire    [FRAGMENT_SLOTS-1:0][8:0]       receive_slot_arbiter_data;
+wire    [FRAGMENT_SLOTS-1:0]            receive_slot_arbiter_data_enable;
+wire    [FRAGMENT_SLOTS-1:0]            receive_slot_arbiter_ready;
 wire    [8:0]                           receive_slot_arbiter_push_data;
 wire                                    receive_slot_arbiter_push_data_valid;
 
-receive_slot_arbiter #(.RECEIVE_QUE_SLOTS(RECEIVE_QUE_SLOTS))
+receive_slot_arbiter #(.RECEIVE_QUE_SLOTS(FRAGMENT_SLOTS))
 receive_slot_arbiter(
     .clock              (receive_slot_arbiter_clock),
     .reset_n            (receive_slot_arbiter_reset_n),
@@ -460,87 +535,6 @@ outbound_fifo(
 assign  receive_data_ready                                      =   0;
 assign  transmit_data                                           =   outbound_fifo_read_data;
 assign  transmit_data_valid                                     =   outbound_fifo_read_data_valid;
-
-assign  receive_slot_arbiter_clock                              =   clock;
-assign  receive_slot_arbiter_reset_n                            =   reset_n;
-assign  receive_slot_arbiter_enable                             =   udp_receieve_handler_ready;
-assign  receive_slot_arbiter_data                               =   udp_receieve_handler_push_data;
-assign  receive_slot_arbiter_data_enable                        =   udp_receieve_handler_push_data_valid;
-assign  receive_slot_arbiter_push_data_ready                    =   !outbound_fifo_full;
-
-generate
-    for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
-        assign  udp_receieve_handler_clock[i]                   =   clock;
-        assign  udp_receieve_handler_reset_n[i]                 =   reset_n;
-        assign  udp_receieve_handler_enable[i]                  =   receive_slot_arbiter_ready[i];
-        assign  udp_receieve_handler_data[i]                    =   payload_fifo_read_data[i];
-        assign  udp_receieve_handler_data_enable[i]             =   payload_fifo_read_data_valid[i];
-        assign  udp_receieve_handler_good_packet[i]             =   ethernet_frame_parser_good_packet[i];
-        assign  udp_receieve_handler_bad_packet[i]              =   ethernet_frame_parser_bad_packet[i];
-        assign  udp_receieve_handler_udp_destination[i]         =   ethernet_frame_parser_udp_destination;
-        assign  udp_receieve_handler_push_data_enable[i]        =   !outbound_fifo_full;
-    end
-endgenerate
-
-generate
-    for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
-        assign  payload_fifo_clock[i]                           =   clock;
-        assign  payload_fifo_write_data[i]                      =   ethernet_frame_parser_packet_data;
-        assign  payload_fifo_write_enable[i]                    =   ethernet_frame_parser_packet_data_valid[i];
-        assign  payload_fifo_read_enable[i]                     =   udp_receieve_handler_push_data_ready[i];
-        assign  payload_fifo_reset_n[i]                         =   udp_receieve_handler_fifo_reset_n[i];
-    end
-endgenerate
-
-assign  ethernet_frame_parser_clock                             =   clock;
-assign  ethernet_frame_parser_reset_n                           =   reset_n;
-assign  ethernet_frame_parser_data                              =   receive_data;
-assign  ethernet_frame_parser_data_enable                       =   receive_data_enable;
-assign  ethernet_frame_parser_checksum_result                   =   frame_check_sequence_generator_checksum;
-assign  ethernet_frame_parser_checksum_result_enable            =   frame_check_sequence_generator_checksum_valid;
-assign  ethernet_frame_parser_checksum_enable                   =   frame_check_sequence_generator_ready;
-
-generate
-    for (i=0; i<RECEIVE_QUE_SLOTS; i=i+1) begin
-        assign  ethernet_frame_parser_recieve_slot_enable[i]    =   payload_fifo_empty[i];
-    end
-endgenerate
-
-
-wire                                    udp_fragment_slot_clock;
-wire                                    udp_fragment_slot_reset_n;
-wire    [7:0]                           udp_fragment_slot_data;
-wire    [FRAGMENT_SLOTS-1:0]            udp_fragment_slot_data_enable;
-wire                                    udp_fragment_slot_data_last;
-wire    [FRAGMENT_SLOTS-1:0]            udp_fragment_slot_push_data_enable;
-wire    [15:0]                          udp_fragment_slot_fragment_id;
-wire    [FRAGMENT_SLOTS-1:0]            udp_fragment_slot_ready;
-wire    [FRAGMENT_SLOTS-1:0]            udp_fragment_slot_data_ready;
-wire    [FRAGMENT_SLOTS-1:0]            udp_fragment_slot_push_data_ready;
-wire    [FRAGMENT_SLOTS-1:0][7:0]       udp_fragment_slot_push_data;
-wire    [FRAGMENT_SLOTS-1:0]            udp_fragment_slot_push_data_valid;
-wire    [FRAGMENT_SLOTS-1:0][15:0]      udp_fragment_slot_push_current_packet_id;
-
-for (j=0; j<FRAGMENT_SLOTS; j=j+1) begin
-    udp_fragment_slot    udp_fragment_slot(
-        .clock              (udp_fragment_slot_clock),
-        .reset_n            (udp_fragment_slot_reset_n),
-        .data               (udp_fragment_slot_data),
-        .data_enable        (udp_fragment_slot_data_enable),
-        .data_last          (udp_fragment_slot_data_last),
-        .push_data_enable   (udp_fragment_slot_push_data_enable[j]),
-        .fragment_id        (udp_fragment_slot_fragment_id),
-
-        .ready              (udp_fragment_slot_ready[j]),
-        .data_ready         (udp_fragment_slot_data_ready[j]),
-        .push_data_ready    (udp_fragment_slot_push_data_ready[j]),
-        .push_data          (udp_fragment_slot_push_data[j]),
-        .push_data_valid    (udp_fragment_slot_push_data_valid[j]),
-        .current_packet_id  (udp_fragment_slot_push_current_packet_id[j])
-    );
-end
-
-
 
 assign  outbound_fifo_read_clock                                =   clock;
 assign  outbound_fifo_read_enable                               =   transmit_data_enable;
@@ -610,8 +604,53 @@ assign  frame_check_sequence_generator_data                     =   ethernet_fra
 assign  frame_check_sequence_generator_data_enable              =   ethernet_frame_generator_checksum_data_valid;
 assign  frame_check_sequence_generator_data_last                =   ethernet_frame_generator_checksum_data_last;
 
+assign  ethernet_frame_parser_clock                             =   clock;
+assign  ethernet_frame_parser_reset_n                           =   reset_n;
+assign  ethernet_frame_parser_data                              =   receive_data;
+assign  ethernet_frame_parser_data_enable                       =   receive_data_enable;
+assign  ethernet_frame_parser_recieve_slot_enable               =   receive_slot_ready;
+assign  ethernet_frame_parser_checksum_result                   =   receive_frame_check_sequence_generator_checksum;
+assign  ethernet_frame_parser_checksum_result_enable            =   receive_frame_check_sequence_generator_checksum_valid;
+
+assign  receive_frame_check_sequence_generator_clock            =   clock;
+assign  receive_frame_check_sequence_generator_reset_n          =   reset_n;
+assign  receive_frame_check_sequence_generator_data             =   ethernet_frame_parser_checksum_data;
+assign  receive_frame_check_sequence_generator_data_enable      =   ethernet_frame_parser_checksum_data_valid;
+assign  receive_frame_check_sequence_generator_data_last        =   ethernet_frame_parser_checksum_data_last;
+
+assign  receive_slot_clock                                      =   clock;
+assign  receive_slot_reset_n                                    =   reset_n;
+assign  receive_slot_data                                       =   ethernet_frame_parser_packet_data;
+assign  receive_slot_data_enable                                =   ethernet_frame_parser_packet_data_valid;
+assign  receive_slot_good_packet                                =   ethernet_frame_parser_good_packet;
+assign  receive_slot_bad_packet                                 =   ethernet_frame_parser_bad_packet;
+assign  receive_slot_ipv4_flags                                 =   ethernet_frame_parser_ipv4_flags;
+assign  receive_slot_ipv4_identification                        =   ethernet_frame_parser_ipv4_identification;
+assign  receive_slot_push_data_enable                           =   udp_receieve_handler_push_data_ready;
+
+assign  udp_receieve_handler_clock                              =   clock;
+assign  udp_receieve_handler_reset_n                            =   reset_n;
+assign  udp_receieve_handler_enable                             =   receive_slot_data_ready;
+assign  udp_receieve_handler_data                               =   receive_slot_push_data;
+assign  udp_receieve_handler_data_enable                        =   receive_slot_push_data_valid;
+assign  udp_receieve_handler_push_data_enable                   =   udp_receieve_handler_ready;
+assign  udp_receive_handler_ipv4_identification                 =   receive_slot_current_ipv4_identification;
+assign  udp_receive_handler_ipv4_flags                          =   receive_slot_current_ipv4_flags;
+assign  udp_receive_handler_fragment_slot_empty                 =   udp_fragment_slot_ready;
+assign  udp_receive_handler_fragment_slot_packet_id             =   udp_fragment_slot_push_current_packet_id;
+
 assign  udp_fragment_slot_clock                                 =   clock;
 assign  udp_fragment_slot_reset_n                               =   reset_n;
 assign  udp_fragment_slot_data                                  =   udp_receieve_handler_push_data;
+assign  udp_fragment_slot_data_enable                           =   udp_receieve_handler_push_data_valid;
+assign  udp_fragment_slot_data_last                             =   udp_receieve_handler_push_data_last;
+assign  udp_fragment_slot_push_data_enable                      =   receive_slot_arbiter_ready;
+assign  udp_fragment_slot_fragment_id                           =   udp_receieve_handler_packet_id;
+
+assign  receive_slot_arbiter_clock                              =   clock;
+assign  receive_slot_arbiter_reset_n                            =   reset_n;
+assign  receive_slot_arbiter_enable                             =   udp_fragment_slot_data_ready;
+assign  receive_slot_arbiter_data                               =   udp_fragment_slot_push_data;
+assign  receive_slot_arbiter_data_enable                        =   udp_fragment_slot_push_data_valid;
 
 endmodule

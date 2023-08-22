@@ -28,7 +28,6 @@ module ethernet_frame_parser#(
     input   wire                            data_enable,
     input   wire    [31:0]                  checksum_result,
     input   wire                            checksum_result_enable,
-    input   wire                            checksum_enable,
     input   wire    [RECEIVE_QUE_SLOTS-1:0] recieve_slot_enable,
 
     output  reg                             data_ready,
@@ -39,7 +38,9 @@ module ethernet_frame_parser#(
     output  reg     [RECEIVE_QUE_SLOTS-1:0] packet_data_valid,
     output  reg     [RECEIVE_QUE_SLOTS-1:0] good_packet,
     output  reg     [RECEIVE_QUE_SLOTS-1:0] bad_packet,
-    output  reg     [15:0]                  udp_destination
+    output  reg     [15:0]                  udp_destination,
+    output  reg     [15:0]                  ipv4_flags,
+    output  reg     [15:0]                  ipv4_identification
 );
 
 
@@ -106,9 +107,7 @@ reg     [3:0]                           ipv4_header_length;
 logic   [15:0]                          _ipv4_total_length;
 reg     [15:0]                          ipv4_total_length;
 logic   [15:0]                          _ipv4_identification;
-reg     [15:0]                          ipv4_identification;
 logic   [15:0]                          _ipv4_flags;
-reg     [15:0]                          ipv4_flags;
 logic   [7:0]                           _ipv4_time_to_live;
 reg     [7:0]                           ipv4_time_to_live;
 logic   [7:0]                           _ipv4_protocol;
@@ -135,7 +134,6 @@ reg     [7:0]                           udp_payload_pad_byte_count;
 logic   [7:0]                           _udp_payload_pad_byte_count;
 reg     [15:0]                          udp_payload_byte_count;
 logic   [15:0]                          _udp_payload_byte_count;
-
 
 always_comb begin
     _state                              =   state;
@@ -320,8 +318,6 @@ always_comb begin
                 _process_counter                    =   process_counter - 1;
                 _ipv4_identification[7:0]           =   data;
                 _ipv4_identification[15:8]          =   ipv4_identification[7:0];
-                _packet_data                        =   data;
-                _packet_data_valid[que_slot_select] =   1;
                 _checksum_data                      =   data;
                 _checksum_data_valid                =   1;
 
@@ -344,8 +340,6 @@ always_comb begin
                 _ipv4_flags[15:8]                   =   ipv4_flags[7:0];
                 _checksum_data                      =   data;
                 _checksum_data_valid                =   1;
-                _packet_data                        =   data;
-                _packet_data_valid[que_slot_select] =   1;
 
                 if(process_counter == 0) begin
                     _process_counter    =   1;
@@ -643,7 +637,7 @@ always_comb begin
                     _que_slot_select =  j;
                 end
             end
-            if (checksum_enable) begin
+            if (checksum_result_enable) begin
                 _data_ready =   1;
 
                 if (|recieve_slot_enable == 0) begin

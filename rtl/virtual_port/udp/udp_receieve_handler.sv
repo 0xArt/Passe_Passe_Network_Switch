@@ -28,19 +28,18 @@ module udp_receieve_handler#(
     input   wire    [RECEIVE_QUE_SLOTS-1:0]         enable,
     input   wire    [RECEIVE_QUE_SLOTS-1:0][7:0]    data,
     input   wire    [RECEIVE_QUE_SLOTS-1:0]         data_enable,
-    input   wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   udp_destination,
     input   wire                                    push_data_enable,
     input   wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   ipv4_identification,
     input   wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   ipv4_flags,
-    input   wire    [FRAGMENT_SLOTS-1:0][15:0]      fragment_slot_packet_id,
     input   wire    [FRAGMENT_SLOTS-1:0]            fragment_slot_empty,
+    input   wire    [FRAGMENT_SLOTS-1:0][15:0]      fragment_slot_packet_id,
 
     output  reg                                     ready,
-    output  reg                                     push_data_ready,
+    output  reg     [RECEIVE_QUE_SLOTS-1:0]         push_data_ready,
     output  reg     [7:0]                           push_data,
     output  reg     [FRAGMENT_SLOTS-1:0]            push_data_valid,
     output  reg     [FRAGMENT_SLOTS-1:0]            push_data_last,
-    output  reg     [15:0]                          packet_id,
+    output  reg     [15:0]                          packet_id
 );
 
 
@@ -51,7 +50,7 @@ wire            timeout_cycle_timer_clock;
 wire            timeout_cycle_timer_reset_n;
 wire            timeout_cycle_timer_enable;
 logic           timeout_cycle_timer_load_count;
-logic  [15:0]   timeout_cycle_timer_count;
+wire  [15:0]    timeout_cycle_timer_count;
 wire            timeout_cycle_timer_expired;
 
 cycle_timer timeout_cycle_timer(
@@ -71,8 +70,6 @@ typedef enum
     S_CHECK_FRAGMENT_STATUS,
     S_FIND_EMPTY_FRAGMENT_SLOT,
     S_FIND_MATCHING_FRAGMENT_SLOT,
-    S_PUSH_UDP_DESTINATION_MSB,
-    S_PUSH_UDP_DESTINATION_LSB,
     S_PUSH_DATA,
     S_WAIT_WITH_PUSH,
     S_WAIT
@@ -80,12 +77,10 @@ typedef enum
 
 state_type                                  _state;
 state_type                                  state;
-logic                                       _push_data_ready;
+logic   [RECEIVE_QUE_SLOTS-1:0]             _push_data_ready;
 logic                                       _ready;
 logic   [8:0]                               _push_data;
 logic                                       _push_data_valid;
-logic   [15:0]                              _saved_udp_destination;
-reg     [15:0]                              saved_udp_destination;
 logic   [7:0]                               _wait_data;
 reg     [7:0]                               wait_data;
 logic   [15:0]                              _packet_id;
@@ -102,12 +97,10 @@ reg     [$clog2(RECEIVE_QUE_SLOTS)-1:0]     receive_slot_select;
 assign  timeout_cycle_timer_clock       =   clock;
 assign  timeout_cycle_timer_reset_n     =   reset_n;
 assign  timeout_cycle_timer_enable      =   1;
-assign  timeout_cycle_timer_load_count  =   TIMEOUT_LIMIT
+assign  timeout_cycle_timer_count       =   TIMEOUT_LIMIT;
 
 always_comb begin
     _state                          =   state;
-    _saved_udp_destination          =   saved_udp_destination;
-    _push_data_ready                =   push_data_ready;
     _ready                          =   ready;
     _push_data                      =   push_data;
     _wait_data                      =   wait_data;
@@ -115,6 +108,7 @@ always_comb begin
     _more_fragments                 =   more_fragments;
     _fragment_slot_select           =   fragment_slot_select;
     _receive_slot_select            =   receive_slot_select;
+    _push_data_ready                =   0;
     _push_data_last                 =   0;
     _push_data_valid                =   0;
     timeout_cycle_timer_load_count  =   0;
@@ -125,7 +119,6 @@ always_comb begin
             _packet_id              =   ipv4_identification[receive_slot_select];
             _more_fragments         =   ipv4_flags[receive_slot_select][13];
             _fragment_offset        =   ipv4_flags[receive_slot_select][12:0];
-            _saved_udp_destination  =   udp_destination[receive_slot_select];
 
             if (enable[receive_slot_select]) begin
                 _state  =   S_CHECK_FRAGMENT_STATUS;
@@ -151,12 +144,12 @@ always_comb begin
         end
         S_FIND_EMPTY_FRAGMENT_SLOT: begin
             if (fragment_slot_empty[fragment_slot_select]) begin
-                _state  =   S_PUSH_UDP_DESTINATION_MSB;
+                _state  =   S_PUSH_DATA;
             end
             else begin
                 if (fragment_slot_select == (FRAGMENT_SLOTS - 1)) begin
                     _fragment_slot_select   =   0;
-                    _fifo_reset_n           =   0;
+                    //_fifo_reset_n           =   0; TODO either drain fifo or output a reset to top level?
                     _state                  =   S_IDLE;
                 end
                 else begin
@@ -171,7 +164,7 @@ always_comb begin
             end
             else begin
                 if (fragment_slot_select == (FRAGMENT_SLOTS - 1)) begin
-                    _fifo_reset_n           =   0;
+                    //_fifo_reset_n           =   0; TODO either drain fifo or output a reset to top level?
                     _state                  =   S_IDLE;
                 end
                 else begin
@@ -179,25 +172,9 @@ always_comb begin
                 end
             end
         end
-        S_PUSH_UDP_DESTINATION_MSB: begin
-            if (push_data_enable) begin
-                _push_data          =   saved_udp_destination[15:8];
-                _push_data_valid    =   1 << fragment_slot_select;
-                _state              =   S_PUSH_UDP_DESTINATION_LSB;
-            end
-        end
-        S_PUSH_UDP_DESTINATION_LSB: begin
-            if (push_data_enable) begin
-                _push_data                      =   saved_udp_destination[7:0];
-                _push_data_valid                =   1 << fragment_slot_select;
-                _state                          =   S_PUSH_DATA;
-                _push_data_ready                =   1;
-                timeout_cycle_timer_load_count  =   1;
-            end
-        end
         S_PUSH_DATA: begin
             if (push_data_enable) begin
-                _push_data_ready    =   1;
+                _push_data_ready    =   1 << receive_slot_select;
 
                 if (data_enable) begin
                     _push_data                      =   data;
@@ -206,7 +183,6 @@ always_comb begin
                 end
                 else begin
                     _state              =   S_IDLE;
-                    _push_data_ready    =   0;
                 end
             end
             if (timeout_cycle_timer_expired) begin
@@ -222,10 +198,8 @@ end
 always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
         state                       <= S_IDLE;
-        saved_udp_destination       <=  0;
         push_data                   <=  0;
         push_data_valid             <=  0;
-        fifo_reset_n                <=  0;
         push_data_ready             <=  0;
         ready                       <=  0;
         wait_data                   <=  0;
@@ -237,7 +211,6 @@ always_ff @(posedge clock or negedge reset_n) begin
     end
     else begin
         state                       <=  _state;
-        saved_udp_destination       <=  _saved_udp_destination;
         push_data                   <=  _push_data;
         push_data_valid             <=  _push_data_valid;
         push_data_ready             <=  _push_data_ready;

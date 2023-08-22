@@ -33,7 +33,7 @@ module receive_slot(
     output  reg             ready,
     output  reg             data_ready,
     output  reg     [15:0]  current_ipv4_flags,
-    output  reg     [15:0]  current_ipv4_identification
+    output  reg     [15:0]  current_ipv4_identification,
     output  logic   [7:0]   push_data,
     output  logic           push_data_valid
 );
@@ -102,7 +102,7 @@ always_comb begin
             _current_ipv4_identification    =   ipv4_identification;
             _current_ipv4_flags             =   ipv4_flags;
 
-            if (goog_packet) begin
+            if (good_packet) begin
                 _state              =   S_DRAIN_SLOT;
             end
             if (bad_packet) begin

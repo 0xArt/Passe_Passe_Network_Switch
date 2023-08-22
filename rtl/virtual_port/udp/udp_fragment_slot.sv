@@ -30,8 +30,7 @@ module udp_fragment_slot(
 
     output  reg             ready,
     output  reg             data_ready,
-    output  reg             push_data_ready,
-    output  logic   [7:0]   push_data,
+    output  logic   [8:0]   push_data,
     output  logic           push_data_valid,
     output  reg     [15:0]  current_packet_id
 );
@@ -48,7 +47,7 @@ wire            fragment_fifo_full;
 wire    [7:0]   fragment_fifo_read_data;
 
 synchronous_fifo
-#(  .DATA_WIDTH   (8),
+#(  .DATA_WIDTH   (9),
     .DATA_DEPTH   (4096)
 ) fragment_fifo(
     .clock              (fragment_fifo_clock),
@@ -73,12 +72,11 @@ typedef enum
 
 state_type          _state;
 state_type          state;
-logic               _push_data_ready;
 logic               _ready;
 logic   [15:0]      _current_packet_id;
 logic               _data_ready;
-reg     [7:0]       buffer_data;
-logic   [7:0]       _buffer_data;
+reg     [8:0]       buffer_data;
+logic   [8:0]       _buffer_data;
 reg                 buffer_data_valid;
 logic               _buffer_data_valid;
 
@@ -90,7 +88,6 @@ assign  fragment_fifo_write_enable  =   buffer_data_valid;
 
 always_comb begin
     _state                          =   state;
-    _push_data_ready                =   push_data_ready;
     _current_packet_id              =   current_packet_id;
     _buffer_data                    =   buffer_data;
     push_data                       =   fragment_fifo_read_data;
@@ -106,13 +103,13 @@ always_comb begin
 
             if (data_enable) begin
                 _state              =   S_CAPTURE_FRAGMENTS;
-                _buffer_data        =   data;
+                _buffer_data        =   {1'b1,data};
                 _buffer_data_valid  =   1;
             end
         end
         S_CAPTURE_FRAGMENTS:  begin
             if (data_enable) begin
-                _buffer_data        =   data;
+                _buffer_data        =   {1'b0,data};
                 _buffer_data_valid  =   1;
             end
             if (data_last) begin
@@ -132,7 +129,6 @@ end
 always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
         state                       <= S_IDLE;
-        push_data_ready             <=  0;
         ready                       <=  0;
         current_packet_id           <=  0;
         data_ready                  <=  0;
@@ -141,7 +137,6 @@ always_ff @(posedge clock or negedge reset_n) begin
     end
     else begin
         state                       <=  _state;
-        push_data_ready             <=  _push_data_ready;
         ready                       <=  _ready;
         current_packet_id           <=  _current_packet_id;
         data_ready                  <=  _data_ready;
