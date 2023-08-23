@@ -43,37 +43,37 @@ module virutal_port_udp#(
 genvar i;
 genvar j;
 
-wire            inbound_fifo_read_clock;
-wire            inbound_fifo_read_reset_n;
-wire            inbound_fifo_write_clock;
-wire            inbound_fifo_write_reset_n;
-wire            inbound_fifo_read_enable;
-wire            inbound_fifo_write_enable;
-wire    [8:0]   inbound_fifo_write_data;
+wire            module_inbound_fifo_read_clock;
+wire            module_inbound_fifo_read_reset_n;
+wire            module_inbound_fifo_write_clock;
+wire            module_inbound_fifo_write_reset_n;
+wire            module_inbound_fifo_read_enable;
+wire            module_inbound_fifo_write_enable;
+wire    [8:0]   module_inbound_fifo_write_data;
 
-wire    [8:0]   inbound_fifo_read_data;
-wire            inbound_fifo_read_data_valid;
-wire            inbound_fifo_full;
-wire            inbound_fifo_empty;
+wire    [8:0]   module_inbound_fifo_read_data;
+wire            module_inbound_fifo_read_data_valid;
+wire            module_inbound_fifo_full;
+wire            module_inbound_fifo_empty;
 
 asynchronous_fifo#(
     .DATA_WIDTH                 (9),
     .DATA_DEPTH                 (8192),
     .FIRST_WORD_FALL_THROUGH    (1)
 )
-inbound_fifo(
-    .read_clock         (inbound_fifo_read_clock),
-    .read_reset_n       (inbound_fifo_read_reset_n),
-    .write_clock        (inbound_fifo_write_clock),
-    .write_reset_n      (inbound_fifo_write_reset_n),
-    .read_enable        (inbound_fifo_read_enable),
-    .write_enable       (inbound_fifo_write_enable),
-    .write_data         (inbound_fifo_write_data),
+module_inbound_fifo(
+    .read_clock         (module_inbound_fifo_read_clock),
+    .read_reset_n       (module_inbound_fifo_read_reset_n),
+    .write_clock        (module_inbound_fifo_write_clock),
+    .write_reset_n      (module_inbound_fifo_write_reset_n),
+    .read_enable        (module_inbound_fifo_read_enable),
+    .write_enable       (module_inbound_fifo_write_enable),
+    .write_data         (module_inbound_fifo_write_data),
 
-    .read_data          (inbound_fifo_read_data),
-    .read_data_valid    (inbound_fifo_read_data_valid),
-    .full               (inbound_fifo_full),
-    .empty              (inbound_fifo_empty)
+    .read_data          (module_inbound_fifo_read_data),
+    .read_data_valid    (module_inbound_fifo_read_data_valid),
+    .full               (module_inbound_fifo_full),
+    .empty              (module_inbound_fifo_empty)
 );
 
 
@@ -289,6 +289,40 @@ frame_check_sequence_generator  frame_check_sequence_generator(
 );
 
 
+wire            switch_inbound_fifo_read_clock;
+wire            switch_inbound_fifo_read_reset_n;
+wire            switch_inbound_fifo_write_clock;
+wire            switch_inbound_fifo_write_reset_n;
+wire            switch_inbound_fifo_read_enable;
+wire            switch_inbound_fifo_write_enable;
+wire    [8:0]   switch_inbound_fifo_write_data;
+
+wire    [8:0]   switch_inbound_fifo_read_data;
+wire            switch_inbound_fifo_read_data_valid;
+wire            switch_inbound_fifo_full;
+wire            switch_inbound_fifo_empty;
+
+asynchronous_fifo#(
+    .DATA_WIDTH                 (9),
+    .DATA_DEPTH                 (2048),
+    .FIRST_WORD_FALL_THROUGH    (1)
+)
+switch_inbound_fifo(
+    .read_clock         (switch_inbound_fifo_read_clock),
+    .read_reset_n       (switch_inbound_fifo_read_reset_n),
+    .write_clock        (switch_inbound_fifo_write_clock),
+    .write_reset_n      (switch_inbound_fifo_write_reset_n),
+    .read_enable        (switch_inbound_fifo_read_enable),
+    .write_enable       (switch_inbound_fifo_write_enable),
+    .write_data         (switch_inbound_fifo_write_data),
+
+    .read_data          (switch_inbound_fifo_read_data),
+    .read_data_valid    (switch_inbound_fifo_read_data_valid),
+    .full               (switch_inbound_fifo_full),
+    .empty              (switch_inbound_fifo_empty)
+);
+
+
 wire            receive_frame_check_sequence_generator_clock;
 wire            receive_frame_check_sequence_generator_reset_n;
 wire    [7:0]   receive_frame_check_sequence_generator_data;
@@ -310,7 +344,6 @@ frame_check_sequence_generator  receive_frame_check_sequence_generator(
     .checksum               (receive_frame_check_sequence_generator_checksum),
     .checksum_valid         (receive_frame_check_sequence_generator_checksum_valid)
 );
-
 
 
 wire                                ethernet_frame_parser_clock;
@@ -531,7 +564,7 @@ outbound_fifo(
     .empty              (outbound_fifo_empty)
 );
 
-assign  receive_data_ready                                      =   0;
+assign  receive_data_ready                                      =   !switch_inbound_fifo_full;
 assign  transmit_data                                           =   outbound_fifo_read_data;
 assign  transmit_data_valid                                     =   outbound_fifo_read_data_valid;
 
@@ -546,17 +579,17 @@ assign  outbound_fifo_write_reset_n                             =   reset_n;
 assign  udp_transmit_handler_clock                              =   clock;
 assign  udp_transmit_handler_reset_n                            =   reset_n;
 assign  udp_transmit_handler_enable                             =   ethernet_frame_generator_ready;
-assign  udp_transmit_handler_data_enable                        =   inbound_fifo_read_data_valid;
-assign  udp_transmit_handler_data                               =   inbound_fifo_read_data;
+assign  udp_transmit_handler_data_enable                        =   module_inbound_fifo_read_data_valid;
+assign  udp_transmit_handler_data                               =   module_inbound_fifo_read_data;
 assign  udp_transmit_handler_ipv4_source                        =   ipv4_source;
 
-assign  inbound_fifo_read_clock                                 =   clock;
-assign  inbound_fifo_read_reset_n                               =   reset_n;
-assign  inbound_fifo_write_clock                                =   module_clock;
-assign  inbound_fifo_write_reset_n                              =   reset_n;
-assign  inbound_fifo_read_enable                                =   udp_transmit_handler_data_ready;
-assign  inbound_fifo_write_enable                               =   module_transmit_data_enable;
-assign  inbound_fifo_write_data                                 =   module_transmit_data;
+assign  module_inbound_fifo_read_clock                          =   clock;
+assign  module_inbound_fifo_read_reset_n                        =   reset_n;
+assign  module_inbound_fifo_write_clock                         =   module_clock;
+assign  module_inbound_fifo_write_reset_n                       =   reset_n;
+assign  module_inbound_fifo_read_enable                         =   udp_transmit_handler_data_ready;
+assign  module_inbound_fifo_write_enable                        =   module_transmit_data_enable;
+assign  module_inbound_fifo_write_data                          =   module_transmit_data;
 
 assign  udp_data_buffer_clock                                   =   clock;
 assign  udp_data_buffer_reset_n                                 =   reset_n;
@@ -603,10 +636,18 @@ assign  frame_check_sequence_generator_data                     =   ethernet_fra
 assign  frame_check_sequence_generator_data_enable              =   ethernet_frame_generator_checksum_data_valid;
 assign  frame_check_sequence_generator_data_last                =   ethernet_frame_generator_checksum_data_last;
 
+assign  switch_inbound_fifo_read_clock                          =   clock;
+assign  switch_inbound_fifo_read_reset_n                        =   reset_n;
+assign  switch_inbound_fifo_write_clock                         =   clock;
+assign  switch_inbound_fifo_write_reset_n                       =   reset_n;
+assign  switch_inbound_fifo_read_enable                         =   ethernet_frame_parser_data_ready;
+assign  switch_inbound_fifo_write_enable                        =   receive_data_enable;
+assign  switch_inbound_fifo_write_data                          =   receive_data;
+
 assign  ethernet_frame_parser_clock                             =   clock;
 assign  ethernet_frame_parser_reset_n                           =   reset_n;
-assign  ethernet_frame_parser_data                              =   receive_data;
-assign  ethernet_frame_parser_data_enable                       =   receive_data_enable;
+assign  ethernet_frame_parser_data                              =   switch_inbound_fifo_read_data;
+assign  ethernet_frame_parser_data_enable                       =   switch_inbound_fifo_read_data_valid;
 assign  ethernet_frame_parser_recieve_slot_enable               =   receive_slot_ready;
 assign  ethernet_frame_parser_checksum_result                   =   receive_frame_check_sequence_generator_checksum;
 assign  ethernet_frame_parser_checksum_result_enable            =   receive_frame_check_sequence_generator_checksum_valid;

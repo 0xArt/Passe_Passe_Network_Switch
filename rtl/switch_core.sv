@@ -197,7 +197,7 @@ generate
     for (i=0; i<NUMBER_OF_VIRTUAL_PORTS; i=i+1) begin
         assign  virutal_port_udp_clock[i]                                               =   clock;
         assign  virutal_port_udp_reset_n[i]                                             =   reset_n;
-        assign  virutal_port_udp_receive_data[i]                                        =   core_data_orchestrator_port_transmit_data[i+NUMBER_OF_RMII_PORTS];
+        assign  virutal_port_udp_receive_data[i]                                        =   core_data_orchestrator_port_transmit_data;
         assign  virutal_port_udp_receive_data_enable[i]                                 =   core_data_orchestrator_port_transmit_data_valid[i+NUMBER_OF_RMII_PORTS];
         assign  virtual_port_udp_transmit_data_enable[i]                                =   core_data_orchestrator_port_receive_data_ready[i+NUMBER_OF_RMII_PORTS];
         assign  virutal_port_udp_module_clock[i]                                        =   module_clock[i];

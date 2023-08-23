@@ -113,11 +113,11 @@ always_comb begin
                 _ready           =  0;
             end
             if (data_last) begin
-                _checksum_valid     = 1;
                 _state              = S_FINISH;
             end
         end
         S_FINISH: begin
+            _checksum_valid         = 1;
             _state                  = S_CALCULATE;
             _lfsr_in                = '1;
             _ready                  = 1;

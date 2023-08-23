@@ -147,7 +147,6 @@ add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/r
 add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/rmii_port/rmii_byte_shipper/byte_to_ship}
 add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/rmii_port/rmii_byte_shipper/sample_counter_limit}
 add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/rmii_port/rmii_byte_shipper/_sample_counter_limit}
-add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/rmii_port/rmii_byte_shipper/_data_ready}
 add wave -noupdate -group switch_core /testbench/switch_core/clock
 add wave -noupdate -group switch_core /testbench/switch_core/reset_n
 add wave -noupdate -group switch_core /testbench/switch_core/rmii_phy_receive_data
@@ -188,47 +187,6 @@ add wave -noupdate -group switch_core /testbench/switch_core/cam_table_write_add
 add wave -noupdate -group switch_core /testbench/switch_core/cam_table_write_data
 add wave -noupdate -group switch_core /testbench/switch_core/cam_table_write_enable
 add wave -noupdate -group switch_core /testbench/switch_core/cam_table_read_data
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/clock}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/reset_n}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/data}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/data_enable}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_result}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_result_enable}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_enable}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/recieve_slot_enable}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/speed_code}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/data_ready}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_data}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_data_valid}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/checksum_data_last}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/packet_data}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/packet_data_valid}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/good_packet}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/bad_packet}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/i}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/j}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_state}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/state}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/process_counter}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_process_counter}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/timeout_counter}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_timeout_counter}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/timeout_counter_limit}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_timeout_counter_limit}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/delayed_data}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_delayed_data}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_checksum_data}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_packet_data_valid}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_packet_data}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_checksum_data_valid}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_checksum_data_last}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/que_slot_select}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_que_slot_select}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_frame_check_sequence}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/frame_check_sequence}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_good_packet}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_bad_packet}
-add wave -noupdate -group frame_parser_1 {/testbench/switch_core/genblk1[1]/rmii_port/ethernet_packet_parser/_data_ready}
 add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_clock}
 add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_reset_n}
 add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/write_clock}
@@ -469,17 +427,6 @@ add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/vi
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_data_ready}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/transmit_data}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/transmit_data_valid}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo_read_clock}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo_read_reset_n}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo_write_clock}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo_write_reset_n}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo_read_enable}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo_write_enable}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo_write_data}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo_read_data}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo_read_data_valid}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo_full}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo_empty}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_transmit_handler_clock}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_transmit_handler_reset_n}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_transmit_handler_enable}
@@ -568,7 +515,6 @@ add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/vi
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_data_enable}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_checksum_result}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_checksum_result_enable}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_checksum_enable}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_recieve_slot_enable}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_data_ready}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_checksum_data}
@@ -579,25 +525,12 @@ add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/vi
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_good_packet}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_bad_packet}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_udp_destination}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/payload_fifo_clock}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/payload_fifo_reset_n}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/payload_fifo_write_data}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/payload_fifo_read_enable}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/payload_fifo_write_enable}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/payload_fifo_read_data_valid}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/payload_fifo_empty}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/payload_fifo_full}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/payload_fifo_read_data}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_receieve_handler_clock}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_receieve_handler_reset_n}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_receieve_handler_enable}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_receieve_handler_data}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_receieve_handler_data_enable}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_receieve_handler_good_packet}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_receieve_handler_bad_packet}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_receieve_handler_udp_destination}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_receieve_handler_push_data_enable}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_receieve_handler_fifo_reset_n}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_receieve_handler_ready}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_receieve_handler_push_data_ready}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_receieve_handler_push_data}
@@ -620,7 +553,6 @@ add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/vi
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/outbound_fifo_empty}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/outbound_fifo_full}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/outbound_fifo_read_data}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter_push_data_ready}
 add wave -noupdate -group virtual_port_udp_transmit_handler {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_transmit_handler/clock}
 add wave -noupdate -group virtual_port_udp_transmit_handler {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_transmit_handler/reset_n}
 add wave -noupdate -group virtual_port_udp_transmit_handler {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_transmit_handler/enable}
@@ -675,61 +607,6 @@ add wave -noupdate -group virtual_port_udp_transmit_handler {/testbench/switch_c
 add wave -noupdate -group virtual_port_udp_transmit_handler {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_transmit_handler/udp_header_size_field}
 add wave -noupdate -group virtual_port_udp_transmit_handler {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_transmit_handler/_udp_checksum_data_last}
 add wave -noupdate -group virtual_port_udp_transmit_handler {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_transmit_handler/_udp_fragment_size}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/read_clock}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/read_reset_n}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/write_clock}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/write_reset_n}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/read_enable}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/read_data}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/read_data_valid}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/write_enable}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/write_data}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/full}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/empty}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram_write_clock}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram_read_clock}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram_read_reset_n}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram_write_reset_n}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram_write_enable}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram_write_data}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram_write_address}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram_read_address}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram_read_data}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller_clock}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller_reset_n}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller_read_enable}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller_write_pointer_gray}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller_memory_read_data}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller_read_data}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller_read_data_valid}
-add wave -noupdate -group virtual_port_inbound_fifo -radix unsigned {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller_memory_read_address}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller_read_pointer_gray}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller_empty}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_write_controller_clock}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_write_controller_reset_n}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_write_controller_write_enable}
-add wave -noupdate -group virtual_port_inbound_fifo -radix hexadecimal {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_write_controller_read_pointer_gray}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_write_controller_write_data}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_write_controller_memory_write_data}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_write_controller_memory_write_data_valid}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_write_controller_memory_write_address}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_write_controller_memory_write_pointer_gray}
-add wave -noupdate -group virtual_port_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_write_controller_full}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/write_clock}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/read_clock}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/read_reset_n}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/write_reset_n}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/write_enable}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/write_data}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/write_address}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/read_address}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/read_data}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/pipelined_read_data}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/_pipelined_read_data}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/memory_read_data}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/_memory_read_data}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/i}
-add wave -noupdate -group virtual_port_inbound_fifo_ram {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/generic_dual_port_ram/j}
 add wave -noupdate -group rmmi_port_0_outbound_fifo {/testbench/switch_core/genblk1[0]/rmii_port/outbound_fifo/read_clock}
 add wave -noupdate -group rmmi_port_0_outbound_fifo {/testbench/switch_core/genblk1[0]/rmii_port/outbound_fifo/read_reset_n}
 add wave -noupdate -group rmmi_port_0_outbound_fifo {/testbench/switch_core/genblk1[0]/rmii_port/outbound_fifo/write_clock}
@@ -795,33 +672,6 @@ add wave -noupdate -group rmii_port_0_outbound_fifo_read_controller {/testbench/
 add wave -noupdate -group rmii_port_0_outbound_fifo_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/outbound_fifo/asynchronous_fifo_read_controller/read_enable_delayed}
 add wave -noupdate -group rmii_port_0_outbound_fifo_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/outbound_fifo/asynchronous_fifo_read_controller/_read_enable_delayed}
 add wave -noupdate -group rmii_port_0_outbound_fifo_read_controller {/testbench/switch_core/genblk1[0]/rmii_port/outbound_fifo/asynchronous_fifo_read_controller/i}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/clock}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/reset_n}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/read_enable}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/write_pointer_gray}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/memory_read_data}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/read_data}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/read_data_valid}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/memory_read_address}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/read_pointer_gray}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/empty}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/read_pointer}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/_read_pointer}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/write_pointer}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/write_pointer_gray_sync_0}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/_write_pointer_gray_sync_0}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/write_pointer_gray_sync_1}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/_write_pointer_gray_sync_1}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/_read_data}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/_read_data_valid}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/_empty}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/_internal_full}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/internal_full}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/read_enable_delayed}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/_read_enable_delayed}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/internal_read_data_valid}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/_internal_read_data_valid}
-add wave -noupdate -group virtual_port_inbound_fifo_read_controller {/testbench/switch_core/genblk2[0]/virutal_port_udp/inbound_fifo/asynchronous_fifo_read_controller/i}
 add wave -noupdate -group virtual_port_transmit_udp_checksum_calc {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_checksum_calculator/clock}
 add wave -noupdate -group virtual_port_transmit_udp_checksum_calc {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_checksum_calculator/reset_n}
 add wave -noupdate -group virtual_port_transmit_udp_checksum_calc {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_checksum_calculator/data}
@@ -871,96 +721,252 @@ add wave -noupdate -group virtual_port_udp_buffer_data {/testbench/switch_core/g
 add wave -noupdate -group virtual_port_udp_buffer_data {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_data_buffer/_memory_read_data}
 add wave -noupdate -group virtual_port_udp_buffer_data {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_data_buffer/i}
 add wave -noupdate -group virtual_port_udp_buffer_data {/testbench/switch_core/genblk2[0]/virutal_port_udp/udp_data_buffer/j}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/clock}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/reset_n}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/enable}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/checksum_result}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/checksum_result_enable}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_checksum_result}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_checksum_result_enable}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_buffer_read_data}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/mac_destination}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/mac_source}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_destination}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_source}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_checksum}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_destination}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_source}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_flags}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_identification}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_payload_size}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_fragment_size}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/checksum_data}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/checksum_data_valid}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/checksum_data_last}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/frame_data}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/frame_data_valid}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_checksum_data}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_checksum_data_valid}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_checksum_data_last}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_buffer_read_address}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ready}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/process_cycle_timer_clock}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/process_cycle_timer_reset_n}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/process_cycle_timer_enable}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/process_cycle_timer_load_count}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/process_cycle_timer_count}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/process_cycle_timer_expired}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_state}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/state}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/i}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/j}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_ready}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/process_counter}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_process_counter}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_mac_destination}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_mac_destination}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_mac_source}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_mac_source}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_ipv4_destination}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_ipv4_destination}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_ipv4_source}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_ipv4_source}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_udp_destination}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_udp_destination}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_ipv4_checksum}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_ipv4_checksum}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_udp_source}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_udp_source}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_udp_payload_size}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_udp_payload_size}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_udp_fragment_size}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_udp_fragment_size}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_total_length}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_ipv4_total_length}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_total_length}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_udp_total_length}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_ipv4_checksum_data_last}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_udp_checksum_data_last}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_ipv4_checksum_data_valid}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/frame_total_length}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_frame_total_length}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_checksum_result}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_checksum_result}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_ipv4_flags}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_ipv4_flags}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_ipv4_identification}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_ipv4_identification}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_checksum_data_last}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_udp_checksum}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_udp_checksum}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_ipv4_checksum_data}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_udp_buffer_read_address}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_frame_byte}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/frame_byte}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_frame_byte_valid}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/frame_byte_valid}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_frame_start}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/frame_start}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_fragment_offset}
-add wave -noupdate -expand -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/fragment_offset}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/clock}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/reset_n}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/enable}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/checksum_result}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/checksum_result_enable}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_checksum_result}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_checksum_result_enable}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_buffer_read_data}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/mac_destination}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/mac_source}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_destination}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_source}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_checksum}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_destination}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_source}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_flags}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_identification}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_payload_size}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_fragment_size}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/checksum_data}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/checksum_data_valid}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/checksum_data_last}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/frame_data}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/frame_data_valid}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_checksum_data}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_checksum_data_valid}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_checksum_data_last}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_buffer_read_address}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ready}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/process_cycle_timer_clock}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/process_cycle_timer_reset_n}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/process_cycle_timer_enable}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/process_cycle_timer_load_count}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/process_cycle_timer_count}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/process_cycle_timer_expired}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_state}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/state}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/i}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/j}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_ready}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/process_counter}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_process_counter}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_mac_destination}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_mac_destination}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_mac_source}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_mac_source}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_ipv4_destination}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_ipv4_destination}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_ipv4_source}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_ipv4_source}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_udp_destination}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_udp_destination}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_ipv4_checksum}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_ipv4_checksum}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_udp_source}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_udp_source}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_udp_payload_size}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_udp_payload_size}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_udp_fragment_size}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_udp_fragment_size}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/ipv4_total_length}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_ipv4_total_length}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/udp_total_length}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_udp_total_length}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_ipv4_checksum_data_last}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_udp_checksum_data_last}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_ipv4_checksum_data_valid}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/frame_total_length}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_frame_total_length}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_checksum_result}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_checksum_result}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_ipv4_flags}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_ipv4_flags}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_ipv4_identification}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_ipv4_identification}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_checksum_data_last}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_saved_udp_checksum}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/saved_udp_checksum}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_ipv4_checksum_data}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_udp_buffer_read_address}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_frame_byte}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/frame_byte}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_frame_byte_valid}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/frame_byte_valid}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_frame_start}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/frame_start}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/_fragment_offset}
+add wave -noupdate -group virtual_port_udp_frame_generator {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_generator/fragment_offset}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/clock}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/reset_n}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/data}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/data_enable}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/checksum_result}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/checksum_result_enable}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/recieve_slot_enable}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/data_ready}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/checksum_data}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/checksum_data_valid}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/checksum_data_last}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/packet_data}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/packet_data_valid}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/good_packet}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/bad_packet}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/udp_destination}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/ipv4_flags}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/ipv4_identification}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_state}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/state}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/i}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/j}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/process_counter}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_process_counter}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_packet_data_valid}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_packet_data}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_checksum_data}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_checksum_data_valid}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_checksum_data_last}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/que_slot_select}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_que_slot_select}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_calculated_frame_check_sequence}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/calculated_frame_check_sequence}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_good_packet}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_bad_packet}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_mac_destination}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/mac_destination}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_mac_source}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/mac_source}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_ether_type}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/ether_type}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_ipv4_version}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/ipv4_version}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_ipv4_header_length}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/ipv4_header_length}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_ipv4_total_length}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/ipv4_total_length}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_ipv4_identification}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_ipv4_flags}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_ipv4_time_to_live}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/ipv4_time_to_live}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_ipv4_protocol}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/ipv4_protocol}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_ipv4_services}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/ipv4_services}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_ipv4_header_checksum}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/ipv4_header_checksum}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_ipv4_source_address}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/ipv4_source_address}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_ipv4_destination_address}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/ipv4_destination_address}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_udp_source_port}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/udp_source_port}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_udp_destination_port}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/udp_destination_port}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_udp_length}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/udp_length}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_udp_checksum}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/udp_checksum}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_frame_check_sequence}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/frame_check_sequence}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/udp_payload_pad_byte_count}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_udp_payload_pad_byte_count}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/udp_payload_byte_count}
+add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/_udp_payload_byte_count}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/read_clock}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/read_reset_n}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/write_clock}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/write_reset_n}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/read_enable}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/write_enable}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/write_data}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/read_data}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/read_data_valid}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/full}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/empty}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/generic_dual_port_ram_write_clock}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/generic_dual_port_ram_read_clock}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/generic_dual_port_ram_read_reset_n}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/generic_dual_port_ram_write_reset_n}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/generic_dual_port_ram_write_enable}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/generic_dual_port_ram_write_data}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/generic_dual_port_ram_write_address}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/generic_dual_port_ram_read_address}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/generic_dual_port_ram_read_data}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_read_controller_clock}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_read_controller_reset_n}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_read_controller_read_enable}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_read_controller_write_pointer_gray}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_read_controller_memory_read_data}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_read_controller_read_data}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_read_controller_read_data_valid}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_read_controller_memory_read_address}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_read_controller_read_pointer_gray}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_read_controller_empty}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_write_controller_clock}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_write_controller_reset_n}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_write_controller_write_enable}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_write_controller_read_pointer_gray}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_write_controller_write_data}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_write_controller_memory_write_data}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_write_controller_memory_write_data_valid}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_write_controller_memory_write_address}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_write_controller_memory_write_pointer_gray}
+add wave -noupdate -group virtual_port_switch_inbound_fifo {/testbench/switch_core/genblk2[0]/virutal_port_udp/switch_inbound_fifo/asynchronous_fifo_write_controller_full}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/clock}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/reset_n}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/data}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/data_enable}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/checksum_result}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/checksum_result_enable}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/checksum_enable}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/recieve_slot_enable}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/speed_code}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/data_ready}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/checksum_data}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/checksum_data_valid}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/checksum_data_last}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/packet_data}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/packet_data_valid}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/good_packet}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/bad_packet}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/i}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/j}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_state}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/state}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/process_counter}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_process_counter}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/timeout_counter}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_timeout_counter}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/timeout_counter_limit}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_timeout_counter_limit}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/delayed_data}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_delayed_data}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_checksum_data}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_packet_data_valid}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_packet_data}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_checksum_data_valid}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_checksum_data_last}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/que_slot_select}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_que_slot_select}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_frame_check_sequence}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/frame_check_sequence}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_good_packet}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_bad_packet}
+add wave -noupdate -expand -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/_data_ready}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {128215000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {14203138 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 666
 configure wave -valuecolwidth 327
@@ -976,4 +982,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {323485696 ps}
+WaveRestoreZoom {7983112 ps} {18266888 ps}

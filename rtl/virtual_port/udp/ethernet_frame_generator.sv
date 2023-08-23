@@ -459,7 +459,7 @@ always_comb begin
         S_IPV4_CHECKSUM_LSB: begin
             _frame_byte[0][7:0]             =   saved_ipv4_checksum[7:0];
             _frame_byte_valid[0]            =   1;
-            process_cycle_timer_count       =   4;
+            process_cycle_timer_count       =   3;
             process_cycle_timer_load_count  =   1;
             _state                          =   S_IPV4_SOURCE_ADDRESS;
         end
