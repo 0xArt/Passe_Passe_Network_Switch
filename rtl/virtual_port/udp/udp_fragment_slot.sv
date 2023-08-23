@@ -38,13 +38,13 @@ module udp_fragment_slot(
 
 wire            fragment_fifo_clock;
 wire            fragment_fifo_reset_n;
-wire    [7:0]   fragment_fifo_write_data;
+wire    [8:0]   fragment_fifo_write_data;
 wire            fragment_fifo_read_enable;
 wire            fragment_fifo_write_enable;
 wire            fragment_fifo_read_data_valid;
 wire            fragment_fifo_empty;
 wire            fragment_fifo_full;
-wire    [7:0]   fragment_fifo_read_data;
+wire    [8:0]   fragment_fifo_read_data;
 
 synchronous_fifo
 #(  .DATA_WIDTH   (9),

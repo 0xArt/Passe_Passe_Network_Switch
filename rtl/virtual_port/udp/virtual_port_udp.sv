@@ -353,13 +353,13 @@ ethernet_frame_parser(
     .bad_packet             (ethernet_frame_parser_bad_packet),
     .udp_destination        (ethernet_frame_parser_udp_destination),
     .ipv4_flags             (ethernet_frame_parser_ipv4_flags),
-    .ipv4_identification    (ethernet_frame_parser_identification)
+    .ipv4_identification    (ethernet_frame_parser_ipv4_identification)
 );
 
 
 wire                                    receive_slot_clock;
 wire                                    receive_slot_reset_n;
-wire                                    receive_slot_data;
+wire    [7:0]                           receive_slot_data;
 wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_data_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_good_packet;
 wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_bad_packet;
@@ -380,19 +380,19 @@ generate
             .clock                          (receive_slot_clock),
             .reset_n                        (receive_slot_reset_n),
             .data                           (receive_slot_data),
-            .data_enable                    (receive_slot_data_enable),
-            .good_packet                    (receive_slot_good_packet),
-            .bad_packet                     (receive_slot_bad_packet),
+            .data_enable                    (receive_slot_data_enable[i]),
+            .good_packet                    (receive_slot_good_packet[i]),
+            .bad_packet                     (receive_slot_bad_packet[i]),
             .ipv4_flags                     (receive_slot_ipv4_flags),
             .ipv4_identification            (receive_slot_ipv4_identification),
-            .push_data_enable               (receive_slot_push_data_enable),
+            .push_data_enable               (receive_slot_push_data_enable[i]),
 
-            .ready                          (receive_slot_ready),
-            .data_ready                     (receive_slot_data_ready),
-            .current_ipv4_flags             (receive_slot_current_ipv4_flags),
-            .current_ipv4_identification    (receive_slot_current_ipv4_identification),
-            .push_data                      (receive_slot_push_data),
-            .push_data_valid                (receive_slot_push_data_valid)
+            .ready                          (receive_slot_ready[i]),
+            .data_ready                     (receive_slot_data_ready[i]),
+            .current_ipv4_flags             (receive_slot_current_ipv4_flags[i]),
+            .current_ipv4_identification    (receive_slot_current_ipv4_identification[i]),
+            .push_data                      (receive_slot_push_data[i]),
+            .push_data_valid                (receive_slot_push_data_valid[i])
         );
     end
 endgenerate
@@ -407,11 +407,11 @@ wire    [FRAGMENT_SLOTS-1:0]            udp_receieve_handler_push_data_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   udp_receive_handler_ipv4_identification;
 wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   udp_receive_handler_ipv4_flags;
 wire    [FRAGMENT_SLOTS-1:0]            udp_receive_handler_fragment_slot_empty;
-wire    [FRAGMENT_SLOTS-1:0]            udp_receive_handler_fragment_slot_packet_id;
+wire    [FRAGMENT_SLOTS-1:0][15:0]      udp_receive_handler_fragment_slot_packet_id;
 
 wire                                    udp_receieve_handler_ready;
 wire    [RECEIVE_QUE_SLOTS-1:0]         udp_receieve_handler_push_data_ready;
-wire    [8:0]                           udp_receieve_handler_push_data;
+wire    [7:0]                           udp_receieve_handler_push_data;
 wire    [FRAGMENT_SLOTS-1:0]            udp_receieve_handler_push_data_valid;
 wire    [FRAGMENT_SLOTS-1:0]            udp_receieve_handler_push_data_last;
 wire    [15:0]                          udp_receieve_handler_packet_id;
@@ -473,7 +473,6 @@ generate
         );
     end
 endgenerate
-
 
 
 wire                                    receive_slot_arbiter_clock;

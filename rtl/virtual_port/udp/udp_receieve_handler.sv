@@ -28,7 +28,7 @@ module udp_receieve_handler#(
     input   wire    [RECEIVE_QUE_SLOTS-1:0]         enable,
     input   wire    [RECEIVE_QUE_SLOTS-1:0][7:0]    data,
     input   wire    [RECEIVE_QUE_SLOTS-1:0]         data_enable,
-    input   wire                                    push_data_enable,
+    input   wire    [RECEIVE_QUE_SLOTS-1:0]         push_data_enable,
     input   wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   ipv4_identification,
     input   wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   ipv4_flags,
     input   wire    [FRAGMENT_SLOTS-1:0]            fragment_slot_empty,
@@ -79,8 +79,8 @@ state_type                                  _state;
 state_type                                  state;
 logic   [RECEIVE_QUE_SLOTS-1:0]             _push_data_ready;
 logic                                       _ready;
-logic   [8:0]                               _push_data;
-logic                                       _push_data_valid;
+logic   [7:0]                               _push_data;
+logic   [FRAGMENT_SLOTS-1:0]                _push_data_valid;
 logic   [7:0]                               _wait_data;
 reg     [7:0]                               wait_data;
 logic   [15:0]                              _packet_id;
@@ -173,7 +173,7 @@ always_comb begin
             end
         end
         S_PUSH_DATA: begin
-            if (push_data_enable) begin
+            if (push_data_enable[receive_slot_select]) begin
                 _push_data_ready    =   1 << receive_slot_select;
 
                 if (data_enable) begin
