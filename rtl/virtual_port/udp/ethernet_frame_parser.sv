@@ -477,7 +477,7 @@ always_comb begin
                 _udp_source_port[15:8]     =   udp_source_port[7:0];
                 _checksum_data             =   data;
                 _checksum_data_valid       =   1;
-                data_ready                  =   1;
+                data_ready                 =   1;
 
                 if (process_counter == 0) begin
                     _process_counter    =   1;
@@ -573,14 +573,15 @@ always_comb begin
                 data_ready                          =   1;
 
                 if (process_counter == 0) begin
-                    if (udp_payload_byte_count == 0) begin
+                    if (udp_payload_byte_count < 18) begin
+                        _process_counter    =   18 - udp_payload_byte_count - 1;
+                        _state              =   S_PAD;
+                    end
+                    else begin
                         _process_counter    =   3;
                         _checksum_data_last =   1;
                         _state              =   S_FRAME_CHECK_SEQUENCE;
-                    end
-                    else begin
-                        _process_counter    =   udp_payload_pad_byte_count - 1;
-                        _state              =   S_PAD;
+
                     end
                 end
                 if (data[8]) begin

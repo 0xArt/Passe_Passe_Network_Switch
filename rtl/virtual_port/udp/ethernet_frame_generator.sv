@@ -126,8 +126,9 @@ typedef enum
     S_UDP_CHECKSUM_MSB,
     S_UDP_CHECKSUM_LSB,
     S_UDP_DATA,
-    S_PUSH_CRC,
     S_PAD,
+    S_PUSH_CRC,
+    S_DELAY,
     S_GAP
 } state_type;
 
@@ -176,10 +177,10 @@ reg     [15:0]                          _saved_udp_checksum;
 logic   [15:0]                          saved_udp_checksum;
 logic   [15:0]                          _ipv4_checksum_data;
 logic   [15:0]                          _udp_buffer_read_address;
-logic   [1:0][8:0]                      _frame_byte;
-reg     [1:0][8:0]                      frame_byte;
-logic   [1:0]                           _frame_byte_valid;
-reg     [1:0]                           frame_byte_valid;
+logic   [2:0][8:0]                      _frame_byte;
+reg     [2:0][8:0]                      frame_byte;
+logic   [2:0]                           _frame_byte_valid;
+reg     [2:0]                           frame_byte_valid;
 logic                                   _frame_start;
 reg                                     frame_start;
 logic   [11:0]                          _fragment_offset;
@@ -213,9 +214,11 @@ always_comb begin
     _saved_udp_checksum                 =   saved_udp_checksum;
     _ipv4_checksum_data                 =   ipv4_checksum_data;
     _fragment_offset                    =   fragment_offset;
+    _frame_byte[2]                      =   frame_byte[1];
     _frame_byte[1]                      =   frame_byte[0];
     _frame_byte[0][7:0]                 =   frame_byte[0][7:0];
     _frame_byte[0][8]                   =   frame_start;
+    _frame_byte_valid[2]                =   frame_byte_valid[1];
     _frame_byte_valid[1]                =   frame_byte_valid[0];
     _frame_byte_valid[0]                =   0;
     checksum_data                       =   frame_byte[0];
@@ -227,10 +230,14 @@ always_comb begin
     process_cycle_timer_load_count      =   0;
     process_cycle_timer_count           =   0;
 
-    frame_data          =   frame_byte[1];
-    frame_data_valid    =   frame_byte_valid[1];
+    frame_data          =   frame_byte[2];
+    frame_data_valid    =   frame_byte_valid[2];
 
     if (state == S_PUSH_CRC && process_counter != 0) begin
+        frame_data[7:0]     =   frame_byte[0];
+        frame_data_valid    =   frame_byte_valid[0];
+    end
+    if (state == S_DELAY) begin
         frame_data[7:0]     =   frame_byte[0];
         frame_data_valid    =   frame_byte_valid[0];
     end
@@ -590,14 +597,25 @@ always_comb begin
                 3: begin
                     _frame_byte[0][7:0]             =   saved_checksum_result[7:0];
                     _frame_byte_valid[0]            =   1;
-                    _process_counter                =   0;
                     process_cycle_timer_count       =   INTER_PACKET_GAP_CYCLES;
                     process_cycle_timer_load_count  =   1;
-                    _state                          =   S_GAP;
+                    _state                          =   S_DELAY;
                 end
             endcase
         end
+        S_DELAY: begin
+            checksum_data_valid =   0;
+
+            if (process_cycle_timer_expired) begin
+                _state                          =   S_IDLE;
+                process_cycle_timer_count       =   INTER_PACKET_GAP_CYCLES;
+                process_cycle_timer_load_count  =   1;
+
+            end
+        end
         S_GAP: begin
+            checksum_data_valid =   0;
+
             if (process_cycle_timer_expired) begin
                 _state                          =   S_IDLE;
             end
@@ -632,8 +650,10 @@ always_ff @(posedge clock or negedge reset_n) begin
         saved_ipv4_checksum             <=  0;
         frame_byte[0]                   <=  0;
         frame_byte[1]                   <=  0;
+        frame_byte[2]                   <=  0;
         frame_byte_valid[0]             <=  0;
         frame_byte_valid[1]             <=  0;
+        frame_byte_valid[2]             <=  0;
         frame_start                     <=  0;
         fragment_offset                 <=  0;
     end
@@ -664,8 +684,10 @@ always_ff @(posedge clock or negedge reset_n) begin
         saved_ipv4_checksum             <=  _saved_ipv4_checksum;
         frame_byte[0]                   <=  _frame_byte[0];
         frame_byte[1]                   <=  _frame_byte[1];
+        frame_byte[2]                   <=  _frame_byte[2];
         frame_byte_valid[0]             <=  _frame_byte_valid[0];
         frame_byte_valid[1]             <=  _frame_byte_valid[1];
+        frame_byte_valid[2]             <=  _frame_byte_valid[2];
         frame_start                     <=  _frame_start;
         fragment_offset                 <=  _fragment_offset;
     end
