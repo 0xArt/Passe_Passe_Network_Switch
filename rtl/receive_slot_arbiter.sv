@@ -51,8 +51,8 @@ reg     [$clog2(RECEIVE_QUE_SLOTS)-1:0]      que_slot_select;
 always_comb begin
     _state                          =   state;
     _ready                          =   ready;
-    _push_data                      =   data[que_slot_select];
-    _push_data_valid                =   data_enable[que_slot_select];
+    _push_data                      =   push_data;
+    _push_data_valid                =   push_data_valid;
 
     case (state)
         S_IDLE: begin
@@ -80,6 +80,10 @@ always_comb begin
                 else begin
                     _que_slot_select = que_slot_select + 1;
                 end
+            end
+            else begin
+                _push_data                      =   data[que_slot_select];
+                _push_data_valid                =   data_enable[que_slot_select];
             end
         end
     endcase

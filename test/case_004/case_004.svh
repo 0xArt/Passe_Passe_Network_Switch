@@ -16,12 +16,12 @@ $display("Running case 004");
 5. UDP  Destination
 6. UDP  Data
 */
-testbench.module_transmit_buffer[0]   = 9'h111; // mac destination
-testbench.module_transmit_buffer[1]   = 9'h22;
-testbench.module_transmit_buffer[2]   = 9'h33;
-testbench.module_transmit_buffer[3]   = 9'h44;
-testbench.module_transmit_buffer[4]   = 9'h55;
-testbench.module_transmit_buffer[5]   = 9'h66;
+testbench.module_transmit_buffer[0]   = 9'h1F6; // mac destination
+testbench.module_transmit_buffer[1]   = 9'h90;
+testbench.module_transmit_buffer[2]   = 9'h2A;
+testbench.module_transmit_buffer[3]   = 9'h94;
+testbench.module_transmit_buffer[4]   = 9'h2D;
+testbench.module_transmit_buffer[5]   = 9'h5E;
 testbench.module_transmit_buffer[6]   = 9'hF0; // ipv4 destination
 testbench.module_transmit_buffer[7]   = 9'hF1;
 testbench.module_transmit_buffer[8]   = 9'hF2;

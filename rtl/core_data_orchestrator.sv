@@ -165,13 +165,15 @@ always_comb begin
                     end
                     else begin
                         //not in table...transmit out of all ports
-                        _process_counter            =   0;
-                        _target_transmit_port       =   '1;
-                        _port_transmit_data_valid   =   '1;
-                        _process_counter            =   4;
-                        _port_transmit_data         =   {1'b1,mac_destination[47:40]};
-                        _mac_destination            =   {mac_destination[39:0],8'h00};
-                        _state                      =   S_TRANSMIT_MAC_DESTINATION;
+                        _process_counter                        =   0;
+                        _target_transmit_port                   =   '1;
+                        _target_transmit_port[port_select]      =   0;
+                        _port_transmit_data_valid               =   '1;
+                        _port_transmit_data_valid[port_select]  =   0;
+                        _process_counter                        =   4;
+                        _port_transmit_data                     =   {1'b1,mac_destination[47:40]};
+                        _mac_destination                        =   {mac_destination[39:0],8'h00};
+                        _state                                  =   S_TRANSMIT_MAC_DESTINATION;
                     end
                 end
                 1: begin

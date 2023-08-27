@@ -98,10 +98,10 @@ testbench.ethernet_message[65]  = 8'h00;
 testbench.ethernet_message[66]  = 8'h00;
 testbench.ethernet_message[67]  = 8'h00;
 //crc32
-testbench.ethernet_message[68]  = 8'h12;
-testbench.ethernet_message[69]  = 8'h61;
-testbench.ethernet_message[70]  = 8'hD9;
-testbench.ethernet_message[71]  = 8'h21;
+testbench.ethernet_message[68]  = 8'h7F;
+testbench.ethernet_message[69]  = 8'h8F;
+testbench.ethernet_message[70]  = 8'h5A;
+testbench.ethernet_message[71]  = 8'hE2;
 
 
 for (i=0;i<72;i=i+1) begin

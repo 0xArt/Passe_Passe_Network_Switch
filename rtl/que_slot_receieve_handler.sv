@@ -31,7 +31,7 @@ module que_slot_receieve_handler(
 
     output  reg             fifo_reset_n,
     output  reg             ready,
-    output  reg             push_data_ready,
+    output  logic           push_data_ready,
     output  reg     [8:0]   push_data,
     output  reg             push_data_valid
 );
@@ -61,22 +61,17 @@ typedef enum
 {
     S_IDLE,
     S_ADVERTISTE,
-    S_PUSH_DATA,
-    S_WAIT_WITH_PUSH,
-    S_WAIT
+    S_PUSH_DATA
 } state_type;
 
 state_type          _state;
 state_type          state;
-logic               _push_data_ready;
 logic               _ready;
 logic   [8:0]       _push_data;
 logic               _push_data_valid;
 logic               _fifo_reset_n;
 logic               _is_first_byte;
 reg                 is_first_byte;
-logic   [8:0]       _wait_data;
-reg     [8:0]       wait_data;
 
 
 assign  timeout_cycle_timer_clock       =   clock;
@@ -88,14 +83,13 @@ assign  timeout_cycle_timer_count       =   TIMEOUT_LIMIT;
 always_comb begin
     _state                          =   state;
     _is_first_byte                  =   is_first_byte;
-    _push_data_ready                =   push_data_ready;
     _ready                          =   ready;
     _push_data[7:0]                 =   push_data[7:0];
     _push_data[8]                   =   is_first_byte;
-    _wait_data                      =   wait_data;
     _push_data_valid                =   0;
     _fifo_reset_n                   =   1;
     timeout_cycle_timer_load_count  =   0;
+    push_data_ready                 =   0;
 
     case (state)
         S_IDLE: begin
@@ -115,62 +109,28 @@ always_comb begin
 
             if (enable && push_data_enable) begin
                 _state              =   S_PUSH_DATA;
-                _push_data_ready    =   1;
             end
         end
         S_PUSH_DATA: begin
             if (timeout_cycle_timer_expired) begin
                 _state              =   S_IDLE;
-                _push_data_ready    =   0;
             end
-            if (push_data_enable) begin
-                if (enable) begin
-                    _push_data_ready                = 1;
+            if (push_data_enable && enable) begin
+                if (data_enable) begin
+                    push_data_ready                 =   1;
+                    _push_data[7:0]                 =   data;
+                    _push_data_valid                =   1;
+                    timeout_cycle_timer_load_count  =   1;
 
-                    if (data_enable) begin
-                        _push_data[7:0]                 =   data;
-                        _push_data_valid                =   1;
-                        timeout_cycle_timer_load_count  =   1;
-
-                        if (is_first_byte) begin
-                            _is_first_byte  =   0;
-                        end
+                    if (is_first_byte) begin
+                        _is_first_byte  =   0;
                     end
                 end
-                else begin
-                    _push_data_ready    =   0;
-                end
-            end
-            else begin
-                _push_data_ready    =   0;
-
-                if (data_enable) begin
-                    _wait_data  =   data;
-                    _state      =   S_WAIT_WITH_PUSH;
-                end
-                else begin
-                    _state      =   S_WAIT;
-                end
-            end
-        end
-        S_WAIT_WITH_PUSH: begin
-            if (push_data_enable) begin
-                _push_data_ready                =   1;
-                _push_data[7:0]                 =   wait_data;
-                _push_data_valid                =   1;
-                timeout_cycle_timer_load_count  =   1;
-                _state                          =   S_PUSH_DATA;
-            end
-        end
-        S_WAIT: begin
-            if (push_data_enable) begin
-                _push_data_ready                =   1;
-                timeout_cycle_timer_load_count  =   1;
-                _state                          =   S_PUSH_DATA;
             end
         end
     endcase
 end
+
 
 always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
@@ -178,20 +138,16 @@ always_ff @(posedge clock or negedge reset_n) begin
         push_data                   <=  0;
         push_data_valid             <=  0;
         fifo_reset_n                <=  0;
-        push_data_ready             <=  0;
         ready                       <=  0;
         is_first_byte               <=  0;
-        wait_data                   <=  0;
     end
     else begin
         state                       <=  _state;
         push_data                   <=  _push_data;
         push_data_valid             <=  _push_data_valid;
         fifo_reset_n                <=  _fifo_reset_n;
-        push_data_ready             <=  _push_data_ready;
         ready                       <=  _ready;
         is_first_byte               <=  _is_first_byte;
-        wait_data                   <=  _wait_data;
     end
 end
 

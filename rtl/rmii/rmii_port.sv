@@ -74,8 +74,9 @@ wire            frame_fifo_full;
 wire            frame_fifo_empty;
 
 synchronous_fifo
-#(.DATA_WIDTH   (9),
-  .DATA_DEPTH   (1500)
+#(.DATA_WIDTH               (9),
+  .DATA_DEPTH               (1500),
+  .FIRST_WORD_FALL_THROUGH ("TRUE")
 ) frame_fifo(
     .clock              (frame_fifo_clock),
     .reset_n            (frame_fifo_reset_n),
@@ -168,8 +169,9 @@ wire    [RECEIVE_QUE_SLOTS-1:0][7:0]   payload_fifo_read_data;
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
         synchronous_fifo
-        #(  .DATA_WIDTH   (8),
-            .DATA_DEPTH   (1024)
+        #(  .DATA_WIDTH                 (8),
+            .DATA_DEPTH                 (1024),
+            .FIRST_WORD_FALL_THROUGH    ("TRUE")
         ) payload_fifo(
             .clock              (payload_fifo_clock[i]),
             .reset_n            (payload_fifo_reset_n[i]),
