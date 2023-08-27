@@ -71,7 +71,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         memory_read_data                <=  0;
         pipelined_read_data             <=  0;
 
-        for (j=0; i<DATA_DEPTH; j=j+1) begin
+        for (j=0; j<DATA_DEPTH; j=j+1) begin
             memory[j]                   <=  0;
         end
     end

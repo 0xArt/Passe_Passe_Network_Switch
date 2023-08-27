@@ -28,14 +28,14 @@ module udp_receieve_handler#(
     input   wire    [RECEIVE_QUE_SLOTS-1:0]         enable,
     input   wire    [RECEIVE_QUE_SLOTS-1:0][7:0]    data,
     input   wire    [RECEIVE_QUE_SLOTS-1:0]         data_enable,
-    input   wire    [RECEIVE_QUE_SLOTS-1:0]         push_data_enable,
+    input   wire    [FRAGMENT_SLOTS-1:0]            push_data_enable,
     input   wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   ipv4_identification,
     input   wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   ipv4_flags,
     input   wire    [FRAGMENT_SLOTS-1:0]            fragment_slot_empty,
     input   wire    [FRAGMENT_SLOTS-1:0][15:0]      fragment_slot_packet_id,
 
     output  reg                                     ready,
-    output  reg     [RECEIVE_QUE_SLOTS-1:0]         push_data_ready,
+    output  reg     [RECEIVE_QUE_SLOTS-1:0]         data_ready,
     output  reg     [7:0]                           push_data,
     output  reg     [FRAGMENT_SLOTS-1:0]            push_data_valid,
     output  reg     [FRAGMENT_SLOTS-1:0]            push_data_last,
@@ -43,7 +43,7 @@ module udp_receieve_handler#(
 );
 
 
-localparam logic [15:0] TIMEOUT_LIMIT       = 16'h00FF;
+localparam logic [15:0] TIMEOUT_LIMIT       = 16'h004;
 
 
 wire            timeout_cycle_timer_clock;
@@ -77,7 +77,7 @@ typedef enum
 
 state_type                                  _state;
 state_type                                  state;
-logic   [RECEIVE_QUE_SLOTS-1:0]             _push_data_ready;
+logic   [RECEIVE_QUE_SLOTS-1:0]             _data_ready;
 logic                                       _ready;
 logic   [7:0]                               _push_data;
 logic   [FRAGMENT_SLOTS-1:0]                _push_data_valid;
@@ -108,7 +108,7 @@ always_comb begin
     _more_fragments                 =   more_fragments;
     _fragment_slot_select           =   fragment_slot_select;
     _receive_slot_select            =   receive_slot_select;
-    _push_data_ready                =   0;
+    _data_ready                     =   0;
     _push_data_last                 =   0;
     _push_data_valid                =   0;
     timeout_cycle_timer_load_count  =   0;
@@ -143,6 +143,8 @@ always_comb begin
             end
         end
         S_FIND_EMPTY_FRAGMENT_SLOT: begin
+            timeout_cycle_timer_load_count  =   1;
+
             if (fragment_slot_empty[fragment_slot_select]) begin
                 _state  =   S_PUSH_DATA;
             end
@@ -158,9 +160,10 @@ always_comb begin
             end
         end
         S_FIND_MATCHING_FRAGMENT_SLOT: begin
+            timeout_cycle_timer_load_count  =   1;
+
             if (fragment_slot_packet_id[fragment_slot_select] == packet_id) begin
                 _state                          =   S_PUSH_DATA;
-                timeout_cycle_timer_load_count  =   1;
             end
             else begin
                 if (fragment_slot_select == (FRAGMENT_SLOTS - 1)) begin
@@ -173,23 +176,18 @@ always_comb begin
             end
         end
         S_PUSH_DATA: begin
-            if (push_data_enable[receive_slot_select]) begin
-                _push_data_ready    =   1 << receive_slot_select;
-
-                if (data_enable) begin
-                    _push_data                      =   data;
-                    _push_data_valid                =   1 << fragment_slot_select;
-                    timeout_cycle_timer_load_count  =   1;
-                end
-                else begin
-                    _state              =   S_IDLE;
-                end
-            end
             if (timeout_cycle_timer_expired) begin
+                _state          =   S_IDLE;
+
                 if (more_fragments == 0) begin
                     _push_data_last =   1 << fragment_slot_select;
                 end
-                _state          =   S_IDLE;
+            end
+            if (data_enable[receive_slot_select]) begin
+                _data_ready                     =   1 << receive_slot_select;
+                _push_data                      =   data[receive_slot_select];
+                _push_data_valid                =   1 << fragment_slot_select;
+                timeout_cycle_timer_load_count  =   1;
             end
         end
     endcase
@@ -200,7 +198,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         state                       <= S_IDLE;
         push_data                   <=  0;
         push_data_valid             <=  0;
-        push_data_ready             <=  0;
+        data_ready                  <=  0;
         ready                       <=  0;
         wait_data                   <=  0;
         packet_id                   <=  0;
@@ -208,12 +206,13 @@ always_ff @(posedge clock or negedge reset_n) begin
         fragment_offset             <=  0;
         push_data_last              <=  0;
         receive_slot_select         <=  0;
+        fragment_slot_select        <=  0;
     end
     else begin
         state                       <=  _state;
         push_data                   <=  _push_data;
         push_data_valid             <=  _push_data_valid;
-        push_data_ready             <=  _push_data_ready;
+        data_ready                  <=  _data_ready;
         ready                       <=  _ready;
         wait_data                   <=  _wait_data;
         packet_id                   <=  _packet_id;
@@ -221,6 +220,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         fragment_offset             <=  _fragment_offset;
         push_data_last              <=  _push_data_last;
         receive_slot_select         <=  _receive_slot_select;
+        fragment_slot_select        <=  _fragment_slot_select;
     end
 end
 

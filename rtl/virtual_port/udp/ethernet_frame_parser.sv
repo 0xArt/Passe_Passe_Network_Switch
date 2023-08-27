@@ -187,7 +187,7 @@ always_comb begin
                     _checksum_data_valid    =   1;
                 end
 
-                for (j=0;i<RECEIVE_QUE_SLOTS;j=j+1) begin
+                for (j=0; j<RECEIVE_QUE_SLOTS; j=j+1) begin
                     if (recieve_slot_enable[j] == 1) begin
                         _que_slot_select =  j;
                     end

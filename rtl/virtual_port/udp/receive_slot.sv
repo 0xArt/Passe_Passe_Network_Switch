@@ -50,8 +50,9 @@ wire            receive_fifo_full;
 wire    [7:0]   receive_fifo_read_data;
 
 synchronous_fifo
-#(  .DATA_WIDTH   (8),
-    .DATA_DEPTH   (1024)
+#(  .DATA_WIDTH                 (8),
+    .DATA_DEPTH                 (1024),
+    .FIRST_WORD_FALL_THROUGH    ("TRUE")
 ) receive_fifo(
     .clock              (receive_fifo_clock),
     .reset_n            (receive_fifo_reset_n),
@@ -85,6 +86,7 @@ assign  receive_fifo_clock          =   clock;
 assign  receive_fifo_reset_n        =   fifo_reset_n;
 assign  receive_fifo_write_data     =   data;
 assign  receive_fifo_write_enable   =   data_enable;
+assign  receive_fifo_read_enable    =   push_data_enable;
 
 always_comb begin
     _state                          =   state;

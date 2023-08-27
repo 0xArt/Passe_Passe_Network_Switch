@@ -47,8 +47,9 @@ wire            fragment_fifo_full;
 wire    [8:0]   fragment_fifo_read_data;
 
 synchronous_fifo
-#(  .DATA_WIDTH   (9),
-    .DATA_DEPTH   (4096)
+#(  .DATA_WIDTH                 (9),
+    .DATA_DEPTH                 (4096),
+    .FIRST_WORD_FALL_THROUGH    ("TRUE")
 ) fragment_fifo(
     .clock              (fragment_fifo_clock),
     .reset_n            (fragment_fifo_reset_n),
@@ -85,6 +86,7 @@ assign  fragment_fifo_clock         =   clock;
 assign  fragment_fifo_reset_n       =   reset_n;
 assign  fragment_fifo_write_data    =   buffer_data;
 assign  fragment_fifo_write_enable  =   buffer_data_valid;
+assign  fragment_fifo_read_enable   =   push_data_enable;
 
 always_comb begin
     _state                          =   state;

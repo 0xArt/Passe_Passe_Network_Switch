@@ -20,8 +20,9 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 module synchronous_fifo#(
-    parameter DATA_WIDTH = 16,
-    parameter DATA_DEPTH = 4096
+    parameter DATA_WIDTH                = 16,
+    parameter DATA_DEPTH                = 4096,
+    parameter FIRST_WORD_FALL_THROUGH   = "FALSE"
 )(
     input   wire                            clock,
     input   wire                            reset_n,
@@ -69,6 +70,10 @@ always_comb begin
         if ((write_pointer + 1) == read_pointer) begin
             full = 1;
         end
+    end
+
+    if (read_enable && read_data_valid) begin
+        _read_data_valid    =   0;
     end
 
     if (write_enable && !read_enable) begin
@@ -127,6 +132,22 @@ always_comb begin
             end
         end
     end
+
+    if (FIRST_WORD_FALL_THROUGH) begin
+        if (!empty) begin
+            if (!read_enable && !read_data_valid) begin
+                _read_data          =   memory[read_pointer];
+                _read_data_valid    =   1;
+
+                if (read_pointer == (DATA_DEPTH -1)) begin
+                    _read_pointer  =   0;
+                end
+                else begin
+                    _read_pointer  = read_pointer + 1;
+                end
+            end
+        end
+    end
 end
 
 always_ff @(posedge clock or negedge reset_n) begin
@@ -136,7 +157,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         read_pointer                    <=  0;
         write_pointer                   <=  0;
 
-        for (j=0; i<DATA_DEPTH; j=j+1) begin
+        for (j=0; j<DATA_DEPTH; j=j+1) begin
             memory[j]                   <=  0;
         end
     end

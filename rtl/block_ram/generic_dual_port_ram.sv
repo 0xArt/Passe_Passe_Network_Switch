@@ -60,7 +60,7 @@ end
 
 always_ff @(posedge write_clock or negedge write_reset_n) begin
     if (!write_reset_n) begin
-        for (j=0; i<DATA_DEPTH; j=j+1) begin
+        for (j=0; j<DATA_DEPTH; j=j+1) begin
             memory[j]                   <=  0;
         end
     end

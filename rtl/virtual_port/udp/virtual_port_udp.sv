@@ -443,7 +443,7 @@ wire    [FRAGMENT_SLOTS-1:0]            udp_receive_handler_fragment_slot_empty;
 wire    [FRAGMENT_SLOTS-1:0][15:0]      udp_receive_handler_fragment_slot_packet_id;
 
 wire                                    udp_receieve_handler_ready;
-wire    [RECEIVE_QUE_SLOTS-1:0]         udp_receieve_handler_push_data_ready;
+wire    [RECEIVE_QUE_SLOTS-1:0]         udp_receieve_handler_data_ready;
 wire    [7:0]                           udp_receieve_handler_push_data;
 wire    [FRAGMENT_SLOTS-1:0]            udp_receieve_handler_push_data_valid;
 wire    [FRAGMENT_SLOTS-1:0]            udp_receieve_handler_push_data_last;
@@ -465,7 +465,7 @@ udp_receieve_handler(
     .fragment_slot_packet_id    (udp_receive_handler_fragment_slot_packet_id),
 
     .ready                      (udp_receieve_handler_ready),
-    .push_data_ready            (udp_receieve_handler_push_data_ready),
+    .data_ready                 (udp_receieve_handler_data_ready),
     .push_data                  (udp_receieve_handler_push_data),
     .push_data_valid            (udp_receieve_handler_push_data_valid),
     .push_data_last             (udp_receieve_handler_push_data_last),
@@ -666,14 +666,13 @@ assign  receive_slot_good_packet                                =   ethernet_fra
 assign  receive_slot_bad_packet                                 =   ethernet_frame_parser_bad_packet;
 assign  receive_slot_ipv4_flags                                 =   ethernet_frame_parser_ipv4_flags;
 assign  receive_slot_ipv4_identification                        =   ethernet_frame_parser_ipv4_identification;
-assign  receive_slot_push_data_enable                           =   udp_receieve_handler_push_data_ready;
+assign  receive_slot_push_data_enable                           =   udp_receieve_handler_data_ready;
 
 assign  udp_receieve_handler_clock                              =   clock;
 assign  udp_receieve_handler_reset_n                            =   reset_n;
 assign  udp_receieve_handler_enable                             =   receive_slot_data_ready;
 assign  udp_receieve_handler_data                               =   receive_slot_push_data;
 assign  udp_receieve_handler_data_enable                        =   receive_slot_push_data_valid;
-assign  udp_receieve_handler_push_data_enable                   =   udp_receieve_handler_ready;
 assign  udp_receive_handler_ipv4_identification                 =   receive_slot_current_ipv4_identification;
 assign  udp_receive_handler_ipv4_flags                          =   receive_slot_current_ipv4_flags;
 assign  udp_receive_handler_fragment_slot_empty                 =   udp_fragment_slot_ready;
