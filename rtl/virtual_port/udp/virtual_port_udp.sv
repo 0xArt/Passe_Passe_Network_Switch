@@ -19,8 +19,8 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module virutal_port_udp#(
-    parameter RECEIVE_QUE_SLOTS = 1,
-    parameter FRAGMENT_SLOTS    = 2
+    parameter RECEIVE_QUE_SLOTS = 4,
+    parameter FRAGMENT_SLOTS    = 4
 )(
     input   wire            clock,
     input   wire            reset_n,

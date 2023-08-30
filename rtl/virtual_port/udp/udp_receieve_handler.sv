@@ -20,8 +20,8 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module udp_receieve_handler#(
-    parameter FRAGMENT_SLOTS    = 2,
-    parameter RECEIVE_QUE_SLOTS = 2
+    parameter FRAGMENT_SLOTS    = 4,
+    parameter RECEIVE_QUE_SLOTS = 4
 )(
     input   wire                                    clock,
     input   wire                                    reset_n,

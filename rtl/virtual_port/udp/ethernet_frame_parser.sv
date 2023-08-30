@@ -20,7 +20,7 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 module ethernet_frame_parser#(
-    parameter RECEIVE_QUE_SLOTS = 1
+    parameter RECEIVE_QUE_SLOTS = 4
 )(
     input   wire                            clock,
     input   wire                            reset_n,
@@ -654,13 +654,11 @@ always_comb begin
             end
         end
         S_RESTART: begin
-            /*
-            for (index=0; index<RECEIVE_QUE_SLOTS; index=index+1 ) begin
+            for (index=0; index<RECEIVE_QUE_SLOTS; index=index+1) begin
                 if (recieve_slot_enable[index]) begin
                     _que_slot_select =  index;
                 end
             end
-            */
             if (checksum_result_enable) begin
                 data_ready =   1;
 

@@ -20,7 +20,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module rmii_port#(
-    parameter RECEIVE_QUE_SLOTS = 1
+    parameter RECEIVE_QUE_SLOTS = 4
 )(
     input   wire            clock,
     input   wire            core_clock,

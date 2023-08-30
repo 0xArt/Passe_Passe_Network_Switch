@@ -20,7 +20,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module que_slot_receieve_handler#(
-    parameter RECEIVE_QUE_SLOTS = 2
+    parameter RECEIVE_QUE_SLOTS = 4
 )(
     input   wire                                    clock,
     input   wire                                    reset_n,

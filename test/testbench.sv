@@ -35,7 +35,7 @@ localparam  MODULE_CLOCK_PERIOD         =   1e9/MODULE_CLOCK_FREQUENCY;
 
 localparam  NUMBER_OF_RMII_PORTS        =   2;
 localparam  NUMBER_OF_VIRTUAL_PORTS     =   1;
-localparam  RECEIVE_QUE_SLOTS           =   2;
+localparam  RECEIVE_QUE_SLOTS           =   4;
 
 logic                                           clock                           =   0;
 logic                                           reset_n                         =   1;
@@ -153,9 +153,9 @@ end
 initial begin
     wait(reset_n);
     repeat(100) @(posedge clock);
-    //case_000();
-    //case_002();
-    //case_003();
+    case_000();
+    case_002();
+    case_003();
     //case_004();
     //case_005();
     case_006();
