@@ -154,97 +154,62 @@ frame_check_sequence_generator  frame_check_sequence_generator(
 );
 
 
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_clock;
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_reset_n;
-wire    [RECEIVE_QUE_SLOTS-1:0][7:0]   payload_fifo_write_data;
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_read_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_write_enable;
+wire                                    que_slot_clock;
+wire                                    que_slot_reset_n;
+wire    [7:0]                           que_slot_data;
+wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_data_enable;
+wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_good_packet;
+wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_bad_packet;
+wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_push_data_enable;
 
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_read_data_valid;
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_empty;
-wire    [RECEIVE_QUE_SLOTS-1:0]        payload_fifo_full;
-wire    [RECEIVE_QUE_SLOTS-1:0][7:0]   payload_fifo_read_data;
-
+wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_ready;
+wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_data_ready;
+wire    [RECEIVE_QUE_SLOTS-1:0][8:0]    que_slot_push_data;
+wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_push_data_valid;
 
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
-        synchronous_fifo
-        #(  .DATA_WIDTH                 (8),
-            .DATA_DEPTH                 (1024),
-            .FIRST_WORD_FALL_THROUGH    ("TRUE")
-        ) payload_fifo(
-            .clock              (payload_fifo_clock[i]),
-            .reset_n            (payload_fifo_reset_n[i]),
-            .read_enable        (payload_fifo_read_enable[i]),
-            .write_enable       (payload_fifo_write_enable[i]),
-            .write_data         (payload_fifo_write_data[i]),
+        que_slot    que_slot(
+            .clock                  (que_slot_clock),
+            .reset_n                (que_slot_reset_n),
+            .data                   (que_slot_data),
+            .data_enable            (que_slot_data_enable[i]),
+            .good_packet            (que_slot_good_packet[i]),
+            .bad_packet             (que_slot_bad_packet[i]),
+            .push_data_enable       (que_slot_push_data_enable[i]),
 
-            .read_data          (payload_fifo_read_data[i]),
-            .read_data_valid    (payload_fifo_read_data_valid[i]),
-            .full               (payload_fifo_full[i]),
-            .empty              (payload_fifo_empty[i])
+            .ready                  (que_slot_ready[i]),
+            .data_ready             (que_slot_data_ready[i]),
+            .push_data              (que_slot_push_data[i]),
+            .push_data_valid        (que_slot_push_data_valid[i])
         );
     end
 endgenerate
 
 
-wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_clock;
-wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_reset_n;
-wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0][7:0]   que_slot_receieve_handler_data;
-wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_data_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_good_packet;
-wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_push_data_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_bad_packet;
-wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_fifo_reset_n;
-wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_ready;
-wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_push_data_ready;
-wire    [RECEIVE_QUE_SLOTS-1:0][8:0]   que_slot_receieve_handler_push_data;
-wire    [RECEIVE_QUE_SLOTS-1:0]        que_slot_receieve_handler_push_data_valid;
+wire                                    que_slot_receieve_handler_clock;
+wire                                    que_slot_receieve_handler_reset_n;
+wire                                    que_slot_receieve_handler_enable;
+wire    [RECEIVE_QUE_SLOTS-1:0][7:0]    que_slot_receieve_handler_data;
+wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_receieve_handler_data_enable;
+wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_receieve_handler_push_enable;
 
-generate
-    for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
-        que_slot_receieve_handler que_slot_receieve_handler(
-            .clock              (que_slot_receieve_handler_clock[i]),
-            .reset_n            (que_slot_receieve_handler_reset_n[i]),
-            .enable             (que_slot_receieve_handler_enable[i]),
-            .data               (que_slot_receieve_handler_data[i]),
-            .data_enable        (que_slot_receieve_handler_data_enable[i]),
-            .good_packet        (que_slot_receieve_handler_good_packet[i]),
-            .bad_packet         (que_slot_receieve_handler_bad_packet[i]),
-            .push_data_enable   (que_slot_receieve_handler_push_data_enable[i]),
+wire                                    que_slot_receieve_handler_ready;
+wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_receieve_handler_data_ready;
+wire    [8:0]                           que_slot_receieve_handler_push_data;
+wire                                    que_slot_receieve_handler_push_data_valid;
 
-            .fifo_reset_n       (que_slot_receieve_handler_fifo_reset_n[i]),
-            .ready              (que_slot_receieve_handler_ready[i]),
-            .push_data_ready    (que_slot_receieve_handler_push_data_ready[i]),
-            .push_data          (que_slot_receieve_handler_push_data[i]),
-            .push_data_valid    (que_slot_receieve_handler_push_data_valid[i])
-        );
-    end
-endgenerate
+que_slot_receieve_handler que_slot_receieve_handler(
+    .clock              (que_slot_receieve_handler_clock),
+    .reset_n            (que_slot_receieve_handler_reset_n),
+    .enable             (que_slot_receieve_handler_enable),
+    .data               (que_slot_receieve_handler_data),
+    .data_enable        (que_slot_receieve_handler_data_enable),
+    .push_enable        (que_slot_receieve_handler_push_enable),
 
-
-wire                                    receive_slot_arbiter_clock;
-wire                                    receive_slot_arbiter_reset_n;
-wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_arbiter_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0][8:0]    receive_slot_arbiter_data;
-wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_arbiter_data_enable;
-wire                                    receive_slot_arbiter_push_data_ready;
-wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_arbiter_ready;
-wire    [8:0]                           receive_slot_arbiter_push_data;
-wire                                    receive_slot_arbiter_push_data_valid;
-
-receive_slot_arbiter #(.RECEIVE_QUE_SLOTS(RECEIVE_QUE_SLOTS))
-receive_slot_arbiter(
-    .clock              (receive_slot_arbiter_clock),
-    .reset_n            (receive_slot_arbiter_reset_n),
-    .enable             (receive_slot_arbiter_enable),
-    .data               (receive_slot_arbiter_data),
-    .data_enable        (receive_slot_arbiter_data_enable),
-
-    .ready              (receive_slot_arbiter_ready),
-    .push_data          (receive_slot_arbiter_push_data),
-    .push_data_valid    (receive_slot_arbiter_push_data_valid)
+    .data_ready         (que_slot_receieve_handler_data_ready),
+    .push_data          (que_slot_receieve_handler_push_data),
+    .push_data_valid    (que_slot_receieve_handler_push_data_valid)
 );
 
 
@@ -356,32 +321,27 @@ assign  rmii_byte_shipper_data                                  =   inbound_fifo
 assign  rmii_byte_shipper_data_enable                           =   inbound_fifo_read_data_valid;
 assign  rmii_byte_shipper_speed_code                            =   rmii_byte_packager_speed_code;
 
-assign  receive_slot_arbiter_clock                              =   clock;
-assign  receive_slot_arbiter_reset_n                            =   reset_n;
-assign  receive_slot_arbiter_enable                             =   que_slot_receieve_handler_ready;
-assign  receive_slot_arbiter_data                               =   que_slot_receieve_handler_push_data;
-assign  receive_slot_arbiter_data_enable                        =   que_slot_receieve_handler_push_data_valid;
-
+assign  que_slot_clock                                          =   clock;
+assign  que_slot_reset_n                                        =   reset_n;
+assign  que_slot_data                                           =   ethernet_packet_parser_packet_data;
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
-        assign  que_slot_receieve_handler_clock[i]              =   clock;
-        assign  que_slot_receieve_handler_reset_n[i]            =   reset_n;
-        assign  que_slot_receieve_handler_enable[i]             =   receive_slot_arbiter_ready[i];
-        assign  que_slot_receieve_handler_data[i]               =   payload_fifo_read_data[i];
-        assign  que_slot_receieve_handler_data_enable[i]        =   payload_fifo_read_data_valid[i];
-        assign  que_slot_receieve_handler_good_packet[i]        =   ethernet_packet_parser_good_packet[i];
-        assign  que_slot_receieve_handler_bad_packet[i]         =   ethernet_packet_parser_bad_packet[i];
-        assign  que_slot_receieve_handler_push_data_enable[i]   =  !outbound_fifo_full;
+        assign  que_slot_data_enable[i]                         =   ethernet_packet_parser_packet_data_valid[i];
+        assign  que_slot_good_packet[i]                         =   ethernet_packet_parser_good_packet[i];
+        assign  que_slot_bad_packet[i]                          =   ethernet_packet_parser_bad_packet[i];
+        assign  que_slot_push_data_enable[i]                    =   que_slot_receieve_handler_data_ready[i];
     end
 endgenerate
 
+assign  que_slot_receieve_handler_clock                         =   clock;
+assign  que_slot_receieve_handler_reset_n                       =   reset_n;
+assign  que_slot_receieve_handler_enable                        =   !outbound_fifo_full;
+
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
-        assign  payload_fifo_clock[i]                           =   clock;
-        assign  payload_fifo_write_data[i]                      =   ethernet_packet_parser_packet_data;
-        assign  payload_fifo_write_enable[i]                    =   ethernet_packet_parser_packet_data_valid[i];
-        assign  payload_fifo_read_enable[i]                     =   que_slot_receieve_handler_push_data_ready[i];
-        assign  payload_fifo_reset_n[i]                         =   que_slot_receieve_handler_fifo_reset_n[i];
+        assign  que_slot_receieve_handler_data[i]               =   que_slot_push_data[i];
+        assign  que_slot_receieve_handler_data_enable[i]        =   que_slot_push_data_valid[i];
+        assign  que_slot_receieve_handler_push_enable[i]        =   que_slot_data_ready[i];
     end
 endgenerate
 
@@ -409,7 +369,7 @@ assign  ethernet_packet_parser_speed_code                       =   rmii_byte_pa
 
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i=i+1) begin
-        assign  ethernet_packet_parser_recieve_slot_enable[i]   =    payload_fifo_empty[i];
+        assign  ethernet_packet_parser_recieve_slot_enable[i]   =   que_slot_ready[i];
     end
 endgenerate
 
@@ -419,12 +379,12 @@ assign  frame_check_sequence_generator_data                     =   ethernet_pac
 assign  frame_check_sequence_generator_data_enable              =   ethernet_packet_parser_checksum_data_valid;
 assign  frame_check_sequence_generator_data_last                =   ethernet_packet_parser_checksum_data_last;
 
-assign  outbound_fifo_write_data                                =   receive_slot_arbiter_push_data;
+assign  outbound_fifo_write_data                                =   que_slot_receieve_handler_push_data;
 assign  outbound_fifo_read_clock                                =   core_clock;
 assign  outbound_fifo_read_enable                               =   receive_data_enable;
 assign  outbound_fifo_read_reset_n                              =   reset_n;
 assign  outbound_fifo_write_clock                               =   clock;
-assign  outbound_fifo_write_enable                              =   receive_slot_arbiter_push_data_valid;
+assign  outbound_fifo_write_enable                              =   que_slot_receieve_handler_push_data_valid;
 assign  outbound_fifo_write_reset_n                             =   reset_n;
 
 endmodule

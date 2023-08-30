@@ -101,10 +101,11 @@ always_comb begin
     case (state)
         S_IDLE: begin
             _ready              =   1;
-            _current_packet_id  =   fragment_id;
+            _current_packet_id  =   0;
 
             if (data_enable) begin
                 _state              =   S_CAPTURE_FRAGMENTS;
+                _current_packet_id  =   fragment_id;
                 _buffer_data        =   {1'b1,data};
                 _buffer_data_valid  =   1;
             end

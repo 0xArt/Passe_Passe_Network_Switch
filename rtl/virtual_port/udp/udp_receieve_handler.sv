@@ -28,7 +28,6 @@ module udp_receieve_handler#(
     input   wire    [RECEIVE_QUE_SLOTS-1:0]         enable,
     input   wire    [RECEIVE_QUE_SLOTS-1:0][7:0]    data,
     input   wire    [RECEIVE_QUE_SLOTS-1:0]         data_enable,
-    input   wire    [FRAGMENT_SLOTS-1:0]            push_data_enable,
     input   wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   ipv4_identification,
     input   wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   ipv4_flags,
     input   wire    [FRAGMENT_SLOTS-1:0]            fragment_slot_empty,
@@ -70,9 +69,7 @@ typedef enum
     S_CHECK_FRAGMENT_STATUS,
     S_FIND_EMPTY_FRAGMENT_SLOT,
     S_FIND_MATCHING_FRAGMENT_SLOT,
-    S_PUSH_DATA,
-    S_WAIT_WITH_PUSH,
-    S_WAIT
+    S_PUSH_DATA
 } state_type;
 
 state_type                                  _state;
@@ -81,8 +78,6 @@ logic   [RECEIVE_QUE_SLOTS-1:0]             _data_ready;
 logic                                       _ready;
 logic   [7:0]                               _push_data;
 logic   [FRAGMENT_SLOTS-1:0]                _push_data_valid;
-logic   [7:0]                               _wait_data;
-reg     [7:0]                               wait_data;
 logic   [15:0]                              _packet_id;
 reg     [15:0]                              more_fragments;
 logic   [15:0]                              _more_fragments;
@@ -103,7 +98,6 @@ always_comb begin
     _state                          =   state;
     _ready                          =   ready;
     _push_data                      =   push_data;
-    _wait_data                      =   wait_data;
     _fragment_offset                =   fragment_offset;
     _more_fragments                 =   more_fragments;
     _fragment_slot_select           =   fragment_slot_select;
@@ -200,7 +194,6 @@ always_ff @(posedge clock or negedge reset_n) begin
         push_data_valid             <=  0;
         data_ready                  <=  0;
         ready                       <=  0;
-        wait_data                   <=  0;
         packet_id                   <=  0;
         more_fragments              <=  0;
         fragment_offset             <=  0;
@@ -214,7 +207,6 @@ always_ff @(posedge clock or negedge reset_n) begin
         push_data_valid             <=  _push_data_valid;
         data_ready                  <=  _data_ready;
         ready                       <=  _ready;
-        wait_data                   <=  _wait_data;
         packet_id                   <=  _packet_id;
         more_fragments              <=  _more_fragments;
         fragment_offset             <=  _fragment_offset;

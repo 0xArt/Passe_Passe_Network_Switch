@@ -436,7 +436,6 @@ wire                                    udp_receieve_handler_reset_n;
 wire    [RECEIVE_QUE_SLOTS-1:0]         udp_receieve_handler_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0][7:0]    udp_receieve_handler_data;
 wire    [RECEIVE_QUE_SLOTS-1:0]         udp_receieve_handler_data_enable;
-wire    [FRAGMENT_SLOTS-1:0]            udp_receieve_handler_push_data_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   udp_receive_handler_ipv4_identification;
 wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   udp_receive_handler_ipv4_flags;
 wire    [FRAGMENT_SLOTS-1:0]            udp_receive_handler_fragment_slot_empty;
@@ -458,7 +457,6 @@ udp_receieve_handler(
     .enable                     (udp_receieve_handler_enable),
     .data                       (udp_receieve_handler_data),
     .data_enable                (udp_receieve_handler_data_enable),
-    .push_data_enable           (udp_receieve_handler_push_data_enable),
     .ipv4_identification        (udp_receive_handler_ipv4_identification),
     .ipv4_flags                 (udp_receive_handler_ipv4_flags),
     .fragment_slot_empty        (udp_receive_handler_fragment_slot_empty),

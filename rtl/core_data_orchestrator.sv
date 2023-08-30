@@ -231,7 +231,6 @@ always_comb begin
                     port_receive_data_ready[port_select]    =   1;
                     _port_transmit_data                     =   {1'b0,port_recieve_data[port_select][7:0]};
                     _port_transmit_data_valid               =   target_transmit_port;
-
                 end
             end
 

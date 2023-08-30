@@ -15,6 +15,7 @@ vlog -sv -work presynth \
     "rtl/fifo/asynchronous_fifo/asynchronous_fifo_read_controller.sv" \
     "rtl/fifo/asynchronous_fifo/asynchronous_fifo_write_controller.sv" \
     "rtl/fifo/asynchronous_fifo/asynchronous_fifo.sv" \
+    "rtl/que_slot.sv" \
     "rtl/que_slot_receieve_handler.sv" \
     "rtl/receive_slot_arbiter.sv" \
     "rtl/ethernet_packet_parser.sv" \

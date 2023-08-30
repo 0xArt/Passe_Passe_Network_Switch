@@ -4,3 +4,4 @@
 presynth/*
 vsim.wlf
 *.ini
+*.py

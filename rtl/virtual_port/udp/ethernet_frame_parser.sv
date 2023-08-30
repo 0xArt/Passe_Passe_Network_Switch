@@ -78,10 +78,9 @@ typedef enum
 
 state_type                              _state;
 state_type                              state;
-integer                                 i;
-integer                                 j;
-reg     [7:0]                           process_counter;
-logic   [7:0]                           _process_counter;
+integer                                 index;
+reg     [15:0]                          process_counter;
+logic   [15:0]                          _process_counter;
 logic   [RECEIVE_QUE_SLOTS-1:0]         _packet_data_valid;
 logic   [7:0]                           _packet_data;
 logic   [7:0]                           _checksum_data;
@@ -175,6 +174,11 @@ always_comb begin
         S_IDLE: begin
             _calculated_frame_check_sequence = 0;
 
+            for (index=0; index<RECEIVE_QUE_SLOTS; index=index+1) begin
+                if (recieve_slot_enable[index]) begin
+                    _que_slot_select =  index;
+                end
+            end
             if (data_enable) begin
                 data_ready = 1;
 
@@ -187,11 +191,6 @@ always_comb begin
                     _checksum_data_valid    =   1;
                 end
 
-                for (j=0; j<RECEIVE_QUE_SLOTS; j=j+1) begin
-                    if (recieve_slot_enable[j] == 1) begin
-                        _que_slot_select =  j;
-                    end
-                end
                 if (|recieve_slot_enable == 0) begin
                     _state       = S_DROP_PACKET;
                 end
@@ -199,7 +198,7 @@ always_comb begin
         end
         S_MAC_DESTINATION: begin
             if (data_enable) begin
-                data_ready                          = 1;
+                data_ready                          =   1;
                 _process_counter                    =   process_counter - 1;
                 _mac_destination[7:0]               =   data;
                 _mac_destination[47:8]              =   mac_destination[39:0];
@@ -458,7 +457,7 @@ always_comb begin
                         _state              =   S_UDP_SOURCE_PORT;
                     end
                     else begin
-                        _process_counter    =   ipv4_total_length - 20;
+                        _process_counter    =   ipv4_total_length - 21;
                         _state              =   S_UDP_PAYLOAD;
                     end
                 end
@@ -534,13 +533,13 @@ always_comb begin
             end
         end
         S_UDP_CHECKSUM: begin
-            if (udp_length < 26) begin
-                _udp_payload_pad_byte_count =   26 - udp_length;
-                _udp_payload_byte_count     =   udp_length - 8;
+            if (ipv4_total_length < 46) begin
+                _udp_payload_pad_byte_count =   46 - ipv4_total_length;
+                _udp_payload_byte_count     =   ipv4_total_length - 28;
             end
             else begin
                 _udp_payload_pad_byte_count =   0;
-                _udp_payload_byte_count     =   udp_length  -  8;
+                _udp_payload_byte_count     =   ipv4_total_length  -  28;
             end
 
             if (data_enable) begin
@@ -655,11 +654,13 @@ always_comb begin
             end
         end
         S_RESTART: begin
-            for (j=0;i<RECEIVE_QUE_SLOTS;j=j+1) begin
-                if (recieve_slot_enable[j] == 1) begin
-                    _que_slot_select =  j;
+            /*
+            for (index=0; index<RECEIVE_QUE_SLOTS; index=index+1 ) begin
+                if (recieve_slot_enable[index]) begin
+                    _que_slot_select =  index;
                 end
             end
+            */
             if (checksum_result_enable) begin
                 data_ready =   1;
 

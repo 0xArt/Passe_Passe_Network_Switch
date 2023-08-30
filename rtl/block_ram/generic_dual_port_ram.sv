@@ -22,7 +22,7 @@
 module generic_dual_port_ram#(
     parameter DATA_WIDTH            = 16,
     parameter DATA_DEPTH            = 4096,
-    parameter PIPELINED_OUTPUT      = 1
+    parameter PIPELINED_OUTPUT      = "TRUE"
 )(
     input   wire                                    write_clock,
     input   wire                                    read_clock,

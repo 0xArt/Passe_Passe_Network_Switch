@@ -1,12 +1,12 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:  www.circuitden.com
-// Engineer: Artin Isagholian
-//           artinisagholian@gmail.com
+// Company:     Phantom Motorsports
+//              www.phantomtuned.com
+// Engineer:    Artin Isagholian
 //
-// Create Date: 04/29/2023
+// Create Date: 04/27/2023
 // Design Name:
-// Module Name: udp_receieve_handler
+// Module Name: que_slot_receieve_handler
 // Project Name:
 // Target Devices:
 // Tool Versions:
@@ -19,25 +19,25 @@
 // Additional Comments:
 //
 //////////////////////////////////////////////////////////////////////////////////
-module que_slot_receieve_handler(
-    input   wire            clock,
-    input   wire            reset_n,
-    input   wire            enable,
-    input   wire    [7:0]   data,
-    input   wire            data_enable,
-    input   wire            good_packet,
-    input   wire            bad_packet,
-    input   wire            push_data_enable,
+module que_slot_receieve_handler#(
+    parameter RECEIVE_QUE_SLOTS = 2
+)(
+    input   wire                                    clock,
+    input   wire                                    reset_n,
+    input   wire                                    enable,
+    input   wire    [RECEIVE_QUE_SLOTS-1:0][7:0]    data,
+    input   wire    [RECEIVE_QUE_SLOTS-1:0]         data_enable,
+    input   wire    [RECEIVE_QUE_SLOTS-1:0]         push_enable,
 
-    output  reg             fifo_reset_n,
-    output  reg             ready,
-    output  logic           push_data_ready,
-    output  reg     [8:0]   push_data,
-    output  reg             push_data_valid
+    output  logic   [RECEIVE_QUE_SLOTS-1:0]         data_ready,
+    output  reg     [8:0]                           push_data,
+    output  reg                                     push_data_valid,
+    output  reg                                     push_data_last
 );
 
 
-localparam logic [15:0] TIMEOUT_LIMIT       = 16'h0008;
+localparam logic [15:0] TIMEOUT_LIMIT       = 16'h00F;
+
 
 wire            timeout_cycle_timer_clock;
 wire            timeout_cycle_timer_reset_n;
@@ -60,94 +60,87 @@ cycle_timer timeout_cycle_timer(
 typedef enum
 {
     S_IDLE,
-    S_ADVERTISTE,
-    S_PUSH_DATA
+    S_PUSH_DATA,
+    S_WAIT
 } state_type;
 
-state_type          _state;
-state_type          state;
-logic               _ready;
-logic   [8:0]       _push_data;
-logic               _push_data_valid;
-logic               _fifo_reset_n;
-logic               _is_first_byte;
-reg                 is_first_byte;
-
+state_type                                  _state;
+state_type                                  state;
+logic   [8:0]                               _push_data;
+logic                                       _push_data_valid;
+logic                                       _push_data_last;
+logic   [$clog2(RECEIVE_QUE_SLOTS)-1:0]     _receive_slot_select;
+reg     [$clog2(RECEIVE_QUE_SLOTS)-1:0]     receive_slot_select;
+reg                                         first_byte;
+logic                                       _first_byte;
 
 assign  timeout_cycle_timer_clock       =   clock;
 assign  timeout_cycle_timer_reset_n     =   reset_n;
 assign  timeout_cycle_timer_enable      =   1;
 assign  timeout_cycle_timer_count       =   TIMEOUT_LIMIT;
 
-
 always_comb begin
     _state                          =   state;
-    _is_first_byte                  =   is_first_byte;
-    _ready                          =   ready;
-    _push_data[7:0]                 =   push_data[7:0];
-    _push_data[8]                   =   is_first_byte;
+    _push_data                      =   push_data;
+    _receive_slot_select            =   receive_slot_select;
+    _first_byte                     =   first_byte;
+    _push_data[8]                   =   first_byte;
+    data_ready                      =   0;
+    _push_data_last                 =   0;
     _push_data_valid                =   0;
-    _fifo_reset_n                   =   1;
     timeout_cycle_timer_load_count  =   0;
-    push_data_ready                 =   0;
 
     case (state)
         S_IDLE: begin
-            _ready          =   0;
-            _is_first_byte  =   1;
+            _first_byte             =   1;
 
-            if (bad_packet) begin
-                _fifo_reset_n = 0;
+            if (enable  && push_enable[receive_slot_select]) begin
+                _state  =   S_PUSH_DATA;
             end
-            else if (good_packet) begin
-                _state                  =   S_ADVERTISTE;
-            end
-        end
-        S_ADVERTISTE:  begin
-            _ready                          =   1;
-            timeout_cycle_timer_load_count  =   1;
-
-            if (enable && push_data_enable) begin
-                _state              =   S_PUSH_DATA;
+            else begin
+                if (receive_slot_select == RECEIVE_QUE_SLOTS-1) begin
+                    _receive_slot_select    =   0;
+                end
+                else begin
+                    _receive_slot_select    =   receive_slot_select + 1;
+                end
             end
         end
         S_PUSH_DATA: begin
             if (timeout_cycle_timer_expired) begin
-                _state              =   S_IDLE;
+                _state          =   S_IDLE;
+                _push_data_last =   1;
             end
-            if (push_data_enable && enable) begin
-                if (data_enable) begin
-                    push_data_ready                 =   1;
-                    _push_data[7:0]                 =   data;
-                    _push_data_valid                =   1;
-                    timeout_cycle_timer_load_count  =   1;
+            if (enable && data_enable[receive_slot_select]) begin
+                data_ready                      =   1 << receive_slot_select;
+                _push_data[7:0]                 =   data[receive_slot_select];
+                _push_data_valid                =   1;
+                timeout_cycle_timer_load_count  =   1;
 
-                    if (is_first_byte) begin
-                        _is_first_byte  =   0;
-                    end
+                if (first_byte) begin
+                    _first_byte =   0;
                 end
             end
         end
     endcase
 end
 
-
 always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
         state                       <= S_IDLE;
         push_data                   <=  0;
         push_data_valid             <=  0;
-        fifo_reset_n                <=  0;
-        ready                       <=  0;
-        is_first_byte               <=  0;
+        push_data_last              <=  0;
+        receive_slot_select         <=  0;
+        first_byte                  <=  0;
     end
     else begin
         state                       <=  _state;
         push_data                   <=  _push_data;
         push_data_valid             <=  _push_data_valid;
-        fifo_reset_n                <=  _fifo_reset_n;
-        ready                       <=  _ready;
-        is_first_byte               <=  _is_first_byte;
+        push_data_last              <=  _push_data_last;
+        receive_slot_select         <=  _receive_slot_select;
+        first_byte                  <=  _first_byte;
     end
 end
 

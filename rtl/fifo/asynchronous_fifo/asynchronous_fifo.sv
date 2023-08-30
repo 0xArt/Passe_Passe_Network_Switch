@@ -23,7 +23,7 @@ module asynchronous_fifo#(
     parameter DATA_WIDTH                = 16,
     parameter DATA_DEPTH                = 4096,
     parameter FIRST_WORD_FALL_THROUGH   = 0,
-    parameter PIPELINED_MEMORY          = 0
+    parameter PIPELINED_MEMORY          = "FALSE"
 )(
     input   wire                            read_clock,
     input   wire                            read_reset_n,

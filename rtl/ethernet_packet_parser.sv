@@ -57,7 +57,7 @@ typedef enum
 } state_type;
 
 integer                                 i;
-integer                                 j;
+integer                                 index;
 state_type                              _state;
 state_type                              state;
 reg     [7:0]                           process_counter;
@@ -118,15 +118,15 @@ always_comb begin
             _process_counter                 = 0;
             _timeout_counter                 = 0;
 
-            for (j=0;i<RECEIVE_QUE_SLOTS;j=j+1) begin
-                if (recieve_slot_enable[j] == 1) begin
-                    _que_slot_select =  j;
+            for (index=0; index<RECEIVE_QUE_SLOTS; index=index+1) begin
+                if (recieve_slot_enable[index]) begin
+                    _que_slot_select =  index;
                 end
             end
             if (data_enable) begin
                 data_ready = 1;
 
-                if (data[8] == 1'b1)  begin
+                if (data[8])  begin
 
                     if (|recieve_slot_enable == 0) begin
                         _state       = S_DROP_PACKET;
@@ -199,9 +199,9 @@ always_comb begin
             _process_counter        =   0;
             _timeout_counter        =   0;
 
-            for (j=0;i<RECEIVE_QUE_SLOTS;j=j+1) begin
-                if (recieve_slot_enable[j] == 1) begin
-                    _que_slot_select =  j;
+            for (index=0; index<RECEIVE_QUE_SLOTS; index=index+1) begin
+                if (recieve_slot_enable[index]) begin
+                    _que_slot_select =  index;
                 end
             end
             if (|recieve_slot_enable == 0) begin

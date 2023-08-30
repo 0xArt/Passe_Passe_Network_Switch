@@ -161,7 +161,7 @@ wire    [47:0]                                  cam_table_read_data;
 generic_block_ram
 #(.DATA_WIDTH       (48),
   .DATA_DEPTH       (NUMBER_OF_PORTS),
-  .PIPELINED_OUTPUT (1)
+  .PIPELINED_OUTPUT ("TRUE")
 )
 cam_table(
     .clock          (cam_table_clock),
