@@ -7,6 +7,7 @@ automatic integer   i = 0;
 automatic integer   j = 0;
 
 $display("Running case 004");
+$display("Transmitting a fragmented IP packet with a UDP data size of 4096 via the virtual port");
 
 /*
 1. MAC  Destination

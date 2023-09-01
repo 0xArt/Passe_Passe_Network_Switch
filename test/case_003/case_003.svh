@@ -7,6 +7,7 @@ automatic integer   i = 0;
 automatic integer   j = 0;
 
 $display("Running case 003");
+$display("Transmitting a via the virtual port");
 
 /*
 1. MAC  Destination

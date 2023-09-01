@@ -156,8 +156,8 @@ initial begin
     case_000();
     case_002();
     case_003();
-    //case_004();
-    //case_005();
+    case_004();
+    case_005();
     case_006();
     $stop();
 end

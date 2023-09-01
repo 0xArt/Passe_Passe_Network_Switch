@@ -8,7 +8,6 @@ automatic integer   j = 0;
 
 $display("Running case 001");
 
-
 testbench.ethernet_message[0]   = 8'h55;
 testbench.ethernet_message[1]   = 8'h55;
 testbench.ethernet_message[2]   = 8'h55;

@@ -8,6 +8,8 @@ automatic integer   i = 0;
 automatic integer   j = 0;
 
 $display("Running case 005");
+$display("Transmitting a packet to RGMII port 0 that is to be routed to the virtual port");
+
 
 testbench.ethernet_message[0]   = 8'h55;
 testbench.ethernet_message[1]   = 8'h55;

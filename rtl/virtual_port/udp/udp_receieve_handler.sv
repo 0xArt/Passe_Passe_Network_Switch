@@ -34,7 +34,7 @@ module udp_receieve_handler#(
     input   wire    [FRAGMENT_SLOTS-1:0][15:0]      fragment_slot_packet_id,
 
     output  reg                                     ready,
-    output  reg     [RECEIVE_QUE_SLOTS-1:0]         data_ready,
+    output  logic   [RECEIVE_QUE_SLOTS-1:0]         data_ready,
     output  reg     [7:0]                           push_data,
     output  reg     [FRAGMENT_SLOTS-1:0]            push_data_valid,
     output  reg     [FRAGMENT_SLOTS-1:0]            push_data_last,
@@ -74,7 +74,6 @@ typedef enum
 
 state_type                                  _state;
 state_type                                  state;
-logic   [RECEIVE_QUE_SLOTS-1:0]             _data_ready;
 logic                                       _ready;
 logic   [7:0]                               _push_data;
 logic   [FRAGMENT_SLOTS-1:0]                _push_data_valid;
@@ -102,7 +101,7 @@ always_comb begin
     _more_fragments                 =   more_fragments;
     _fragment_slot_select           =   fragment_slot_select;
     _receive_slot_select            =   receive_slot_select;
-    _data_ready                     =   0;
+    data_ready                      =   0;
     _push_data_last                 =   0;
     _push_data_valid                =   0;
     timeout_cycle_timer_load_count  =   0;
@@ -178,7 +177,7 @@ always_comb begin
                 end
             end
             if (data_enable[receive_slot_select]) begin
-                _data_ready                     =   1 << receive_slot_select;
+                data_ready                      =   1 << receive_slot_select;
                 _push_data                      =   data[receive_slot_select];
                 _push_data_valid                =   1 << fragment_slot_select;
                 timeout_cycle_timer_load_count  =   1;
@@ -192,7 +191,6 @@ always_ff @(posedge clock or negedge reset_n) begin
         state                       <= S_IDLE;
         push_data                   <=  0;
         push_data_valid             <=  0;
-        data_ready                  <=  0;
         ready                       <=  0;
         packet_id                   <=  0;
         more_fragments              <=  0;
@@ -205,7 +203,6 @@ always_ff @(posedge clock or negedge reset_n) begin
         state                       <=  _state;
         push_data                   <=  _push_data;
         push_data_valid             <=  _push_data_valid;
-        data_ready                  <=  _data_ready;
         ready                       <=  _ready;
         packet_id                   <=  _packet_id;
         more_fragments              <=  _more_fragments;

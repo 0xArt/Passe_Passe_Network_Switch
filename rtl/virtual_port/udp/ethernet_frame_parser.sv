@@ -471,12 +471,14 @@ always_comb begin
         end
         S_UDP_SOURCE_PORT: begin
             if (data_enable) begin
-                _process_counter           =   process_counter - 1;
-                _udp_source_port[7:0]      =   data;
-                _udp_source_port[15:8]     =   udp_source_port[7:0];
-                _checksum_data             =   data;
-                _checksum_data_valid       =   1;
-                data_ready                 =   1;
+                _process_counter                    =   process_counter - 1;
+                _udp_source_port[7:0]               =   data;
+                _udp_source_port[15:8]              =   udp_source_port[7:0];
+                _checksum_data                      =   data;
+                _checksum_data_valid                =   1;
+                data_ready                          =   1;
+                _packet_data                        =   data;
+                _packet_data_valid[que_slot_select] =   1;
 
                 if (process_counter == 0) begin
                     _process_counter    =   1;
@@ -492,12 +494,14 @@ always_comb begin
         end
         S_UDP_DESTINATION_PORT: begin
             if (data_enable) begin
-                _process_counter                =   process_counter - 1;
-                _udp_destination_port[7:0]      =   data;
-                _udp_destination_port[15:8]     =   udp_destination_port[7:0];
-                _checksum_data                  =   data;
-                _checksum_data_valid            =   1;
-                data_ready                      =   1;
+                _process_counter                    =   process_counter - 1;
+                _udp_destination_port[7:0]          =   data;
+                _udp_destination_port[15:8]         =   udp_destination_port[7:0];
+                _checksum_data                      =   data;
+                _checksum_data_valid                =   1;
+                data_ready                          =   1;
+                _packet_data                        =   data;
+                _packet_data_valid[que_slot_select] =   1;
 
                 if (process_counter == 0) begin
                     _process_counter    =   1;
@@ -513,12 +517,14 @@ always_comb begin
         end
         S_UDP_LENGTH: begin
             if (data_enable) begin
-                _process_counter                =   process_counter - 1;
-                _udp_length[7:0]                =   data;
-                _udp_length[15:8]               =   udp_length[7:0];
-                _checksum_data                  =   data;
-                _checksum_data_valid            =   1;
-                data_ready                      =   1;
+                _process_counter                    =   process_counter - 1;
+                _udp_length[7:0]                    =   data;
+                _udp_length[15:8]                   =   udp_length[7:0];
+                _checksum_data                      =   data;
+                _checksum_data_valid                =   1;
+                data_ready                          =   1;
+                _packet_data                        =   data;
+                _packet_data_valid[que_slot_select] =   1;
 
                 if (process_counter == 0) begin
                     _process_counter    =   1;
@@ -557,8 +563,8 @@ always_comb begin
                 if (data[8]) begin
                     _state                          =   S_RESTART;
                     _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
                     _checksum_data_last             =   1;
+                    data_ready                      =   0;
                 end
             end
         end
@@ -586,8 +592,8 @@ always_comb begin
                 if (data[8]) begin
                     _state                          =   S_RESTART;
                     _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
                     _checksum_data_last             =   1;
+                    data_ready                      =   0;
                 end
             end
         end
@@ -606,8 +612,8 @@ always_comb begin
                 if (data[8]) begin
                     _state                          =   S_RESTART;
                     _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
                     _checksum_data_last             =   1;
+                    data_ready                      =   0;
                 end
             end
         end
@@ -628,8 +634,8 @@ always_comb begin
                 if (data[8]) begin
                     _state                          =   S_RESTART;
                     _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
                     _checksum_data_last             =   1;
+                    data_ready                      =   0;
                 end
             end
         end

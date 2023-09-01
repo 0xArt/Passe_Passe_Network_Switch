@@ -104,6 +104,7 @@ testbench.ethernet_message[70]  = 8'hD9;
 testbench.ethernet_message[71]  = 8'h21;
 
 
+$display("Transmitting a faulty packet to RMII port 0");
 
 for (i=0;i<20;i=i+1) begin
     @(posedge testbench.clock);
@@ -127,6 +128,7 @@ end
 testbench.ethernet_transmit_data[0]          =   0;
 testbench.ethernet_transmit_data_valid[0]    =   0;
 
+$display("Transmitting a proper packet to RMII port 0");
 
 for (i=0;i<72;i=i+1) begin
     @(posedge testbench.clock);
