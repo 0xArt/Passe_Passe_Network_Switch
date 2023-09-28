@@ -98,7 +98,7 @@ wire                                ethernet_packet_parser_data_enable;
 wire    [31:0]                      ethernet_packet_parser_checksum_result;
 wire                                ethernet_packet_parser_checksum_result_enable;
 wire                                ethernet_packet_parser_checksum_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_packet_parser_recieve_slot_enable;
+wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_packet_parser_receive_slot_enable;
 wire    [1:0]                       ethernet_packet_parser_speed_code;
 wire                                ethernet_packet_parser_data_ready;
 wire    [7:0]                       ethernet_packet_parser_checksum_data;
@@ -118,7 +118,7 @@ ethernet_packet_parser(
     .checksum_result        (ethernet_packet_parser_checksum_result),
     .checksum_result_enable (ethernet_packet_parser_checksum_result_enable),
     .checksum_enable        (ethernet_packet_parser_checksum_enable),
-    .recieve_slot_enable    (ethernet_packet_parser_recieve_slot_enable),
+    .receive_slot_enable    (ethernet_packet_parser_receive_slot_enable),
     .speed_code             (ethernet_packet_parser_speed_code),
 
     .data_ready             (ethernet_packet_parser_data_ready),
@@ -369,7 +369,7 @@ assign  ethernet_packet_parser_speed_code                       =   rmii_byte_pa
 
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i=i+1) begin
-        assign  ethernet_packet_parser_recieve_slot_enable[i]   =   que_slot_ready[i];
+        assign  ethernet_packet_parser_receive_slot_enable[i]   =   que_slot_ready[i];
     end
 endgenerate
 

@@ -121,8 +121,8 @@ endgenerate
 
 wire                                    core_data_orchestrator_clock;
 wire                                    core_data_orchestraotr_reset_n;
-wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_recieve_data_enable;
-wire    [NUMBER_OF_PORTS-1:0][8:0]      core_data_orchestrator_port_recieve_data;
+wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_receive_data_enable;
+wire    [NUMBER_OF_PORTS-1:0][8:0]      core_data_orchestrator_port_receive_data;
 wire    [47:0]                          core_data_orchestrator_cam_table_read_data;
 wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_receive_data_ready;
 wire    [8:0]                           core_data_orchestrator_port_transmit_data;
@@ -136,8 +136,8 @@ core_data_orchestrator #(.NUMBER_OF_PORTS(NUMBER_OF_PORTS))
 core_data_orchestrator(
     .clock                      (core_data_orchestrator_clock),
     .reset_n                    (core_data_orchestraotr_reset_n),
-    .port_recieve_data_enable   (core_data_orchestrator_port_recieve_data_enable),
-    .port_recieve_data          (core_data_orchestrator_port_recieve_data),
+    .port_receive_data_enable   (core_data_orchestrator_port_receive_data_enable),
+    .port_receive_data          (core_data_orchestrator_port_receive_data),
     .cam_table_read_data        (core_data_orchestrator_cam_table_read_data),
 
     .port_receive_data_ready    (core_data_orchestrator_port_receive_data_ready),
@@ -188,8 +188,8 @@ generate
         assign  rmii_port_receive_data_enable[i]                    =   core_data_orchestrator_port_receive_data_ready[i];
         assign  rmii_port_transmit_data_enable[i]                   =   core_data_orchestrator_port_transmit_data_valid[i];
         assign  rmii_port_transmit_data[i]                          =   core_data_orchestrator_port_transmit_data;
-        assign  core_data_orchestrator_port_recieve_data_enable[i]  =   rmii_port_receive_data_valid[i];
-        assign  core_data_orchestrator_port_recieve_data[i]         =   rmii_port_receive_data[i];
+        assign  core_data_orchestrator_port_receive_data_enable[i]  =   rmii_port_receive_data_valid[i];
+        assign  core_data_orchestrator_port_receive_data[i]         =   rmii_port_receive_data[i];
     end
 endgenerate
 
@@ -206,8 +206,8 @@ generate
         assign  virutal_port_udp_mac_source[i]                                          =   {40'hBE_AC_DC_EF_F0,i[7:0]};
         assign  virutal_port_udp_ipv4_source[i]                                          =  {24'hF0_0F_B8,i[7:0]};
 
-        assign  core_data_orchestrator_port_recieve_data_enable[i+NUMBER_OF_RMII_PORTS] =   virutal_port_udp_transmit_data_valid[i];
-        assign  core_data_orchestrator_port_recieve_data[i+NUMBER_OF_RMII_PORTS]        =   virutal_port_udp_transmit_data[i];
+        assign  core_data_orchestrator_port_receive_data_enable[i+NUMBER_OF_RMII_PORTS] =   virutal_port_udp_transmit_data_valid[i];
+        assign  core_data_orchestrator_port_receive_data[i+NUMBER_OF_RMII_PORTS]        =   virutal_port_udp_transmit_data[i];
     end
 endgenerate
 

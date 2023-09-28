@@ -8,6 +8,7 @@ automatic integer   i = 0;
 automatic integer   j = 0;
 
 $display("Running case 000");
+$display("Transmitting a faulty packet to RMII port 0");
 
 testbench.ethernet_message[0]   = 8'h55;
 testbench.ethernet_message[1]   = 8'h55;
@@ -102,9 +103,6 @@ testbench.ethernet_message[68]  = 8'h12;
 testbench.ethernet_message[69]  = 8'h61;
 testbench.ethernet_message[70]  = 8'hD9;
 testbench.ethernet_message[71]  = 8'h21;
-
-
-$display("Transmitting a faulty packet to RMII port 0");
 
 for (i=0;i<20;i=i+1) begin
     @(posedge testbench.clock);

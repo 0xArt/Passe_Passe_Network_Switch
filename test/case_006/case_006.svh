@@ -22,6 +22,7 @@ automatic logic [31:0]  frame_check_sequence    = 0;
 automatic logic [15:0]  ipv4_flags              = 0;
 
 $display("Running case 006");
+$display("Transmitting a fragmented IP packet with a UDP data size of 2000 via RMII0 destined for the virtual port");
 
 
 testbench.ethernet_message[0]   = 8'h55;

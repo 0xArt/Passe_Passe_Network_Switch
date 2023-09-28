@@ -25,8 +25,8 @@ module core_data_orchestrator#(
 )(
     input   wire                                        clock,
     input   wire                                        reset_n,
-    input   wire    [NUMBER_OF_PORTS-1:0]               port_recieve_data_enable,
-    input   wire    [NUMBER_OF_PORTS-1:0][8:0]          port_recieve_data,
+    input   wire    [NUMBER_OF_PORTS-1:0]               port_receive_data_enable,
+    input   wire    [NUMBER_OF_PORTS-1:0][8:0]          port_receive_data,
     input   wire    [47:0]                              cam_table_read_data,
 
     output  logic   [NUMBER_OF_PORTS-1:0]               port_receive_data_ready,
@@ -113,12 +113,12 @@ always_comb begin
         S_FIND_START_BIT: begin
             _process_counter    =   5;
 
-            if (port_recieve_data_enable[port_select]) begin
+            if (port_receive_data_enable[port_select]) begin
                 port_receive_data_ready[port_select]   = 1;
 
-                if (port_recieve_data[port_select][8]) begin
+                if (port_receive_data[port_select][8]) begin
                     _mac_destination[47:8]  =   mac_destination[39:0];
-                    _mac_destination[7:0]   =   port_recieve_data[port_select];
+                    _mac_destination[7:0]   =   port_receive_data[port_select];
                     _state                  =   S_GET_MAC_DESTINATION;
                 end
             end
@@ -127,10 +127,10 @@ always_comb begin
             end
         end
         S_GET_MAC_DESTINATION: begin
-            if (port_recieve_data_enable[port_select] ) begin
+            if (port_receive_data_enable[port_select] ) begin
                 port_receive_data_ready[port_select]    = 1;
                 _mac_destination[47:8]                  = mac_destination[39:0];
-                _mac_destination[7:0]                   = port_recieve_data[port_select];
+                _mac_destination[7:0]                   = port_receive_data[port_select];
                 _process_counter                        = process_counter - 1;
             end
             if(process_counter == 0) begin
@@ -139,10 +139,10 @@ always_comb begin
             end
         end
         S_GET_MAC_SOURCE: begin
-            if (port_recieve_data_enable[port_select] ) begin
+            if (port_receive_data_enable[port_select] ) begin
                 port_receive_data_ready[port_select]    = 1;
                 _mac_source[47:8]                       = mac_source[39:0];
-                _mac_source[7:0]                        = port_recieve_data[port_select];
+                _mac_source[7:0]                        = port_receive_data[port_select];
                 _process_counter                        = process_counter - 1;
             end
             if(process_counter == 0) begin
@@ -220,16 +220,16 @@ always_comb begin
             end
         end
         S_TRANSMIT_DATA: begin
-            if (port_recieve_data_enable[port_select]) begin
+            if (port_receive_data_enable[port_select]) begin
                 timeout_cycle_timer_load_count          = 1;
 
-                if (port_recieve_data[port_select][8]) begin
+                if (port_receive_data[port_select][8]) begin
                     _port_select                =   port_select + 1;
                     _state                      =   S_FIND_START_BIT;
                 end
                 else begin
                     port_receive_data_ready[port_select]    =   1;
-                    _port_transmit_data                     =   {1'b0,port_recieve_data[port_select][7:0]};
+                    _port_transmit_data                     =   {1'b0,port_receive_data[port_select][7:0]};
                     _port_transmit_data_valid               =   target_transmit_port;
                 end
             end

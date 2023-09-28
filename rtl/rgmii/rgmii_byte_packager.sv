@@ -1,12 +1,12 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:  www.circuitden.com
-// Engineer: Artin Isagholian
-//           artinisagholian@gmail.com
+// Company:     Phantom Motorsports
+//              www.phantomtuned.com
+// Engineer:    Artin Isagholian
 // 
-// Create Date: 05/05/2023
+// Create Date: 04/22/2023 07:07:33 PM
 // Design Name: 
-// Module Name: rgmii_byte_packager
+// Module Name: rmii_byte_packager
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -19,16 +19,12 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-module rgmii_byte_packager#(
-    parameter logic [1:0]   SPEED_CODE_GIGABIT      = 2,
-    parameter logic [1:0]   SPEED_CODE_100_MEGABIT  = 1,
-    parameter logic [1:0]   SPEED_CODE_10_MEGABIT   = 0
-)(
+module rgmii_byte_packager
+(
     input   wire            clock,
     input   wire            reset_n,
-    input   wire    [7:0]   data,
-    input   wire            data_enable,
-    input   wire            data_error,
+    input   wire    [3:0]   data,
+    input   wire    [1:0]   data_control,
 
     output  reg     [8:0]   packaged_data,
     output  reg             packaged_data_valid,
@@ -36,10 +32,46 @@ module rgmii_byte_packager#(
 );
 
 
+wire            data_ddr_input_buffer_clock;
+wire            data_ddr_input_buffer_reset_n;
+wire    [3:0]   data_ddr_input_buffer_ddr_input;
+
+wire    [7:0]   data_ddr_input_buffer_ddr_output;
+
+
+ddr_input_buffer#(
+  .INPUT_WIDTH              (4)
+)data_ddr_input_buffer(
+    .clock          (data_ddr_input_buffer_clock),
+    .reset_n        (data_ddr_input_buffer_reset_n),
+    .ddr_input      (data_ddr_input_buffer_ddr_input),
+
+    .ddr_output     (data_ddr_input_buffer_ddr_output)
+);
+
+
+wire            data_control_ddr_input_buffer_clock;
+wire            data_control_ddr_input_buffer_reset_n;
+wire            data_control_ddr_input_buffer_ddr_input;
+
+wire    [1:0]   data_control_ddr_input_buffer_ddr_output;
+
+ddr_input_buffer#(
+  .INPUT_WIDTH              (1)
+)data_control_ddr_input_buffer(
+    .clock          (data_control_ddr_input_buffer_clock),
+    .reset_n        (data_control_ddr_input_buffer_reset_n),
+    .ddr_input      (data_control_ddr_input_buffer_ddr_input),
+
+    .ddr_output     (data_control_ddr_input_buffer_ddr_output)
+);
+
+
 typedef enum
 {
     S_SYNC,
-    S_SPEED_CHECK
+    S_START_OF_FRAME,
+    S_PACK
 } state_type;
 
 state_type      state;
@@ -61,14 +93,22 @@ reg             is_first_byte;
 logic   [1:0]   _speed_code;
 
 
+assign  data_ddr_input_buffer_clock                 =   clock;
+assign  data_ddr_input_buffer_reset_n               =   reset_n;
+assign  data_ddr_input_buffer_ddr_input             =   data;
+
+assign  data_control_ddr_input_buffer_clock         =   clock;
+assign  data_control_ddr_input_buffer_reset_n       =   reset_n;
+assign  data_control_ddr_input_buffer_ddr_input     =   data_control;
+
 always_comb  begin
     _state                  =   state;
     _counter                =   counter;
     _sample_counter         =   sample_counter;
     _packaged_data          =   packaged_data;
-    _data_enable_delayed    =   data_enable;
-    _data_error_delayed     =   data_error_delayed;
-    _data_delayed           =   data;
+    _data_enable_delayed    =   data_control_ddr_input_buffer_ddr_output[0];
+    _data_error_delayed     =   data_control_ddr_input_buffer_ddr_output[1];
+    _data_delayed           =   data_ddr_input_buffer_ddr_input;
     _is_first_byte          =   is_first_byte;
     _packaged_data[8]       =   is_first_byte;
     _speed_code             =   speed_code;
@@ -76,25 +116,13 @@ always_comb  begin
 
     case (state)
         S_SYNC: begin
-            _is_first_byte   =   1;
-
-            if (data_enable_delayed && !data_error_delayed) begin
-                if (data_delayed == 8'h55) begin
-                    if (counter == 7) begin
-                        _state      =   S_SPEED_CHECK;
-                        _counter    =   0;
-                    end
-                    else begin
-                        _counter    =   counter + 1;
-                    end
-                end
-                else begin
-                    _counter    =   0;
-                end
-            end
-            else  begin
-                _counter    =   0;
-            end
+            _state  =   S_START_OF_FRAME;
+        end
+        S_START_OF_FRAME: begin
+            _state  =   S_PACK;
+        end
+        S_PACK: begin
+            _state  =   S_SYNC;
         end
     endcase
 end
@@ -110,7 +138,7 @@ always_ff @(posedge clock) begin
         data_delayed        <=  0;
         data_error_delayed  <=  0;
         is_first_byte       <=  0;
-        speed_code          <=  SPEED_CODE_100_MEGABIT;
+        speed_code          <=  0;
     end
     else begin
         state               <=  _state;

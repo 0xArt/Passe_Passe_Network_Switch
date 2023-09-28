@@ -32,7 +32,7 @@ module ethernet_packet_parser#(
     input   wire    [31:0]                  checksum_result,
     input   wire                            checksum_result_enable,
     input   wire                            checksum_enable,
-    input   wire    [RECEIVE_QUE_SLOTS-1:0] recieve_slot_enable,
+    input   wire    [RECEIVE_QUE_SLOTS-1:0] receive_slot_enable,
     input   wire    [1:0]                   speed_code,
 
     output  logic                           data_ready,
@@ -119,7 +119,7 @@ always_comb begin
             _timeout_counter                 = 0;
 
             for (index=0; index<RECEIVE_QUE_SLOTS; index=index+1) begin
-                if (recieve_slot_enable[index]) begin
+                if (receive_slot_enable[index]) begin
                     _que_slot_select =  index;
                 end
             end
@@ -128,7 +128,7 @@ always_comb begin
 
                 if (data[8])  begin
 
-                    if (|recieve_slot_enable == 0) begin
+                    if (|receive_slot_enable == 0) begin
                         _state       = S_DROP_PACKET;
                     end
                     else begin
@@ -200,11 +200,11 @@ always_comb begin
             _timeout_counter        =   0;
 
             for (index=0; index<RECEIVE_QUE_SLOTS; index=index+1) begin
-                if (recieve_slot_enable[index]) begin
+                if (receive_slot_enable[index]) begin
                     _que_slot_select =  index;
                 end
             end
-            if (|recieve_slot_enable == 0) begin
+            if (|receive_slot_enable == 0) begin
                 _state       = S_DROP_PACKET;
             end
             else begin

@@ -352,7 +352,7 @@ wire    [8:0]                       ethernet_frame_parser_data;
 wire                                ethernet_frame_parser_data_enable;
 wire    [31:0]                      ethernet_frame_parser_checksum_result;
 wire                                ethernet_frame_parser_checksum_result_enable;
-wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_frame_parser_recieve_slot_enable;
+wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_frame_parser_receive_slot_enable;
 
 wire                                ethernet_frame_parser_data_ready;
 wire    [7:0]                       ethernet_frame_parser_checksum_data;
@@ -374,7 +374,7 @@ ethernet_frame_parser(
     .data_enable            (ethernet_frame_parser_data_enable),
     .checksum_result        (ethernet_frame_parser_checksum_result),
     .checksum_result_enable (ethernet_frame_parser_checksum_result_enable),
-    .recieve_slot_enable    (ethernet_frame_parser_recieve_slot_enable),
+    .receive_slot_enable    (ethernet_frame_parser_receive_slot_enable),
 
     .data_ready             (ethernet_frame_parser_data_ready),
     .checksum_data          (ethernet_frame_parser_checksum_data),
@@ -566,6 +566,9 @@ assign  receive_data_ready                                      =   !switch_inbo
 assign  transmit_data                                           =   outbound_fifo_read_data;
 assign  transmit_data_valid                                     =   outbound_fifo_read_data_valid;
 
+assign module_receive_data                                      =   receive_slot_arbiter_push_data;
+assign module_receive_data_valid                                =   receive_slot_arbiter_push_data_valid;
+
 assign  outbound_fifo_read_clock                                =   clock;
 assign  outbound_fifo_read_enable                               =   transmit_data_enable;
 assign  outbound_fifo_read_reset_n                              =   reset_n;
@@ -646,7 +649,7 @@ assign  ethernet_frame_parser_clock                             =   clock;
 assign  ethernet_frame_parser_reset_n                           =   reset_n;
 assign  ethernet_frame_parser_data                              =   switch_inbound_fifo_read_data;
 assign  ethernet_frame_parser_data_enable                       =   switch_inbound_fifo_read_data_valid;
-assign  ethernet_frame_parser_recieve_slot_enable               =   receive_slot_ready;
+assign  ethernet_frame_parser_receive_slot_enable               =   receive_slot_ready;
 assign  ethernet_frame_parser_checksum_result                   =   receive_frame_check_sequence_generator_checksum;
 assign  ethernet_frame_parser_checksum_result_enable            =   receive_frame_check_sequence_generator_checksum_valid;
 

@@ -8,6 +8,7 @@ vmap intel "/home/artin/intelFPGA_lite/22.1std/questa_fse/modelsim_lib"
 
 
 vlog -sv -work presynth \
+    "rtl/cam_table/cam_table.sv" \
     "rtl/cycle_timer.sv" \
     "rtl/block_ram/generic_dual_port_ram.sv" \
     "rtl/block_ram/generic_block_ram.sv" \
@@ -23,6 +24,8 @@ vlog -sv -work presynth \
     "rtl/rmii/rmii_byte_packager.sv" \
     "rtl/rmii/rmii_byte_shipper.sv" \
     "rtl/rmii/rmii_port.sv" \
+    "rtl/rgmii/ddr_input_buffer.sv" \
+    "rtl/rgmii/ddr_output_buffer.sv" \
     "rtl/rgmii/rgmii_byte_packager.sv" \
     "rtl/rgmii/rgmii_port.sv" \
     "rtl/virtual_port/udp/internet_checksum_calculator.sv" \
