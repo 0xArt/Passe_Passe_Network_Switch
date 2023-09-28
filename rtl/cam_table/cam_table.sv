@@ -41,8 +41,7 @@ reg     [$clog2(TABLE_DEPTH)-1:0]      index_list   [TABLE_DEPTH-1:0];
 logic   [$clog2(TABLE_DEPTH)-1:0]      _index_list  [TABLE_DEPTH-1:0];
 reg                                     filled      [TABLE_DEPTH-1:0];
 logic                                   _filled     [TABLE_DEPTH-1:0];
-reg                                     written;
-logic                                   _written;
+logic                                   written;
 logic   [$clog2(TABLE_DEPTH)-1:0]       _match_index;
 logic                                   _match_valid;
 logic                                   _no_match;
@@ -52,10 +51,10 @@ integer                                 j;
 
 
 always_comb begin
-    _written        =   written;
+    _match_index    =   match_index;
     _no_match       =   0;
     _match_valid    =   0;
-    _match_index    =   match_index;
+    written         =   0;
 
     for (i=0; i<TABLE_DEPTH; i=i+1) begin
         _key_list[i]    =   key_list[i];
@@ -68,14 +67,11 @@ always_comb begin
             if (!written) begin
                 if (!filled[i]) begin
                     _key_list[i]    = key;
-                    _filled[i]      = 0;
-                    _written        = 1;
+                    _filled[i]      = 1;
+                    written         = 1;
                 end
             end
         end
-    end
-    else begin
-        _written    = 0;
     end
 
     if (match_enable) begin
@@ -93,7 +89,6 @@ end
 
 always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
-        written     <=  0;
         no_match    <=  0;
         match_valid <=  0;
         match_index <=  0;
@@ -105,7 +100,6 @@ always_ff @(posedge clock or negedge reset_n) begin
         end
     end
     else begin
-        written     <=  _written;
         no_match    <=  _no_match;
         match_valid <=  _match_valid;
         match_index <=  _match_index;
