@@ -1,34 +1,5 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/clock
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/reset_n
-add wave -noupdate -group core_data_orch -expand /testbench/switch_core/core_data_orchestrator/port_recieve_data_enable
-add wave -noupdate -group core_data_orch -expand -subitemconfig {{/testbench/switch_core/core_data_orchestrator/port_recieve_data[0]} -expand} /testbench/switch_core/core_data_orchestrator/port_recieve_data
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/cam_table_read_data
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/port_receive_data_ready
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/port_transmit_data
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/port_transmit_data_valid
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/cam_table_read_address
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/cam_table_write_address
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/cam_table_write_data
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/cam_table_write_data_valid
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/i
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/_state
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/state
-add wave -noupdate -group core_data_orch -radix hexadecimal /testbench/switch_core/core_data_orchestrator/_port_transmit_data
-add wave -noupdate -group core_data_orch -radix hexadecimal -childformat {{{/testbench/switch_core/core_data_orchestrator/_port_transmit_data_valid[2]} -radix hexadecimal} {{/testbench/switch_core/core_data_orchestrator/_port_transmit_data_valid[1]} -radix hexadecimal} {{/testbench/switch_core/core_data_orchestrator/_port_transmit_data_valid[0]} -radix hexadecimal}} -expand -subitemconfig {{/testbench/switch_core/core_data_orchestrator/_port_transmit_data_valid[2]} {-height 23 -radix hexadecimal} {/testbench/switch_core/core_data_orchestrator/_port_transmit_data_valid[1]} {-height 23 -radix hexadecimal} {/testbench/switch_core/core_data_orchestrator/_port_transmit_data_valid[0]} {-height 23 -radix hexadecimal}} /testbench/switch_core/core_data_orchestrator/_port_transmit_data_valid
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/_cam_table_read_address
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/_cam_table_write_address
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/_cam_table_write_data
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/_cam_table_write_data_valid
-add wave -noupdate -group core_data_orch -radix hexadecimal /testbench/switch_core/core_data_orchestrator/_mac_destination
-add wave -noupdate -group core_data_orch -radix hexadecimal /testbench/switch_core/core_data_orchestrator/mac_destination
-add wave -noupdate -group core_data_orch -radix hexadecimal /testbench/switch_core/core_data_orchestrator/_mac_source
-add wave -noupdate -group core_data_orch -radix hexadecimal /testbench/switch_core/core_data_orchestrator/mac_source
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/_port_select
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/port_select
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/_process_counter
-add wave -noupdate -group core_data_orch /testbench/switch_core/core_data_orchestrator/process_counter
 add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/rmii_port/rmii_byte_shipper/clock}
 add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/rmii_port/rmii_byte_shipper/reset_n}
 add wave -noupdate -group rmii_byte_shipper {/testbench/switch_core/genblk1[1]/rmii_port/rmii_byte_shipper/data}
@@ -73,22 +44,13 @@ add wave -noupdate -group switch_core /testbench/switch_core/rmii_port_rmii_tran
 add wave -noupdate -group switch_core /testbench/switch_core/rmii_port_rmii_transmit_data_valid
 add wave -noupdate -group switch_core /testbench/switch_core/core_data_orchestrator_clock
 add wave -noupdate -group switch_core /testbench/switch_core/core_data_orchestraotr_reset_n
-add wave -noupdate -group switch_core /testbench/switch_core/core_data_orchestrator_port_recieve_data_enable
-add wave -noupdate -group switch_core -expand /testbench/switch_core/core_data_orchestrator_port_recieve_data
-add wave -noupdate -group switch_core /testbench/switch_core/core_data_orchestrator_cam_table_read_data
 add wave -noupdate -group switch_core /testbench/switch_core/core_data_orchestrator_port_receive_data_ready
 add wave -noupdate -group switch_core /testbench/switch_core/core_data_orchestrator_port_transmit_data
 add wave -noupdate -group switch_core /testbench/switch_core/core_data_orchestrator_port_transmit_data_valid
-add wave -noupdate -group switch_core /testbench/switch_core/core_data_orchestrator_cam_table_read_address
-add wave -noupdate -group switch_core /testbench/switch_core/core_data_orchestrator_cam_table_write_address
 add wave -noupdate -group switch_core /testbench/switch_core/core_data_orchestrator_cam_table_write_data
 add wave -noupdate -group switch_core /testbench/switch_core/core_data_orchestrator_cam_table_write_data_valid
 add wave -noupdate -group switch_core /testbench/switch_core/cam_table_clock
-add wave -noupdate -group switch_core /testbench/switch_core/cam_table_read_address
-add wave -noupdate -group switch_core /testbench/switch_core/cam_table_write_address
-add wave -noupdate -group switch_core /testbench/switch_core/cam_table_write_data
 add wave -noupdate -group switch_core /testbench/switch_core/cam_table_write_enable
-add wave -noupdate -group switch_core /testbench/switch_core/cam_table_read_data
 add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_clock}
 add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/read_reset_n}
 add wave -noupdate -group rmii_inbound_fifo_0 {/testbench/switch_core/genblk1[0]/rmii_port/inbound_fifo/write_clock}
@@ -314,7 +276,6 @@ add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/vi
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_data_enable}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_checksum_result}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_checksum_result_enable}
-add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_recieve_slot_enable}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_data_ready}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_checksum_data}
 add wave -noupdate -group virtual_port_udp {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser_checksum_data_valid}
@@ -547,7 +508,6 @@ add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genb
 add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/data_enable}
 add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/checksum_result}
 add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/checksum_result_enable}
-add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/recieve_slot_enable}
 add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/data_ready}
 add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/checksum_data}
 add wave -noupdate -group udp_ethernet_frame_parser {/testbench/switch_core/genblk2[0]/virutal_port_udp/ethernet_frame_parser/checksum_data_valid}
@@ -793,7 +753,6 @@ add wave -noupdate -group receive_slot_arbiter {/testbench/switch_core/genblk2[0
 add wave -noupdate -group receive_slot_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/push_data_valid}
 add wave -noupdate -group receive_slot_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/_state}
 add wave -noupdate -group receive_slot_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/state}
-add wave -noupdate -group receive_slot_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/_ready}
 add wave -noupdate -group receive_slot_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/_push_data}
 add wave -noupdate -group receive_slot_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/_push_data_valid}
 add wave -noupdate -group receive_slot_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/_que_slot_select}
@@ -805,7 +764,6 @@ add wave -noupdate -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/
 add wave -noupdate -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/checksum_result}
 add wave -noupdate -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/checksum_result_enable}
 add wave -noupdate -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/checksum_enable}
-add wave -noupdate -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/recieve_slot_enable}
 add wave -noupdate -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/speed_code}
 add wave -noupdate -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/data_ready}
 add wave -noupdate -group ethernet_packet_parser_rmii_0 {/testbench/switch_core/genblk1[0]/rmii_port/ethernet_packet_parser/checksum_data}
@@ -848,15 +806,68 @@ add wave -noupdate -group fragment_arbiter {/testbench/switch_core/genblk2[0]/vi
 add wave -noupdate -group fragment_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/push_data_valid}
 add wave -noupdate -group fragment_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/_state}
 add wave -noupdate -group fragment_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/state}
-add wave -noupdate -group fragment_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/_ready}
 add wave -noupdate -group fragment_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/_push_data}
 add wave -noupdate -group fragment_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/_push_data_valid}
 add wave -noupdate -group fragment_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/_que_slot_select}
 add wave -noupdate -group fragment_arbiter {/testbench/switch_core/genblk2[0]/virutal_port_udp/receive_slot_arbiter/que_slot_select}
 add wave -noupdate /testbench/ethernet_message
 add wave -noupdate /testbench/udp_data
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/clock
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/reset_n
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/port_receive_data_enable
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/port_receive_data
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/cam_table_match_index
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/cam_table_no_match
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/cam_table_match_enable
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/port_receive_data_ready
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/port_transmit_data
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/port_transmit_data_valid
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/cam_table_match_valid
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/cam_table_write_data
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/cam_table_write_data_valid
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/cam_table_index
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/timeout_cycle_timer_clock
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/timeout_cycle_timer_reset_n
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/timeout_cycle_timer_enable
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/timeout_cycle_timer_load_count
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/timeout_cycle_timer_count
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/timeout_cycle_timer_expired
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/i
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/_state
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/state
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/_port_transmit_data
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/_port_transmit_data_valid
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/_cam_table_write_data
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/_cam_table_write_data_valid
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/_mac_destination
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/mac_destination
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/_mac_source
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/mac_source
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/_port_select
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/port_select
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/_process_counter
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/process_counter
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/_target_transmit_port
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/target_transmit_port
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/_cam_table_match_valid
+add wave -noupdate -expand -group core_data_orchestrator /testbench/switch_core/core_data_orchestrator/_cam_table_index
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/clock
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/reset_n
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/write_enable
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/key
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/index
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/match_enable
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/match_index
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/match_valid
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/no_match
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/written
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/_match_index
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/_match_valid
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/_no_match
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/i
+add wave -noupdate -expand -group cam_table /testbench/switch_core/cam_table/j
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {112825000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {9932574 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 666
 configure wave -valuecolwidth 327
@@ -872,4 +883,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {340561920 ps}
+WaveRestoreZoom {9437536 ps} {10767856 ps}

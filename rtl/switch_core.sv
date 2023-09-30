@@ -22,7 +22,8 @@
 module switch_core#(
     parameter NUMBER_OF_RMII_PORTS    = 2,
     parameter NUMBER_OF_VIRTUAL_PORTS = 0,
-    parameter RECEIVE_QUE_SLOTS       = 2
+    parameter RECEIVE_QUE_SLOTS       = 2,
+    parameter CAM_TABLE_DEPTH         = 32
 )(
     input   wire                                        clock,
     input   wire                                        reset_n,
@@ -123,14 +124,17 @@ wire                                    core_data_orchestrator_clock;
 wire                                    core_data_orchestraotr_reset_n;
 wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_receive_data_enable;
 wire    [NUMBER_OF_PORTS-1:0][8:0]      core_data_orchestrator_port_receive_data;
-wire    [47:0]                          core_data_orchestrator_cam_table_read_data;
+wire    [$clog2(CAM_TABLE_DEPTH)-1:0]   core_data_orchestrator_cam_table_match_index;
+wire                                    core_data_orchestrator_cam_table_no_match;
+wire                                    core_data_orchestrator_cam_table_match_enable;
+
 wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_receive_data_ready;
 wire    [8:0]                           core_data_orchestrator_port_transmit_data;
 wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_transmit_data_valid;
-wire    [3:0]                           core_data_orchestrator_cam_table_read_address;
-wire    [3:0]                           core_data_orchestrator_cam_table_write_address;
+wire                                    core_data_orchestrator_cam_table_match_valid;
 wire    [47:0]                          core_data_orchestrator_cam_table_write_data;
 wire                                    core_data_orchestrator_cam_table_write_data_valid;
+wire    [$clog2(NUMBER_OF_PORTS)-1:0]   core_data_orchestrator_cam_table_index;
 
 core_data_orchestrator #(.NUMBER_OF_PORTS(NUMBER_OF_PORTS))
 core_data_orchestrator(
@@ -138,42 +142,48 @@ core_data_orchestrator(
     .reset_n                    (core_data_orchestraotr_reset_n),
     .port_receive_data_enable   (core_data_orchestrator_port_receive_data_enable),
     .port_receive_data          (core_data_orchestrator_port_receive_data),
-    .cam_table_read_data        (core_data_orchestrator_cam_table_read_data),
+    .cam_table_match_index      (core_data_orchestrator_cam_table_match_index),
+    .cam_table_no_match         (core_data_orchestrator_cam_table_no_match),
+    .cam_table_match_enable     (core_data_orchestrator_cam_table_match_enable),
 
     .port_receive_data_ready    (core_data_orchestrator_port_receive_data_ready),
     .port_transmit_data         (core_data_orchestrator_port_transmit_data),
     .port_transmit_data_valid   (core_data_orchestrator_port_transmit_data_valid),
-    .cam_table_read_address     (core_data_orchestrator_cam_table_read_address),
-    .cam_table_write_address    (core_data_orchestrator_cam_table_write_address),
+    .cam_table_match_valid      (core_data_orchestrator_cam_table_match_valid),
     .cam_table_write_data       (core_data_orchestrator_cam_table_write_data),
-    .cam_table_write_data_valid (core_data_orchestrator_cam_table_write_data_valid)
+    .cam_table_write_data_valid (core_data_orchestrator_cam_table_write_data_valid),
+    .cam_table_index            (core_data_orchestrator_cam_table_index)
 );
 
 
-wire                                            cam_table_clock;
-wire                                            cam_table_reset_n;
-wire                                            cam_table_write_enable;
-wire    [47:0]                                  cam_table_write_data;
-wire    [$clog2(NUMBER_OF_PORTS)-1:0]           cam_table_write_address;
-wire    [$clog2(NUMBER_OF_PORTS)-1:0]           cam_table_read_address;
-wire    [47:0]                                  cam_table_read_data;
+wire                                    cam_table_clock;
+wire                                    cam_table_reset_n;
+wire                                    cam_table_write_enable;
+wire    [47:0]                          cam_table_key;
+wire    [$clog2(NUMBER_OF_PORTS)-1:0]   cam_table_index;
+wire                                    cam_table_match_enable;
 
-generic_block_ram
-#(.DATA_WIDTH       (48),
-  .DATA_DEPTH       (NUMBER_OF_PORTS),
-  .PIPELINED_OUTPUT ("TRUE")
+wire    [$clog2(NUMBER_OF_PORTS)-1:0]   cam_table_match_index;
+wire                                    cam_table_match_valid;
+wire                                    cam_table_no_match;
+
+cam_table
+#(.KEY_WIDTH    (48),
+  .TABLE_DEPTH  (CAM_TABLE_DEPTH),
+  .INDEX_DEPTH  (NUMBER_OF_PORTS)
 )
 cam_table(
     .clock          (cam_table_clock),
     .reset_n        (cam_table_reset_n),
     .write_enable   (cam_table_write_enable),
-    .write_address  (cam_table_write_address),
-    .write_data     (cam_table_write_data),
-    .read_address   (cam_table_read_address),
+    .key            (cam_table_key),
+    .index          (cam_table_index),
+    .match_enable   (cam_table_match_enable),
 
-    .read_data      (cam_table_read_data)
+    .match_index    (cam_table_match_index),
+    .match_valid    (cam_table_match_valid),
+    .no_match       (cam_table_no_match)
 );
-
 
 generate
     for (i=0; i<NUMBER_OF_RMII_PORTS; i=i+1) begin
@@ -213,13 +223,15 @@ endgenerate
 
 assign  core_data_orchestrator_clock                        =   clock;
 assign  core_data_orchestraotr_reset_n                      =   reset_n;
-assign  core_data_orchestrator_cam_table_read_data          =   cam_table_read_data;
+assign  core_data_orchestrator_cam_table_match_index        =   cam_table_match_index;
+assign  core_data_orchestrator_cam_table_match_enable       =   cam_table_match_valid;
+assign  core_data_orchestrator_cam_table_no_match           =   cam_table_no_match;
 
 assign  cam_table_clock                                     =   clock;
 assign  cam_table_reset_n                                   =   reset_n;
-assign  cam_table_read_address                              =   core_data_orchestrator_cam_table_read_address;
-assign  cam_table_write_address                             =   core_data_orchestrator_cam_table_write_address;
-assign  cam_table_write_data                                =   core_data_orchestrator_cam_table_write_data;
+assign  cam_table_match_enable                              =   core_data_orchestrator_cam_table_match_valid;
+assign  cam_table_key                                       =   core_data_orchestrator_cam_table_write_data;
+assign  cam_table_index                                     =   core_data_orchestrator_cam_table_index;
 assign  cam_table_write_enable                              =   core_data_orchestrator_cam_table_write_data_valid;
 
 

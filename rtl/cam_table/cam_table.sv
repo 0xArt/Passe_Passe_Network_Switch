@@ -21,15 +21,17 @@
 //////////////////////////////////////////////////////////////////////////////////
 module cam_table#(
     parameter KEY_WIDTH             = 48,
-    parameter TABLE_DEPTH           = 32
+    parameter TABLE_DEPTH           = 32,
+    parameter INDEX_DEPTH           = 8
 )(
     input   wire                                    clock,
     input   wire                                    reset_n,
     input   wire                                    write_enable,
     input   wire    [KEY_WIDTH-1:0]                 key,
-    input   wire    [$clog2(TABLE_DEPTH)-1:0]       match_enable,
+    input   wire    [$clog2(INDEX_DEPTH)-1:0]       index,
+    input   wire                                    match_enable,
 
-    output  reg     [$clog2(TABLE_DEPTH)-1:0]       match_index,
+    output  reg     [$clog2(INDEX_DEPTH)-1:0]       match_index,
     output  reg                                     match_valid,
     output  reg                                     no_match
 );
@@ -37,12 +39,12 @@ module cam_table#(
 
 reg     [KEY_WIDTH-1:0]                key_list     [TABLE_DEPTH-1:0];
 logic   [KEY_WIDTH-1:0]                _key_list    [TABLE_DEPTH-1:0];
-reg     [$clog2(TABLE_DEPTH)-1:0]      index_list   [TABLE_DEPTH-1:0];
-logic   [$clog2(TABLE_DEPTH)-1:0]      _index_list  [TABLE_DEPTH-1:0];
+reg     [$clog2(INDEX_DEPTH)-1:0]      index_list   [TABLE_DEPTH-1:0];
+logic   [$clog2(INDEX_DEPTH)-1:0]      _index_list  [TABLE_DEPTH-1:0];
 reg                                     filled      [TABLE_DEPTH-1:0];
 logic                                   _filled     [TABLE_DEPTH-1:0];
 logic                                   written;
-logic   [$clog2(TABLE_DEPTH)-1:0]       _match_index;
+logic   [$clog2(INDEX_DEPTH)-1:0]       _match_index;
 logic                                   _match_valid;
 logic                                   _no_match;
 
@@ -67,6 +69,7 @@ always_comb begin
             if (!written) begin
                 if (!filled[i]) begin
                     _key_list[i]    = key;
+                    _index_list[i]  = index;
                     _filled[i]      = 1;
                     written         = 1;
                 end
