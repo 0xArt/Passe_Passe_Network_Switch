@@ -8,7 +8,7 @@ vmap intel "/home/artin/intelFPGA_lite/22.1std/questa_fse/modelsim_lib"
 
 
 vlog -sv -work presynth \
-    "rtl/cam_table/cam_table.sv" \
+    "rtl/cam_table.sv" \
     "rtl/cycle_timer.sv" \
     "rtl/block_ram/generic_dual_port_ram.sv" \
     "rtl/block_ram/generic_block_ram.sv" \

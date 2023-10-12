@@ -135,8 +135,12 @@ wire                                    core_data_orchestrator_cam_table_match_v
 wire    [47:0]                          core_data_orchestrator_cam_table_write_data;
 wire                                    core_data_orchestrator_cam_table_write_data_valid;
 wire    [$clog2(NUMBER_OF_PORTS)-1:0]   core_data_orchestrator_cam_table_index;
+wire                                    core_data_orchestrator_cam_table_delete_key;
 
-core_data_orchestrator #(.NUMBER_OF_PORTS(NUMBER_OF_PORTS))
+core_data_orchestrator
+#(  .NUMBER_OF_PORTS    (NUMBER_OF_PORTS),
+    .TABLE_DEPTH        (CAM_TABLE_DEPTH)
+)
 core_data_orchestrator(
     .clock                      (core_data_orchestrator_clock),
     .reset_n                    (core_data_orchestraotr_reset_n),
@@ -152,7 +156,8 @@ core_data_orchestrator(
     .cam_table_match_valid      (core_data_orchestrator_cam_table_match_valid),
     .cam_table_write_data       (core_data_orchestrator_cam_table_write_data),
     .cam_table_write_data_valid (core_data_orchestrator_cam_table_write_data_valid),
-    .cam_table_index            (core_data_orchestrator_cam_table_index)
+    .cam_table_index            (core_data_orchestrator_cam_table_index),
+    .cam_table_delete_key       (core_data_orchestrator_cam_table_delete_key)
 );
 
 
@@ -162,6 +167,7 @@ wire                                    cam_table_write_enable;
 wire    [47:0]                          cam_table_key;
 wire    [$clog2(NUMBER_OF_PORTS)-1:0]   cam_table_index;
 wire                                    cam_table_match_enable;
+wire                                    cam_table_delete_enable;
 
 wire    [$clog2(NUMBER_OF_PORTS)-1:0]   cam_table_match_index;
 wire                                    cam_table_match_valid;
@@ -179,6 +185,7 @@ cam_table(
     .key            (cam_table_key),
     .index          (cam_table_index),
     .match_enable   (cam_table_match_enable),
+    .delete_enable  (cam_table_delete_enable),
 
     .match_index    (cam_table_match_index),
     .match_valid    (cam_table_match_valid),
@@ -233,6 +240,6 @@ assign  cam_table_match_enable                              =   core_data_orches
 assign  cam_table_key                                       =   core_data_orchestrator_cam_table_write_data;
 assign  cam_table_index                                     =   core_data_orchestrator_cam_table_index;
 assign  cam_table_write_enable                              =   core_data_orchestrator_cam_table_write_data_valid;
-
+assign  cam_table_delete_enable                             =   core_data_orchestrator_cam_table_delete_key;
 
 endmodule

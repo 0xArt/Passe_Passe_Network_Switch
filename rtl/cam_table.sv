@@ -30,6 +30,7 @@ module cam_table#(
     input   wire    [KEY_WIDTH-1:0]                 key,
     input   wire    [$clog2(INDEX_DEPTH)-1:0]       index,
     input   wire                                    match_enable,
+    input   wire                                    delete_enable,
 
     output  reg     [$clog2(INDEX_DEPTH)-1:0]       match_index,
     output  reg                                     match_valid,
@@ -77,11 +78,19 @@ always_comb begin
         end
     end
 
+    if (delete_enable) begin
+        for (i=0; i<TABLE_DEPTH; i=i+1) begin
+            if (filled[i] && (key_list[i] == key)) begin
+                _filled[i]  =   0;
+            end
+        end
+    end
+
     if (match_enable) begin
         _no_match = 1;
 
         for (i=0; i<TABLE_DEPTH; i=i+1) begin
-            if (key_list[i] == key) begin
+            if (filled[i] && (key_list[i] == key)) begin
                 _no_match       = 0;
                 _match_index    = index_list[i];
                 _match_valid    = 1;

@@ -38,7 +38,8 @@ module core_data_orchestrator#(
     output  reg                                         cam_table_match_valid,
     output  reg     [47:0]                              cam_table_write_data,
     output  reg                                         cam_table_write_data_valid,
-    output  reg     [$clog2(NUMBER_OF_PORTS)-1:0]       cam_table_index
+    output  reg     [$clog2(NUMBER_OF_PORTS)-1:0]       cam_table_index,
+    output  reg                                         cam_table_delete_key
 );
 
 
@@ -65,6 +66,7 @@ typedef enum
     S_GET_MAC_DESTINATION,
     S_GET_MAC_SOURCE,
     S_LOOKUP_SOURCE_PORT,
+    S_DELETE_OLD_TABLE_ENTRY,
     S_UPDATE_TABLE,
     S_LOOKUP_DESTINATION_PORT,
     S_TRANSMIT_MAC_DESTINATION,
@@ -91,6 +93,7 @@ logic       [NUMBER_OF_PORTS-1:0]               _target_transmit_port;
 reg         [NUMBER_OF_PORTS-1:0]               target_transmit_port;
 logic                                           _cam_table_match_valid;
 logic       [$clog2(NUMBER_OF_PORTS)-1:0]       _cam_table_index;
+logic                                           _cam_table_delete_key;
 
 assign  timeout_cycle_timer_clock       =   clock;
 assign  timeout_cycle_timer_reset_n     =   reset_n;
@@ -112,6 +115,7 @@ always_comb begin
     port_receive_data_ready             =   0;
     _cam_table_write_data_valid         =   0;
     timeout_cycle_timer_load_count      =   0;
+    _cam_table_delete_key               =   0;
 
     case (state)
         S_FIND_START_BIT: begin
@@ -166,11 +170,22 @@ always_comb begin
                         _process_counter    =   0;
                     end
                     if (cam_table_match_enable) begin
-                        _state              =  S_LOOKUP_DESTINATION_PORT;
                         _process_counter    =   0;
+
+                        if (port_select ==  cam_table_match_index) begin
+                            _state          =  S_LOOKUP_DESTINATION_PORT;
+                        end
+                        else begin
+                            _state          =   S_DELETE_OLD_TABLE_ENTRY;
+                        end
                     end
                 end
             endcase
+        end
+        S_DELETE_OLD_TABLE_ENTRY: begin
+            _cam_table_write_data       =   mac_source;
+            _cam_table_delete_key       =   1;
+            _state                      =   S_UPDATE_TABLE;
         end
         S_UPDATE_TABLE: begin
             _process_counter            =   0;
@@ -268,6 +283,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         process_counter             <=  0;
         target_transmit_port        <=  0;
         cam_table_index             <=  0;
+        cam_table_delete_key        <=  0;
     end
     else begin
         state                       <=  _state;
@@ -282,6 +298,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         process_counter             <=  _process_counter;
         target_transmit_port        <=  _target_transmit_port;
         cam_table_index             <=  _cam_table_index;
+        cam_table_delete_key        <=  _cam_table_delete_key;
     end
 end
 
