@@ -69,6 +69,7 @@ typedef enum
     S_CHECK_FRAGMENT_STATUS,
     S_FIND_EMPTY_FRAGMENT_SLOT,
     S_FIND_MATCHING_FRAGMENT_SLOT,
+    S_FLUSH_NON_DATAGRAM_DATA,
     S_PUSH_DATA
 } state_type;
 
@@ -87,6 +88,8 @@ reg     [12:0]                              fragment_offset;
 logic   [FRAGMENT_SLOTS-1:0]                _push_data_last;
 logic   [$clog2(RECEIVE_QUE_SLOTS)-1:0]     _receive_slot_select;
 reg     [$clog2(RECEIVE_QUE_SLOTS)-1:0]     receive_slot_select;
+logic   [7:0]                               _process_counter;
+reg     [7:0]                               process_counter;
 
 assign  timeout_cycle_timer_clock       =   clock;
 assign  timeout_cycle_timer_reset_n     =   reset_n;
@@ -101,6 +104,7 @@ always_comb begin
     _more_fragments                 =   more_fragments;
     _fragment_slot_select           =   fragment_slot_select;
     _receive_slot_select            =   receive_slot_select;
+    _process_counter                =   process_counter;
     data_ready                      =   0;
     _push_data_last                 =   0;
     _push_data_valid                =   0;
@@ -156,7 +160,8 @@ always_comb begin
             timeout_cycle_timer_load_count  =   1;
 
             if (fragment_slot_packet_id[fragment_slot_select] == packet_id) begin
-                _state                          =   S_PUSH_DATA;
+                _state                          =   S_FLUSH_NON_DATAGRAM_DATA;
+                _process_counter                =   14;
             end
             else begin
                 if (fragment_slot_select == (FRAGMENT_SLOTS - 1)) begin
@@ -166,6 +171,18 @@ always_comb begin
                 else begin
                     _fragment_slot_select   =   fragment_slot_select + 1;
                 end
+            end
+        end
+        S_FLUSH_NON_DATAGRAM_DATA: begin
+            if (data_enable[receive_slot_select]) begin
+                _process_counter                =   process_counter - 1;
+                data_ready                      =   1 << receive_slot_select;
+                timeout_cycle_timer_load_count  =   1;
+            end
+
+            if (process_counter == 0) begin
+                _state      =   S_PUSH_DATA;
+                data_ready  =   0;
             end
         end
         S_PUSH_DATA: begin
@@ -198,6 +215,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         push_data_last              <=  0;
         receive_slot_select         <=  0;
         fragment_slot_select        <=  0;
+        process_counter             <=  0;
     end
     else begin
         state                       <=  _state;
@@ -210,6 +228,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         push_data_last              <=  _push_data_last;
         receive_slot_select         <=  _receive_slot_select;
         fragment_slot_select        <=  _fragment_slot_select;
+        process_counter             <=  _process_counter;
     end
 end
 

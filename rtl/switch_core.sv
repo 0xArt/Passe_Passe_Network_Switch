@@ -20,10 +20,11 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module switch_core#(
-    parameter NUMBER_OF_RMII_PORTS    = 2,
-    parameter NUMBER_OF_VIRTUAL_PORTS = 0,
-    parameter RECEIVE_QUE_SLOTS       = 2,
-    parameter CAM_TABLE_DEPTH         = 32
+    parameter NUMBER_OF_RMII_PORTS      = 2,
+    parameter NUMBER_OF_VIRTUAL_PORTS   = 0,
+    parameter RECEIVE_QUE_SLOTS         = 2,
+    parameter CAM_TABLE_DEPTH           = 32,
+    parameter UDP_TRANSMIT_BUFFER_SIZE  = 4096
 )(
     input   wire                                        clock,
     input   wire                                        reset_n,

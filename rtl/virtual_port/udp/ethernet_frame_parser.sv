@@ -224,6 +224,8 @@ always_comb begin
                 _mac_source[7:0]                    =   data;
                 _mac_source[47:8]                   =   mac_source[39:0];
                 _checksum_data                      =   data;
+                _packet_data                        =   data;
+                _packet_data_valid[que_slot_select] =   1;
                 _checksum_data_valid                =   1;
 
                 if (process_counter == 0) begin
@@ -422,12 +424,14 @@ always_comb begin
         end
         S_IPV4_SOURCE_ADDRESS: begin
             if (data_enable) begin
-                _process_counter                =   process_counter - 1;
-                _ipv4_source_address[7:0]       =   data;
-                _ipv4_source_address[31:8]      =   ipv4_source_address[23:0];
-                _checksum_data                  =   data;
-                _checksum_data_valid            =   1;
-                data_ready                      =   1;
+                _process_counter                    =   process_counter - 1;
+                _ipv4_source_address[7:0]           =   data;
+                _ipv4_source_address[31:8]          =   ipv4_source_address[23:0];
+                _checksum_data                      =   data;
+                _packet_data                        =   data;
+                _packet_data_valid[que_slot_select] =   1;
+                _checksum_data_valid                =   1;
+                data_ready                          =   1;
 
                 if (process_counter == 0) begin
                     _process_counter    =   3;
@@ -447,6 +451,8 @@ always_comb begin
                 _ipv4_destination_address[7:0]      =   data;
                 _ipv4_destination_address[31:8]     =   ipv4_destination_address[23:0];
                 _checksum_data                      =   data;
+                _packet_data                        =   data;
+                _packet_data_valid[que_slot_select] =   1;
                 _checksum_data_valid                =   1;
                 data_ready                          =   1;
 

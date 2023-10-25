@@ -19,8 +19,9 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module virutal_port_udp#(
-    parameter RECEIVE_QUE_SLOTS = 4,
-    parameter FRAGMENT_SLOTS    = 4
+    parameter RECEIVE_QUE_SLOTS         = 4,
+    parameter FRAGMENT_SLOTS            = 4,
+    parameter UDP_TRANSMIT_BUFFER_SIZE  = 4096
 )(
     input   wire            clock,
     input   wire            reset_n,
@@ -162,7 +163,7 @@ wire    [7:0]   udp_data_buffer_read_data;
 
 generic_block_ram
 #(.DATA_WIDTH       (8),
-  .DATA_DEPTH       (65535),
+  .DATA_DEPTH       (UDP_TRANSMIT_BUFFER_SIZE),
   .PIPELINED_OUTPUT (0)
 )
 udp_data_buffer(
