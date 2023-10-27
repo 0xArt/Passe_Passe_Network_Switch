@@ -50,6 +50,7 @@ reg     [$clog2(RECEIVE_QUE_SLOTS)-1:0]      que_slot_select;
 always_comb begin
     _state                          =   state;
     _push_data                      =   push_data;
+    _que_slot_select                =   que_slot_select;
     _push_data_valid                =   0;
     ready                           =   0;
 
