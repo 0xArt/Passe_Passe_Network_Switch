@@ -22,7 +22,7 @@
 module generic_block_ram#(
     parameter DATA_WIDTH            = 16,
     parameter DATA_DEPTH            = 4096,
-    parameter PIPELINED_OUTPUT      = "TRUE"
+    parameter PIPELINED_OUTPUT      = 0
 )(
     input   wire                                    clock,
     input   wire                                    reset_n,

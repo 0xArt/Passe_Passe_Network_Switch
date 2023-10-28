@@ -61,7 +61,8 @@ wire            module_inbound_fifo_empty;
 asynchronous_fifo#(
     .DATA_WIDTH                 (9),
     .DATA_DEPTH                 (8192),
-    .FIRST_WORD_FALL_THROUGH    (1)
+    .FIRST_WORD_FALL_THROUGH    (1),
+    .XILINX                     (XILINX)
 )
 module_inbound_fifo(
     .read_clock         (module_inbound_fifo_read_clock),
@@ -162,10 +163,11 @@ wire    [15:0]  udp_data_buffer_read_address;
 
 wire    [7:0]   udp_data_buffer_read_data;
 
-generic_block_ram
+block_ram
 #(.DATA_WIDTH       (8),
   .DATA_DEPTH       (UDP_TRANSMIT_BUFFER_SIZE),
-  .PIPELINED_OUTPUT (0)
+  .PIPELINED_OUTPUT (0),
+  .XILINX           (XILINX)
 )
 udp_data_buffer(
     .clock                  (udp_data_buffer_clock),
@@ -307,7 +309,8 @@ wire            switch_inbound_fifo_empty;
 asynchronous_fifo#(
     .DATA_WIDTH                 (9),
     .DATA_DEPTH                 (2048),
-    .FIRST_WORD_FALL_THROUGH    (1)
+    .FIRST_WORD_FALL_THROUGH    (1),
+    .XILINX                     (XILINX)
 )
 switch_inbound_fifo(
     .read_clock         (switch_inbound_fifo_read_clock),
@@ -549,7 +552,8 @@ wire            outbound_fifo_empty;
 asynchronous_fifo#(
     .DATA_WIDTH                 (9),
     .DATA_DEPTH                 (8192),
-    .FIRST_WORD_FALL_THROUGH    (1)
+    .FIRST_WORD_FALL_THROUGH    (1),
+    .XILINX                     (XILINX)
 )
 outbound_fifo(
     .read_clock         (outbound_fifo_read_clock),

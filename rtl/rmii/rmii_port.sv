@@ -76,8 +76,8 @@ wire            frame_fifo_empty;
 
 synchronous_fifo
 #(.DATA_WIDTH               (9),
-  .DATA_DEPTH               (1500),
-  .FIRST_WORD_FALL_THROUGH  ("TRUE"),
+  .DATA_DEPTH               (2048),
+  .FIRST_WORD_FALL_THROUGH  (1),
   .XILINX                   (XILINX)                
 ) frame_fifo(
     .clock              (frame_fifo_clock),
@@ -232,7 +232,8 @@ wire    [8:0]   outbound_fifo_read_data;
 asynchronous_fifo#(
     .DATA_WIDTH                 (9),
     .DATA_DEPTH                 (4096),
-    .FIRST_WORD_FALL_THROUGH    (1)
+    .FIRST_WORD_FALL_THROUGH    (1),
+    .XILINX                     (XILINX)
 )
 outbound_fifo(
     .read_clock         (outbound_fifo_read_clock),
@@ -288,7 +289,8 @@ wire            inbound_fifo_empty;
 asynchronous_fifo#(
     .DATA_WIDTH                 (9),
     .DATA_DEPTH                 (4096),
-    .FIRST_WORD_FALL_THROUGH    (1)
+    .FIRST_WORD_FALL_THROUGH    (1),
+    .XILINX                     (XILINX)
 )
 inbound_fifo(
     .read_clock         (inbound_fifo_read_clock),
