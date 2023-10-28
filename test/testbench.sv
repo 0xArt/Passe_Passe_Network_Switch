@@ -36,6 +36,7 @@ localparam  MODULE_CLOCK_PERIOD         =   1e9/MODULE_CLOCK_FREQUENCY;
 localparam  NUMBER_OF_RMII_PORTS        =   2;
 localparam  NUMBER_OF_VIRTUAL_PORTS     =   1;
 localparam  RECEIVE_QUE_SLOTS           =   4;
+localparam  XILINX                      =   0;
 
 logic                                           clock                           =   0;
 logic                                           reset_n                         =   1;
@@ -65,7 +66,8 @@ wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]  switch_core_module_transmit_data;
 switch_core #(
     .NUMBER_OF_RMII_PORTS       (NUMBER_OF_RMII_PORTS),
     .NUMBER_OF_VIRTUAL_PORTS    (NUMBER_OF_VIRTUAL_PORTS),
-    .RECEIVE_QUE_SLOTS          (RECEIVE_QUE_SLOTS)
+    .RECEIVE_QUE_SLOTS          (RECEIVE_QUE_SLOTS),
+    .XILINX                     (XILINX)
 )
 switch_core(
     .clock                          (switch_core_clock),

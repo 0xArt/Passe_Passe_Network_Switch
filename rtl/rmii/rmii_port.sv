@@ -20,7 +20,8 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module rmii_port#(
-    parameter RECEIVE_QUE_SLOTS = 4
+    parameter RECEIVE_QUE_SLOTS = 4,
+    parameter XILINX            = 0
 )(
     input   wire            clock,
     input   wire            core_clock,
@@ -76,7 +77,8 @@ wire            frame_fifo_empty;
 synchronous_fifo
 #(.DATA_WIDTH               (9),
   .DATA_DEPTH               (1500),
-  .FIRST_WORD_FALL_THROUGH ("TRUE")
+  .FIRST_WORD_FALL_THROUGH  ("TRUE"),
+  .XILINX                   (XILINX)                
 ) frame_fifo(
     .clock              (frame_fifo_clock),
     .reset_n            (frame_fifo_reset_n),
@@ -169,7 +171,9 @@ wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_push_data_valid;
 
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
-        que_slot    que_slot(
+        que_slot#(
+            .XILINX (XILINX)
+        )que_slot(
             .clock                  (que_slot_clock),
             .reset_n                (que_slot_reset_n),
             .data                   (que_slot_data),

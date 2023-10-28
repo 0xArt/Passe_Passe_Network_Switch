@@ -193,17 +193,17 @@ always_ff @(posedge clock or negedge reset_n) begin
         read_data                   <=  0;
         read_data_valid             <=  0;
         read_pointer                <=  0;
-        empty                       <=  1;
         internal_full               <=  0;
         read_enable_delayed         <=  0;
         write_pointer_gray_sync_0   <=  0;
         write_pointer_gray_sync_1   <=  0;
         internal_read_data_valid    <=  0;
-        empty_delay_0               <=  0;
-        empty_delay_1               <=  1;
         read_data_valid_delay_0     <=  0;
         read_data_valid_delay_1     <=  0;
         available_bytes             <=  0;
+        empty                       <=  1;
+        empty_delay_0               <=  1;
+        empty_delay_1               <=  1;
     end
     else begin
         read_data                   <=  _read_data;

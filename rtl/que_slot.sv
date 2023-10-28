@@ -19,7 +19,9 @@
 // Additional Comments:
 //
 //////////////////////////////////////////////////////////////////////////////////
-module que_slot(
+module que_slot#(
+    parameter XILINX    = 0
+)(
     input   wire            clock,
     input   wire            reset_n,
     input   wire    [7:0]   data,
@@ -48,7 +50,8 @@ wire    [7:0]   receive_fifo_read_data;
 synchronous_fifo
 #(  .DATA_WIDTH                 (8),
     .DATA_DEPTH                 (1024),
-    .FIRST_WORD_FALL_THROUGH    ("TRUE")
+    .FIRST_WORD_FALL_THROUGH    (1),
+    .XILINX                     (XILINX)
 ) receive_fifo(
     .clock              (receive_fifo_clock),
     .reset_n            (receive_fifo_reset_n),

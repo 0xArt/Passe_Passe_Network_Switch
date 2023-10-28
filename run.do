@@ -12,6 +12,7 @@ vlog -sv -work presynth \
     "rtl/cycle_timer.sv" \
     "rtl/block_ram/generic_dual_port_ram.sv" \
     "rtl/block_ram/generic_block_ram.sv" \
+    "rtl/fifo/generic_synchronous_fifo.sv" \
     "rtl/fifo/synchronous_fifo.sv" \
     "rtl/fifo/asynchronous_fifo/asynchronous_fifo_read_controller.sv" \
     "rtl/fifo/asynchronous_fifo/asynchronous_fifo_write_controller.sv" \

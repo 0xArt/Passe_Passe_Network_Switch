@@ -24,7 +24,8 @@ module switch_core#(
     parameter NUMBER_OF_VIRTUAL_PORTS   = 0,
     parameter RECEIVE_QUE_SLOTS         = 2,
     parameter CAM_TABLE_DEPTH           = 32,
-    parameter UDP_TRANSMIT_BUFFER_SIZE  = 4096
+    parameter UDP_TRANSMIT_BUFFER_SIZE  = 4096,
+    parameter XILINX                    = 0
 )(
     input   wire                                        clock,
     input   wire                                        reset_n,
@@ -62,8 +63,10 @@ wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_port_rmii_transmit_data_valid;
 
 generate
     for (i=0; i<NUMBER_OF_RMII_PORTS; i =i+1) begin
-        rmii_port #(.RECEIVE_QUE_SLOTS(RECEIVE_QUE_SLOTS))
-        rmii_port(
+        rmii_port #(
+            .RECEIVE_QUE_SLOTS  (RECEIVE_QUE_SLOTS),
+            .XILINX             (XILINX)
+        )rmii_port(
             .clock                          (rmii_port_clock[i]),
             .core_clock                     (rmii_port_core_clock[i]),
             .reset_n                        (rmii_port_reset_n[i]),
@@ -100,8 +103,10 @@ wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_transmit_data_v
 
 generate
     for (i=0; i<NUMBER_OF_VIRTUAL_PORTS; i =i+1) begin
-        virutal_port_udp #(.RECEIVE_QUE_SLOTS(RECEIVE_QUE_SLOTS))
-        virutal_port_udp(
+        virutal_port_udp #(
+            .RECEIVE_QUE_SLOTS  (RECEIVE_QUE_SLOTS),
+            .XILINX             (XILINX)
+        )virutal_port_udp(
             .clock                              (virutal_port_udp_clock[i]),
             .reset_n                            (virutal_port_udp_reset_n[i]),
             .mac_source                         (virutal_port_udp_mac_source[i]),

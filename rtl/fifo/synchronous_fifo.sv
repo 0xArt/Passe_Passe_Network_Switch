@@ -22,7 +22,8 @@
 module synchronous_fifo#(
     parameter DATA_WIDTH                = 16,
     parameter DATA_DEPTH                = 4096,
-    parameter FIRST_WORD_FALL_THROUGH   = "FALSE"
+    parameter FIRST_WORD_FALL_THROUGH   = 0,
+    parameter XILINX                    = 0
 )(
     input   wire                            clock,
     input   wire                            reset_n,
@@ -37,140 +38,185 @@ module synchronous_fifo#(
 );
 
 
-reg     [DATA_DEPTH-1:0]                read_pointer;
-logic   [DATA_DEPTH-1:0]                _read_pointer;
-reg     [DATA_DEPTH-1:0]                write_pointer;
-logic   [DATA_DEPTH-1:0]                _write_pointer;
-logic   [DATA_WIDTH-1:0]                _read_data;
-logic                                   _read_data_valid;
-reg     [DATA_WIDTH-1:0]                memory   [DATA_DEPTH-1:0];
-logic   [DATA_WIDTH-1:0]                _memory  [DATA_DEPTH-1:0];
-integer                                 i;
-integer                                 j;
+generate
+    if (XILINX && !FIRST_WORD_FALL_THROUGH) begin
 
+        wire                        xpm_fifo_sync_data_valid;
+        wire    [DATA_WIDTH-1:0]    xpm_fifo_sync_dout;
+        wire                        xpm_fifo_sync_empty;
+        wire                        xpm_fifo_sync_full;
+        wire    [DATA_WIDTH-1:0]    xpm_fifo_sync_din;
+        wire                        xpm_fifo_sync_rd_en;
+        wire                        xpm_fifo_sync_rst;
+        wire                        xpm_fifo_sync_wr_clk;
+        wire                        xpm_fifo_sync_wr_en;
 
-always_comb begin
-    _read_data          =   read_data;
-    _read_data_valid    =   read_data_valid;
-    _read_pointer       =   read_pointer;
-    _write_pointer      =   write_pointer;
-    full                =   0;
-    empty               =   ( (write_pointer == read_pointer) && !full ) ? 1 : 0;
+        xpm_fifo_sync #(
+            .CASCADE_HEIGHT         (0),
+            .DOUT_RESET_VALUE       ("0"),
+            .ECC_MODE               ("no_ecc"),
+            .FIFO_MEMORY_TYPE       ("auto"),
+            .FIFO_READ_LATENCY      (0),
+            .FIFO_WRITE_DEPTH       (DATA_DEPTH),
+            .FULL_RESET_VALUE       (0),
+            .PROG_EMPTY_THRESH      (10),
+            .PROG_FULL_THRESH       (10),
+            .RD_DATA_COUNT_WIDTH    (1),
+            .READ_DATA_WIDTH        (DATA_WIDTH),
+            .READ_MODE              ("std"),
+            .SIM_ASSERT_CHK         (0),
+            .USE_ADV_FEATURES       ("0707"),
+            .WAKEUP_TIME            (0),
+            .WRITE_DATA_WIDTH       (DATA_WIDTH),
+            .WR_DATA_COUNT_WIDTH    (1)
+        ) xpm_fifo_sync_inst (
+        .almost_empty       (),
+        .almost_full        (),
+        .data_valid         (xpm_fifo_sync_data_valid), 
+        .dbiterr            (),
+        .dout               (xpm_fifo_sync_dout),
+        .empty              (xpm_fifo_sync_empty),
+        .full               (xpm_fifo_sync_full),
+        .overflow           (),
+        .prog_empty         (),
+        .prog_full          (),
+        .rd_data_count      (),
+        .rd_rst_busy        (),
+        .sbiterr            (),
+        .underflow          (),
+        .wr_ack             (),
+        .wr_data_count      (),
+        .wr_rst_busy        (),
+        .din                (xpm_fifo_sync_din),
+        .injectdbiterr      (),
+        .injectsbiterr      (),
+        .rd_en              (xpm_fifo_sync_rd_en),
+        .rst                (xpm_fifo_sync_rst),
+        .sleep              (),
+        .wr_clk             (xpm_fifo_sync_wr_clk),
+        .wr_en              (xpm_fifo_sync_wr_en)
+        );
 
-    for (i=0; i<DATA_DEPTH; i=i+1) begin
-        _memory[i]      =   memory[i];
+        assign  read_data_valid         =   xpm_fifo_sync_data_valid;
+        assign  read_data               =   xpm_fifo_sync_dout;
+        assign  full                    =   xpm_fifo_sync_full;
+        assign  empty                   =   xpm_fifo_sync_empty;
+
+        assign  xpm_fifo_sync_din       =   write_data;
+        assign  xpm_fifo_sync_rd_en     =   read_enable;
+        assign  xpm_fifo_sync_rst       =   !reset_n;
+        assign  xpm_fifo_sync_wr_clk    =   clock;
+        assign  xpm_fifo_sync_wr_en     =   write_enable;
     end
+    else if (XILINX && FIRST_WORD_FALL_THROUGH) begin
+        wire                        xpm_fifo_sync_data_valid;
+        wire    [DATA_WIDTH-1:0]    xpm_fifo_sync_dout;
+        wire                        xpm_fifo_sync_empty;
+        wire                        xpm_fifo_sync_full;
+        wire    [DATA_WIDTH-1:0]    xpm_fifo_sync_din;
+        wire                        xpm_fifo_sync_rd_en;
+        wire                        xpm_fifo_sync_rst;
+        wire                        xpm_fifo_sync_wr_clk;
+        wire                        xpm_fifo_sync_wr_en;
 
-    if (write_pointer == (DATA_DEPTH - 1)) begin
-        if (read_pointer == 0) begin
-            full = 1;
-        end
+        xpm_fifo_sync #(
+            .CASCADE_HEIGHT         (0),
+            .DOUT_RESET_VALUE       ("0"),
+            .ECC_MODE               ("no_ecc"),
+            .FIFO_MEMORY_TYPE       ("auto"),
+            .FIFO_READ_LATENCY      (0),
+            .FIFO_WRITE_DEPTH       (DATA_DEPTH),
+            .FULL_RESET_VALUE       (0),
+            .PROG_EMPTY_THRESH      (10),
+            .PROG_FULL_THRESH       (10),
+            .RD_DATA_COUNT_WIDTH    (1),
+            .READ_DATA_WIDTH        (DATA_WIDTH),
+            .READ_MODE              ("fwft"),
+            .SIM_ASSERT_CHK         (0),
+            .USE_ADV_FEATURES       ("0707"),
+            .WAKEUP_TIME            (0),
+            .WRITE_DATA_WIDTH       (DATA_WIDTH),
+            .WR_DATA_COUNT_WIDTH    (1)
+        ) xpm_fifo_sync_inst (
+        .almost_empty       (),
+        .almost_full        (),
+        .data_valid         (xpm_fifo_sync_data_valid), 
+        .dbiterr            (),
+        .dout               (xpm_fifo_sync_dout),
+        .empty              (xpm_fifo_sync_empty),
+        .full               (xpm_fifo_sync_full),
+        .overflow           (),
+        .prog_empty         (),
+        .prog_full          (),
+        .rd_data_count      (),
+        .rd_rst_busy        (),
+        .sbiterr            (),
+        .underflow          (),
+        .wr_ack             (),
+        .wr_data_count      (),
+        .wr_rst_busy        (),
+        .din                (xpm_fifo_sync_din),
+        .injectdbiterr      (),
+        .injectsbiterr      (),
+        .rd_en              (xpm_fifo_sync_rd_en),
+        .rst                (xpm_fifo_sync_rst),
+        .sleep              (),
+        .wr_clk             (xpm_fifo_sync_wr_clk),
+        .wr_en              (xpm_fifo_sync_wr_en)
+        );
+
+        assign  read_data_valid         =   xpm_fifo_sync_data_valid;
+        assign  read_data               =   xpm_fifo_sync_dout;
+        assign  full                    =   xpm_fifo_sync_full;
+        assign  empty                   =   xpm_fifo_sync_empty;
+
+        assign  xpm_fifo_sync_din       =   write_data;
+        assign  xpm_fifo_sync_rd_en     =   read_enable;
+        assign  xpm_fifo_sync_rst       =   !reset_n;
+        assign  xpm_fifo_sync_wr_clk    =   clock;
+        assign  xpm_fifo_sync_wr_en     =   write_enable;
     end
     else begin
-        if ((write_pointer + 1) == read_pointer) begin
-            full = 1;
-        end
+        wire                        generic_synchronous_fifo_clock;
+        wire                        generic_synchronous_fifo_reset_n;
+        wire                        generic_synchronous_fifo_read_enable;
+        wire                        generic_synchronous_fifo_write_enable;
+        wire    [DATA_WIDTH-1:0]    generic_synchronous_fifo_write_data;
+
+        wire    [DATA_WIDTH-1:0]    generic_synchronous_fifo_read_data;
+        wire                        generic_synchronous_fifo_read_data_valid;
+        wire                        generic_synchronous_fifo_full;
+        wire                        generic_synchronous_fifo_empty;
+
+        generic_synchronous_fifo#(
+            .DATA_WIDTH               (DATA_WIDTH),
+            .DATA_DEPTH               (DATA_DEPTH),
+            .FIRST_WORD_FALL_THROUGH  (FIRST_WORD_FALL_THROUGH)
+        )generic_synchronous_fifo(
+            .clock              (generic_synchronous_fifo_clock),
+            .reset_n            (generic_synchronous_fifo_reset_n),
+            .read_enable        (generic_synchronous_fifo_read_enable),
+            .write_enable       (generic_synchronous_fifo_write_enable),
+            .write_data         (generic_synchronous_fifo_write_data),
+
+            .read_data          (generic_synchronous_fifo_read_data),
+            .read_data_valid    (generic_synchronous_fifo_read_data_valid),
+            .full               (generic_synchronous_fifo_full),
+            .empty              (generic_synchronous_fifo_empty)
+        );
+
+        
+        assign  read_data                               =   generic_synchronous_fifo_read_data;
+        assign  read_data_valid                         =   generic_synchronous_fifo_read_data_valid;
+        assign  full                                    =   generic_synchronous_fifo_full;
+        assign  empty                                   =   generic_synchronous_fifo_empty;
+
+        assign  generic_synchronous_fifo_clock          =   clock;
+        assign  generic_syncrhonous_fifo_reset_n        =   reset_n;
+        assign  generic_synchronous_fifo_read_enable    =   read_enable;
+        assign  generic_synchronous_fifo_write_enable   =   write_enable;
+        assign  generic_synchronous_fifo_write_data     =   write_data;
     end
-
-    if (read_enable && read_data_valid) begin
-        _read_data_valid    =   0;
-    end
-
-    if (write_enable && !read_enable) begin
-        if (!full) begin
-            _memory[write_pointer] = write_data;
-
-            if (write_pointer == (DATA_DEPTH -1)) begin
-                _write_pointer  =   0;
-            end
-            else begin
-                _write_pointer  = write_pointer + 1;
-            end
-        end
-    end
-
-    if (read_enable && !write_enable) begin
-        if(!empty) begin
-            _read_data          =   memory[read_pointer];
-            _read_data_valid    =   1;
-
-            if (read_pointer == (DATA_DEPTH -1)) begin
-                _read_pointer  =   0;
-            end
-            else begin
-                _read_pointer  = read_pointer + 1;
-            end
-        end
-        else begin
-            _read_data_valid    =   0;
-        end
-    end
-
-    if (read_enable && write_enable) begin
-        if (empty) begin
-            _read_data       =   write_data;
-            _read_data_valid =   1;
-        end
-        else begin
-            _read_data          =   memory[read_pointer];
-            _read_data_valid    =   1;
-
-            if (read_pointer == (DATA_DEPTH -1)) begin
-                _read_pointer  =   0;
-            end
-            else begin
-                _read_pointer  = read_pointer + 1;
-            end
-
-            _memory[write_pointer] = write_data;
-
-            if (write_pointer == (DATA_DEPTH -1)) begin
-                _write_pointer  =   0;
-            end
-            else begin
-                _write_pointer  = write_pointer + 1;
-            end
-        end
-    end
-
-    if (FIRST_WORD_FALL_THROUGH) begin
-        if (!empty) begin
-            if (!read_enable && !read_data_valid) begin
-                _read_data          =   memory[read_pointer];
-                _read_data_valid    =   1;
-
-                if (read_pointer == (DATA_DEPTH -1)) begin
-                    _read_pointer  =   0;
-                end
-                else begin
-                    _read_pointer  = read_pointer + 1;
-                end
-            end
-        end
-    end
-end
-
-always_ff @(posedge clock or negedge reset_n) begin
-    if (!reset_n) begin
-        read_data                       <=  0;
-        read_data_valid                 <=  0;
-        read_pointer                    <=  0;
-        write_pointer                   <=  0;
-
-        for (j=0; j<DATA_DEPTH; j=j+1) begin
-            memory[j]                   <=  0;
-        end
-    end
-    else begin
-        read_data                       <=  _read_data;
-        read_data_valid                 <=  _read_data_valid;
-        read_pointer                    <=  _read_pointer;
-        write_pointer                   <=  _write_pointer;
-
-        for (j=0; j<DATA_DEPTH; j=j+1) begin
-            memory[j]                   <=  _memory[j];
-        end
-    end
-end
+endgenerate
 
 endmodule

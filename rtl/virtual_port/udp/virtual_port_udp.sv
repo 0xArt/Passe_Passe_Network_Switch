@@ -21,7 +21,8 @@
 module virutal_port_udp#(
     parameter RECEIVE_QUE_SLOTS         = 4,
     parameter FRAGMENT_SLOTS            = 4,
-    parameter UDP_TRANSMIT_BUFFER_SIZE  = 4096
+    parameter UDP_TRANSMIT_BUFFER_SIZE  = 4096,
+    parameter XILINX                    = "FALSE"
 )(
     input   wire            clock,
     input   wire            reset_n,
@@ -410,7 +411,8 @@ wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_push_data_valid;
 
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
-        receive_slot    receive_slot(
+        receive_slot#(.XILINX(XILINX))
+        receive_slot(
             .clock                          (receive_slot_clock),
             .reset_n                        (receive_slot_reset_n),
             .data                           (receive_slot_data),
@@ -488,7 +490,8 @@ wire    [FRAGMENT_SLOTS-1:0][15:0]  udp_fragment_slot_push_current_packet_id;
 
 generate
     for (j=0; j<FRAGMENT_SLOTS; j = j+1) begin
-        udp_fragment_slot    udp_fragment_slot(
+        udp_fragment_slot#(.XILINX(XILINX))    
+        udp_fragment_slot(
             .clock              (udp_fragment_slot_clock),
             .reset_n            (udp_fragment_slot_reset_n),
             .data               (udp_fragment_slot_data),
