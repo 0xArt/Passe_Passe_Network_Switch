@@ -100,6 +100,8 @@ wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_module_transmit
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_receive_data_ready;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]      virutal_port_udp_transmit_data;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_transmit_data_valid;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]      virutal_port_udp_module_receive_data;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_module_receive_data_valid;
 
 generate
     for (i=0; i<NUMBER_OF_VIRTUAL_PORTS; i =i+1) begin
@@ -118,6 +120,8 @@ generate
             .module_transmit_data               (virutal_port_udp_module_transmit_data[i]),
             .module_transmit_data_enable        (virutal_port_udp_module_transmit_data_enable[i]),
 
+            .module_receive_data                (virutal_port_udp_module_receive_data),
+            .module_receive_data_valid          (virutal_port_udp_module_receive_data_valid),
             .receive_data_ready                 (virutal_port_udp_receive_data_ready[i]),
             .transmit_data                      (virutal_port_udp_transmit_data[i]),
             .transmit_data_valid                (virutal_port_udp_transmit_data_valid[i])
@@ -130,7 +134,7 @@ wire                                    core_data_orchestrator_clock;
 wire                                    core_data_orchestraotr_reset_n;
 wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_receive_data_enable;
 wire    [NUMBER_OF_PORTS-1:0][8:0]      core_data_orchestrator_port_receive_data;
-wire    [$clog2(CAM_TABLE_DEPTH)-1:0]   core_data_orchestrator_cam_table_match_index;
+wire    [$clog2(NUMBER_OF_PORTS)-1:0]   core_data_orchestrator_cam_table_match_index;
 wire                                    core_data_orchestrator_cam_table_no_match;
 wire                                    core_data_orchestrator_cam_table_match_enable;
 

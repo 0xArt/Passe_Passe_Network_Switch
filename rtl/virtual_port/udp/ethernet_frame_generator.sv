@@ -20,38 +20,39 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 module ethernet_frame_generator#(
-    logic [15:0]    INTER_PACKET_GAP_CYCLES       = 16'h000F
-)(
-    input   wire                            clock,
-    input   wire                            reset_n,
-    input   wire                            enable,
-    input   wire    [31:0]                  checksum_result,
-    input   wire                            checksum_result_enable,
-    input   wire    [15:0]                  ipv4_checksum_result,
-    input   wire                            ipv4_checksum_result_enable,
-    input   wire    [7:0]                   udp_buffer_read_data,
-    input   wire    [47:0]                  mac_destination,
-    input   wire    [47:0]                  mac_source,
-    input   wire    [31:0]                  ipv4_destination,
-    input   wire    [31:0]                  ipv4_source,
-    input   wire    [15:0]                  udp_checksum,
-    input   wire    [15:0]                  udp_destination,
-    input   wire    [15:0]                  udp_source,
-    input   wire    [15:0]                  ipv4_flags,
-    input   wire    [15:0]                  ipv4_identification,
-    input   wire    [15:0]                  udp_payload_size,
-    input   wire    [15:0]                  udp_fragment_size,
+    logic [15:0]    INTER_PACKET_GAP_CYCLES     = 16'h000F,
+    parameter       UDP_TRANSMIT_BUFFER_SIZE    = 4096  
+)(              
+    input   wire                                            clock,
+    input   wire                                            reset_n,
+    input   wire                                            enable,
+    input   wire    [31:0]                                  checksum_result,
+    input   wire                                            checksum_result_enable,
+    input   wire    [15:0]                                  ipv4_checksum_result,
+    input   wire                                            ipv4_checksum_result_enable,
+    input   wire    [7:0]                                   udp_buffer_read_data,
+    input   wire    [47:0]                                  mac_destination,
+    input   wire    [47:0]                                  mac_source,
+    input   wire    [31:0]                                  ipv4_destination,
+    input   wire    [31:0]                                  ipv4_source,
+    input   wire    [15:0]                                  udp_checksum,
+    input   wire    [15:0]                                  udp_destination,
+    input   wire    [15:0]                                  udp_source,
+    input   wire    [15:0]                                  ipv4_flags,
+    input   wire    [15:0]                                  ipv4_identification,
+    input   wire    [15:0]                                  udp_payload_size,
+    input   wire    [15:0]                                  udp_fragment_size,
 
-    output  logic   [7:0]                   checksum_data,
-    output  logic                           checksum_data_valid,
-    output  reg                             checksum_data_last,
-    output  logic   [8:0]                   frame_data,
-    output  logic                           frame_data_valid,
-    output  reg     [7:0]                   ipv4_checksum_data,
-    output  reg                             ipv4_checksum_data_valid,
-    output  reg                             ipv4_checksum_data_last,
-    output  reg     [15:0]                  udp_buffer_read_address,
-    output  reg                             ready
+    output  logic   [7:0]                                   checksum_data,
+    output  logic                                           checksum_data_valid,
+    output  reg                                             checksum_data_last,
+    output  logic   [8:0]                                   frame_data,
+    output  logic                                           frame_data_valid,
+    output  reg     [7:0]                                   ipv4_checksum_data,
+    output  reg                                             ipv4_checksum_data_valid,
+    output  reg                                             ipv4_checksum_data_last,
+    output  reg     [$clog2(UDP_TRANSMIT_BUFFER_SIZE)-1:0]  udp_buffer_read_address,
+    output  reg                                             ready
 );
 
 
@@ -132,59 +133,59 @@ typedef enum
     S_GAP
 } state_type;
 
-state_type                              _state;
-state_type                              state;
-integer                                 i;
-integer                                 j;
-logic                                   _ready;
-reg     [7:0]                           process_counter;
-logic   [7:0]                           _process_counter;
-reg     [47:0]                          saved_mac_destination;
-logic   [47:0]                          _saved_mac_destination;
-reg     [47:0]                          saved_mac_source;
-logic   [47:0]                          _saved_mac_source;
-reg     [31:0]                          saved_ipv4_destination;
-logic   [31:0]                          _saved_ipv4_destination;
-reg     [31:0]                          saved_ipv4_source;
-logic   [31:0]                          _saved_ipv4_source;
-reg     [15:0]                          saved_udp_destination;
-logic   [15:0]                          _saved_udp_destination;
-reg     [15:0]                          saved_ipv4_checksum;
-logic   [15:0]                          _saved_ipv4_checksum;
-reg     [15:0]                          saved_udp_source;
-logic   [15:0]                          _saved_udp_source;
-reg     [15:0]                          saved_udp_payload_size;
-logic   [15:0]                          _saved_udp_payload_size;
-reg     [15:0]                          saved_udp_fragment_size;
-logic   [15:0]                          _saved_udp_fragment_size;
-reg     [15:0]                          ipv4_total_length;
-logic   [15:0]                          _ipv4_total_length;
-reg     [15:0]                          udp_total_length;
-logic   [15:0]                          _udp_total_length;
-logic                                   _ipv4_checksum_data_last;
-logic                                   _udp_checksum_data_last;
-logic                                   _ipv4_checksum_data_valid;
-reg     [15:0]                          frame_total_length;
-logic   [15:0]                          _frame_total_length;
-reg     [31:0]                          saved_checksum_result;
-logic   [31:0]                          _saved_checksum_result;
-reg     [15:0]                          saved_ipv4_flags;
-logic   [15:0]                          _saved_ipv4_flags;
-reg     [15:0]                          saved_ipv4_identification;
-logic   [15:0]                          _saved_ipv4_identification;
-logic                                   _checksum_data_last;
-reg     [15:0]                          _saved_udp_checksum;
-logic   [15:0]                          saved_udp_checksum;
-logic   [15:0]                          _ipv4_checksum_data;
-logic   [15:0]                          _udp_buffer_read_address;
-logic   [2:0][8:0]                      _frame_byte;
-reg     [2:0][8:0]                      frame_byte;
-logic   [2:0]                           _frame_byte_valid;
-reg     [2:0]                           frame_byte_valid;
-logic                                   _frame_start;
-reg                                     frame_start;
-logic   [11:0]                          _fragment_offset;
-reg     [11:0]                          fragment_offset;
+state_type                                      _state;
+state_type                                      state;
+integer                                         i;
+integer                                         j;
+logic                                           _ready;
+reg     [7:0]                                   process_counter;
+logic   [7:0]                                   _process_counter;
+reg     [47:0]                                  saved_mac_destination;
+logic   [47:0]                                  _saved_mac_destination;
+reg     [47:0]                                  saved_mac_source;
+logic   [47:0]                                  _saved_mac_source;
+reg     [31:0]                                  saved_ipv4_destination;
+logic   [31:0]                                  _saved_ipv4_destination;
+reg     [31:0]                                  saved_ipv4_source;
+logic   [31:0]                                  _saved_ipv4_source;
+reg     [15:0]                                  saved_udp_destination;
+logic   [15:0]                                  _saved_udp_destination;
+reg     [15:0]                                  saved_ipv4_checksum;
+logic   [15:0]                                  _saved_ipv4_checksum;
+reg     [15:0]                                  saved_udp_source;
+logic   [15:0]                                  _saved_udp_source;
+reg     [15:0]                                  saved_udp_payload_size;
+logic   [15:0]                                  _saved_udp_payload_size;
+reg     [15:0]                                  saved_udp_fragment_size;
+logic   [15:0]                                  _saved_udp_fragment_size;
+reg     [15:0]                                  ipv4_total_length;
+logic   [15:0]                                  _ipv4_total_length;
+reg     [15:0]                                  udp_total_length;
+logic   [15:0]                                  _udp_total_length;
+logic                                           _ipv4_checksum_data_last;
+logic                                           _udp_checksum_data_last;
+logic                                           _ipv4_checksum_data_valid;
+reg     [15:0]                                  frame_total_length;
+logic   [15:0]                                  _frame_total_length;
+reg     [31:0]                                  saved_checksum_result;
+logic   [31:0]                                  _saved_checksum_result;
+reg     [15:0]                                  saved_ipv4_flags;
+logic   [15:0]                                  _saved_ipv4_flags;
+reg     [15:0]                                  saved_ipv4_identification;
+logic   [15:0]                                  _saved_ipv4_identification;
+logic                                           _checksum_data_last;
+reg     [15:0]                                  _saved_udp_checksum;
+logic   [15:0]                                  saved_udp_checksum;
+logic   [15:0]                                  _ipv4_checksum_data;
+logic   [$clog2(UDP_TRANSMIT_BUFFER_SIZE)-1:0]  _udp_buffer_read_address;
+logic   [2:0][8:0]                              _frame_byte;
+reg     [2:0][8:0]                              frame_byte;
+logic   [2:0]                                   _frame_byte_valid;
+reg     [2:0]                                   frame_byte_valid;
+logic                                           _frame_start;
+reg                                             frame_start;
+logic   [11:0]                                  _fragment_offset;
+reg     [11:0]                                  fragment_offset;
 
 
 assign  process_cycle_timer_clock       =   clock;

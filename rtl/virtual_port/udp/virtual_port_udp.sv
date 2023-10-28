@@ -80,31 +80,32 @@ module_inbound_fifo(
 );
 
 
-wire            udp_transmit_handler_clock;
-wire            udp_transmit_handler_reset_n;
-wire            udp_transmit_handler_enable;
-wire    [8:0]   udp_transmit_handler_data;
-wire            udp_transmit_handler_data_enable;
-wire    [31:0]  udp_transmit_handler_ipv4_source;
+wire                                            udp_transmit_handler_clock;
+wire                                            udp_transmit_handler_reset_n;
+wire                                            udp_transmit_handler_enable;
+wire    [8:0]                                   udp_transmit_handler_data;
+wire                                            udp_transmit_handler_data_enable;
+wire    [31:0]                                  udp_transmit_handler_ipv4_source;
 
-wire            udp_transmit_handler_data_ready;
-wire    [47:0]  udp_transmit_handler_mac_destination;
-wire    [31:0]  udp_transmit_handler_ipv4_destination;
-wire    [15:0]  udp_transmit_handler_udp_destination;
-wire    [15:0]  udp_transmit_handler_udp_source;
-wire    [15:0]  udp_transmit_handler_ipv4_identification;
-wire    [15:0]  udp_transmit_handler_ipv4_flags;
-wire    [15:0]  udp_transmit_handler_udp_fragment_size;
-wire    [15:0]  udp_transmit_handler_udp_total_payload_size;
-wire    [15:0]  udp_transmit_handler_udp_buffer_write_address;
-wire    [7:0]   udp_transmit_handler_udp_buffer_data;
-wire            udp_transmit_handler_udp_buffer_data_valid;
-wire    [7:0]   udp_transmit_handler_udp_checksum_data;
-wire            udp_transmit_handler_udp_checksum_data_valid;
-wire            udp_transmit_handler_udp_checksum_data_last;
-wire            udp_transmit_handler_transmit_valid;
+wire                                            udp_transmit_handler_data_ready;
+wire    [47:0]                                  udp_transmit_handler_mac_destination;
+wire    [31:0]                                  udp_transmit_handler_ipv4_destination;
+wire    [15:0]                                  udp_transmit_handler_udp_destination;
+wire    [15:0]                                  udp_transmit_handler_udp_source;
+wire    [15:0]                                  udp_transmit_handler_ipv4_identification;
+wire    [15:0]                                  udp_transmit_handler_ipv4_flags;
+wire    [15:0]                                  udp_transmit_handler_udp_fragment_size;
+wire    [15:0]                                  udp_transmit_handler_udp_total_payload_size;
+wire    [$clog2(UDP_TRANSMIT_BUFFER_SIZE)-1:0]  udp_transmit_handler_udp_buffer_write_address;
+wire    [7:0]                                   udp_transmit_handler_udp_buffer_data;
+wire                                            udp_transmit_handler_udp_buffer_data_valid;
+wire    [7:0]                                   udp_transmit_handler_udp_checksum_data;
+wire                                            udp_transmit_handler_udp_checksum_data_valid;
+wire                                            udp_transmit_handler_udp_checksum_data_last;
+wire                                            udp_transmit_handler_transmit_valid;
 
-udp_transmit_handler udp_transmit_handler(
+udp_transmit_handler#(.UDP_TRANSMIT_BUFFER_SIZE(UDP_TRANSMIT_BUFFER_SIZE)) 
+udp_transmit_handler(
     .clock                      (udp_transmit_handler_clock),
     .reset_n                    (udp_transmit_handler_reset_n),
     .enable                     (udp_transmit_handler_enable),
@@ -154,12 +155,12 @@ internet_checksum_calculator    udp_checksum_calculator(
 );
 
 
-wire            udp_data_buffer_clock;
-wire            udp_data_buffer_reset_n;
-wire            udp_data_buffer_write_enable;
-wire    [7:0]   udp_data_buffer_write_data;
-wire    [15:0]  udp_data_buffer_write_address;
-wire    [15:0]  udp_data_buffer_read_address;
+wire                                            udp_data_buffer_clock;
+wire                                            udp_data_buffer_reset_n;
+wire                                            udp_data_buffer_write_enable;
+wire    [7:0]                                   udp_data_buffer_write_data;
+wire    [$clog2(UDP_TRANSMIT_BUFFER_SIZE)-1:0]  udp_data_buffer_write_address;
+wire    [$clog2(UDP_TRANSMIT_BUFFER_SIZE)-1:0]  udp_data_buffer_read_address;
 
 wire    [7:0]   udp_data_buffer_read_data;
 
@@ -181,39 +182,40 @@ udp_data_buffer(
 );
 
 
-wire            ethernet_frame_generator_clock;
-wire            ethernet_frame_generator_reset_n;
-wire            ethernet_frame_generator_enable;
-wire    [31:0]  ethenret_frame_generator_checksum_result;
-wire            ethernet_frame_generator_checksum_result_enable;
-wire    [15:0]  ethernet_frame_generator_ipv4_checksum_result;
-wire            ethernet_frame_generator_ipv4_checksum_result_enable;
-wire    [7:0]   ethernet_frame_generator_udp_buffer_read_data;
-wire    [47:0]  ethernet_frame_generator_mac_destination;
-wire    [47:0]  ethernet_frame_generator_mac_source;
-wire    [31:0]  ethernet_frame_generator_ipv4_destination;
-wire    [31:0]  ethernet_frame_generator_ipv4_source;
-wire    [15:0]  ethernet_frame_generator_udp_checksum;
-wire    [15:0]  ethernet_frame_generator_udp_destination;
-wire    [15:0]  ethernet_frame_generator_udp_source;
-wire    [15:0]  ethernet_frame_generator_udp_payload_size;
-wire    [15:0]  ethernet_frame_generator_udp_fragment_size;
-wire    [15:0]  ethernet_frame_generator_ipv4_flags;
-wire    [15:0]  ethernet_frame_generator_ipv4_identification;
+wire                                            ethernet_frame_generator_clock;
+wire                                            ethernet_frame_generator_reset_n;
+wire                                            ethernet_frame_generator_enable;
+wire    [31:0]                                  ethenret_frame_generator_checksum_result;
+wire                                            ethernet_frame_generator_checksum_result_enable;
+wire    [15:0]                                  ethernet_frame_generator_ipv4_checksum_result;
+wire                                            ethernet_frame_generator_ipv4_checksum_result_enable;
+wire    [7:0]                                   ethernet_frame_generator_udp_buffer_read_data;
+wire    [47:0]                                  ethernet_frame_generator_mac_destination;
+wire    [47:0]                                  ethernet_frame_generator_mac_source;
+wire    [31:0]                                  ethernet_frame_generator_ipv4_destination;
+wire    [31:0]                                  ethernet_frame_generator_ipv4_source;
+wire    [15:0]                                  ethernet_frame_generator_udp_checksum;
+wire    [15:0]                                  ethernet_frame_generator_udp_destination;
+wire    [15:0]                                  ethernet_frame_generator_udp_source;
+wire    [15:0]                                  ethernet_frame_generator_udp_payload_size;
+wire    [15:0]                                  ethernet_frame_generator_udp_fragment_size;
+wire    [15:0]                                  ethernet_frame_generator_ipv4_flags;
+wire    [15:0]                                  ethernet_frame_generator_ipv4_identification;
 
-wire    [7:0]   ethernet_frame_generator_checksum_data;
-wire            ethernet_frame_generator_checksum_data_valid;
-wire            ethernet_frame_generator_checksum_data_last;
-wire    [8:0]   ethernet_frame_generator_frame_data;
-wire            ethernet_frame_generator_frame_data_valid;
-wire    [7:0]   ethernet_frame_generator_ipv4_checksum_data;
-wire            ethernet_frame_generator_ipv4_checksum_data_valid;
-wire            ethernet_frame_generator_ipv4_checksum_data_last;
-wire    [15:0]  ethernet_frame_generator_udp_buffer_read_address;
-wire            ethernet_frame_generator_ready;
+wire    [7:0]                                   ethernet_frame_generator_checksum_data;
+wire                                            ethernet_frame_generator_checksum_data_valid;
+wire                                            ethernet_frame_generator_checksum_data_last;
+wire    [8:0]                                   ethernet_frame_generator_frame_data;
+wire                                            ethernet_frame_generator_frame_data_valid;
+wire    [7:0]                                   ethernet_frame_generator_ipv4_checksum_data;
+wire                                            ethernet_frame_generator_ipv4_checksum_data_valid;
+wire                                            ethernet_frame_generator_ipv4_checksum_data_last;
+wire    [$clog2(UDP_TRANSMIT_BUFFER_SIZE)-1:0]  ethernet_frame_generator_udp_buffer_read_address;
+wire                                            ethernet_frame_generator_ready;
 
 
-ethernet_frame_generator    ethernet_frame_generator(
+ethernet_frame_generator#(.UDP_TRANSMIT_BUFFER_SIZE(UDP_TRANSMIT_BUFFER_SIZE))
+ethernet_frame_generator(
     .clock                          (ethernet_frame_generator_clock),
     .reset_n                        (ethernet_frame_generator_reset_n),
     .enable                         (ethernet_frame_generator_enable),

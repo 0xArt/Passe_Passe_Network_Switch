@@ -166,7 +166,7 @@ wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_push_data_enable;
 
 wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_ready;
 wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_data_ready;
-wire    [RECEIVE_QUE_SLOTS-1:0][8:0]    que_slot_push_data;
+wire    [RECEIVE_QUE_SLOTS-1:0][7:0]    que_slot_push_data;
 wire    [RECEIVE_QUE_SLOTS-1:0]         que_slot_push_data_valid;
 
 generate

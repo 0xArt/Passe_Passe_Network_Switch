@@ -76,7 +76,7 @@ generate
         .WRITE_DATA_WIDTH      (DATA_WIDTH),    
         .WR_DATA_COUNT_WIDTH   (1)   
       )
-      xpm_fifo_async_inst (
+      xpm_fifo_async_inst(
         .almost_empty          (),
         .almost_full           (),
         .data_valid            (xpm_fifo_async_data_valid),
@@ -150,7 +150,7 @@ generate
         .WRITE_DATA_WIDTH      (DATA_WIDTH),    
         .WR_DATA_COUNT_WIDTH   (1)   
       )
-      xpm_fifo_async_inst (
+      xpm_fifo_async_inst(
         .almost_empty          (),
         .almost_full           (),
         .data_valid            (xpm_fifo_async_data_valid),

@@ -105,6 +105,7 @@ always_comb begin
     _fragment_slot_select           =   fragment_slot_select;
     _receive_slot_select            =   receive_slot_select;
     _process_counter                =   process_counter;
+    _packet_id                      =   packet_id;
     data_ready                      =   0;
     _push_data_last                 =   0;
     _push_data_valid                =   0;
