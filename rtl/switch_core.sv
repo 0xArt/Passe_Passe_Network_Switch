@@ -29,6 +29,7 @@ module switch_core#(
 )(
     input   wire                                        clock,
     input   wire                                        reset_n,
+    input   wire                                        rmii_clock,
     input   wire    [NUMBER_OF_RMII_PORTS-1:0][1:0]     rmii_phy_receive_data,
     input   wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_phy_receive_data_enable,
     input   wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_phy_receive_data_error,
@@ -38,7 +39,8 @@ module switch_core#(
 
     output  wire    [NUMBER_OF_RMII_PORTS-1:0][1:0]     rmii_phy_transmit_data,
     output  wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_phy_transmit_data_vaid,
-    output  wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_phy_reference_clock
+    output  wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]  module_receive_data,
+    output  wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]       module_receive_data_valid
 );
 
 localparam NUMBER_OF_PORTS = NUMBER_OF_RMII_PORTS + NUMBER_OF_VIRTUAL_PORTS;
@@ -204,7 +206,7 @@ cam_table(
 
 generate
     for (i=0; i<NUMBER_OF_RMII_PORTS; i=i+1) begin
-        assign  rmii_port_clock[i]                                  =   clock;
+        assign  rmii_port_clock[i]                                  =   rmii_clock;
         assign  rmii_port_core_clock[i]                             =   clock;
         assign  rmii_port_reset_n[i]                                =   reset_n;
         assign  rmii_port_rmii_receive_data[i]                      =   rmii_phy_receive_data[i];
@@ -231,8 +233,10 @@ generate
         assign  virutal_port_udp_module_transmit_data[i]                                =   module_transmit_data[i];
         assign  virutal_port_udp_module_transmit_data_enable[i]                         =   module_transmit_data_enable[i];
         assign  virutal_port_udp_mac_source[i]                                          =   {40'hBE_AC_DC_EF_F0,i[7:0]};
-        assign  virutal_port_udp_ipv4_source[i]                                          =  {24'hF0_0F_B8,i[7:0]};
+        assign  virutal_port_udp_ipv4_source[i]                                         =   {24'hF0_0F_B8,i[7:0]};
 
+        assign  module_receive_data[i]                                                  =   virutal_port_udp_module_receive_data[i];
+        assign  module_receive_data_valid[i]                                            =   virutal_port_udp_module_receive_data_valid[i];
         assign  core_data_orchestrator_port_receive_data_enable[i+NUMBER_OF_RMII_PORTS] =   virutal_port_udp_transmit_data_valid[i];
         assign  core_data_orchestrator_port_receive_data[i+NUMBER_OF_RMII_PORTS]        =   virutal_port_udp_transmit_data[i];
     end

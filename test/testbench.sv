@@ -52,12 +52,12 @@ logic [8:0]                                     module_transmit_buffer [0:8888];
 
 wire                                        switch_core_clock;
 wire                                        switch_core_reset_n;
+wire                                        switch_core_rmii_clock;
 wire    [NUMBER_OF_RMII_PORTS-1:0][1:0]     switch_core_rmii_phy_receive_data;
 wire    [NUMBER_OF_RMII_PORTS-1:0]          switch_core_rmii_phy_receive_data_enable;
 wire    [NUMBER_OF_RMII_PORTS-1:0]          switch_core_rmii_phy_receive_data_error;
 wire    [NUMBER_OF_RMII_PORTS-1:0][1:0]     switch_core_rmii_phy_transmit_data;
 wire    [NUMBER_OF_RMII_PORTS-1:0]          switch_core_rmii_phy_transmit_data_valid;
-wire    [NUMBER_OF_RMII_PORTS-1:0]          switch_core_rmii_phy_reference_clock;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]       switch_core_module_clock;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]       switch_core_module_transmit_data_enable;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]  switch_core_module_transmit_data;
@@ -72,6 +72,7 @@ switch_core #(
 switch_core(
     .clock                          (switch_core_clock),
     .reset_n                        (switch_core_reset_n),
+    .rmii_clock                     (switch_core_rmii_clock),
     .rmii_phy_receive_data          (switch_core_rmii_phy_receive_data),
     .rmii_phy_receive_data_enable   (switch_core_rmii_phy_receive_data_enable),
     .rmii_phy_receive_data_error    (switch_core_rmii_phy_receive_data_error),
@@ -80,8 +81,7 @@ switch_core(
     .module_transmit_data           (switch_core_module_transmit_data),
 
     .rmii_phy_transmit_data         (switch_core_rmii_phy_transmit_data),
-    .rmii_phy_transmit_data_vaid    (switch_core_rmii_phy_transmit_data_valid),
-    .rmii_phy_reference_clock       (switch_core_rmii_phy_reference_clock)
+    .rmii_phy_transmit_data_vaid    (switch_core_rmii_phy_transmit_data_valid)
 );
 
 
@@ -109,6 +109,7 @@ rmii_byte_packager rmii_byte_packager(
 
 assign  switch_core_clock                               =   clock;
 assign  switch_core_reset_n                             =   reset_n;
+assign  switch_core_rmii_clock                          =   clock;
 assign  switch_core_rmii_phy_receive_data[0]            =   ethernet_transmit_data[0];
 assign  switch_core_rmii_phy_receive_data_enable[0]     =   ethernet_transmit_data_valid[0];
 assign  switch_core_rmii_phy_receive_data_error[0]      =   0;

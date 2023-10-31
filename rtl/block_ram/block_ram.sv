@@ -38,9 +38,9 @@ module block_ram#(
 
 generate
     if (XILINX) begin
-
         localparam READ_LATENCY = PIPELINED_OUTPUT + 1;
 
+        wire    [DATA_WIDTH-1:0]            xpm_memory_sdpram_dina;
         wire    [DATA_WIDTH-1:0]            xpm_memory_sdpram_doutb;
         wire    [$clog2(DATA_DEPTH)-1:0]    xpm_memory_sdpram_addra;
         wire    [$clog2(DATA_DEPTH)-1:0]    xpm_memory_sdpram_addrb;
@@ -90,7 +90,7 @@ generate
             .addrb          (xpm_memory_sdpram_addrb),
             .clka           (xpm_memory_sdpram_clka),
             .clkb           (xpm_memory_sdpram_clkb),
-            .dina           (dina),
+            .dina           (xpm_memory_sdpram_dina),
             .ena            (1'b1),
             .enb            (1'b1),
             .injectdbiterra (),
@@ -101,8 +101,10 @@ generate
             .wea            (xpm_memory_sdpram_wea)
         );
 
-        assign  read_data   =   xpm_memory_sdpram_doutb;
 
+        assign  read_data               =   xpm_memory_sdpram_doutb;
+
+        assign  xpm_memory_sdpram_dina  =   write_data; 
         assign  xpm_memory_sdpram_addra =   write_address;
         assign  xpm_memory_sdpram_addrb =   read_address;
         assign  xpm_memory_sdpram_clka  =   clock;
@@ -134,6 +136,7 @@ generate
 
             .read_data          (generic_block_ram_read_data)
         );
+
 
         assign  read_data                       =   generic_block_ram_read_data;
 

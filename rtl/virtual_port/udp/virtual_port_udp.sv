@@ -22,7 +22,7 @@ module virutal_port_udp#(
     parameter RECEIVE_QUE_SLOTS         = 4,
     parameter FRAGMENT_SLOTS            = 4,
     parameter UDP_TRANSMIT_BUFFER_SIZE  = 4096,
-    parameter XILINX                    = "FALSE"
+    parameter XILINX                    = 0
 )(
     input   wire            clock,
     input   wire            reset_n,

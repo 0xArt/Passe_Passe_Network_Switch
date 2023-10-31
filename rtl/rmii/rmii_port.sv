@@ -317,7 +317,7 @@ assign  inbound_fifo_write_data                                 =   transmit_dat
 assign  inbound_fifo_read_clock                                 =   clock;
 assign  inbound_fifo_read_enable                                =   rmii_byte_shipper_data_ready;
 assign  inbound_fifo_read_reset_n                               =   reset_n;
-assign  inbound_fifo_write_clock                                =   clock;
+assign  inbound_fifo_write_clock                                =   core_clock;
 assign  inbound_fifo_write_enable                               =   transmit_data_enable;
 assign  inbound_fifo_write_reset_n                              =   reset_n;
 

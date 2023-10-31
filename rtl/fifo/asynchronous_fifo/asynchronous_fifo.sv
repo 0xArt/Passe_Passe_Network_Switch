@@ -43,7 +43,6 @@ module asynchronous_fifo#(
 
 generate
     if (XILINX && !FIRST_WORD_FALL_THROUGH) begin
-
       wire                    xpm_fifo_async_data_valid;
       wire  [DATA_WIDTH-1:0]  xpm_fifo_async_dout;
       wire                    xpm_fifo_async_empty;
@@ -104,6 +103,7 @@ generate
         .wr_clk                (xpm_fifo_async_wr_clk),
         .wr_en                 (xpm_fifo_async_wr_en)
       );
+      
 
       assign  read_data_valid       = xpm_fifo_async_data_valid;
       assign  read_data             = xpm_fifo_async_dout;
@@ -179,6 +179,7 @@ generate
         .wr_en                 (xpm_fifo_async_wr_en)
       );
 
+
       assign  read_data_valid       = xpm_fifo_async_data_valid;
       assign  read_data             = xpm_fifo_async_dout;
       assign  full                  = xpm_fifo_async_full;
@@ -224,6 +225,7 @@ generate
           .full              (generic_asynchronous_fifo_full),
           .empty             (generic_asynchronous_fifo_empty)
         );
+
 
         assign  read_data                               = generic_asynchronous_fifo_read_data;
         assign  read_data_valid                         = generic_asynchronous_fifo_read_data_valid;

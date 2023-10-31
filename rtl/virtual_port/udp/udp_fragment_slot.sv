@@ -20,7 +20,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module udp_fragment_slot#(
-    parameter XILINX    = "FALSE"
+    parameter XILINX    = 0
 )(
     input   wire            clock,
     input   wire            reset_n,
@@ -51,7 +51,7 @@ wire    [8:0]   fragment_fifo_read_data;
 synchronous_fifo
 #(  .DATA_WIDTH                 (9),
     .DATA_DEPTH                 (4096),
-    .FIRST_WORD_FALL_THROUGH    ("TRUE"),
+    .FIRST_WORD_FALL_THROUGH    (1),
     .XILINX                     (XILINX)
 ) fragment_fifo(
     .clock              (fragment_fifo_clock),

@@ -61,7 +61,7 @@ always_comb begin
     _checksum_valid                 =   0;
     _ready                          =   ready;
 
-    for (i=0;i<8;i++) begin
+    for (i=0; i<8; i++) begin
         data_binary_reverse[i]      = data[7-i];
     end
 
