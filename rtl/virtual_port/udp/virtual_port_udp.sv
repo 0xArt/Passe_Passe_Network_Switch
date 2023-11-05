@@ -39,7 +39,8 @@ module virutal_port_udp#(
     output  wire            module_receive_data_valid,
     output  wire            receive_data_ready,
     output  wire    [8:0]   transmit_data,                      //to switch data orch
-    output  wire            transmit_data_valid                 //to switch data orch
+    output  wire            transmit_data_valid,                //to switch data orch
+    output  wire            module_transmit_data_ready
 );
 
 genvar i;
@@ -575,9 +576,9 @@ outbound_fifo(
 assign  receive_data_ready                                      =   !switch_inbound_fifo_full;
 assign  transmit_data                                           =   outbound_fifo_read_data;
 assign  transmit_data_valid                                     =   outbound_fifo_read_data_valid;
-
-assign module_receive_data                                      =   receive_slot_arbiter_push_data;
-assign module_receive_data_valid                                =   receive_slot_arbiter_push_data_valid;
+assign  module_transmit_data_ready                              =   !module_inbound_fifo_full;
+assign  module_receive_data                                     =   receive_slot_arbiter_push_data;
+assign  module_receive_data_valid                               =   receive_slot_arbiter_push_data_valid;
 
 assign  outbound_fifo_read_clock                                =   clock;
 assign  outbound_fifo_read_enable                               =   transmit_data_enable;

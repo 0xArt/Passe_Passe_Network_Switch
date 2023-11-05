@@ -32,7 +32,7 @@ module block_ram#(
     input   wire    [$clog2(DATA_DEPTH)-1:0]        write_address,
     input   wire    [$clog2(DATA_DEPTH)-1:0]        read_address,
 
-    output  reg     [DATA_WIDTH-1:0]                read_data
+    output  wire     [DATA_WIDTH-1:0]               read_data
 );
 
 

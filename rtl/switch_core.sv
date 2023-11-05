@@ -40,7 +40,9 @@ module switch_core#(
     output  wire    [NUMBER_OF_RMII_PORTS-1:0][1:0]     rmii_phy_transmit_data,
     output  wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_phy_transmit_data_vaid,
     output  wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]  module_receive_data,
-    output  wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]       module_receive_data_valid
+    output  wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]       module_receive_data_valid,
+    output  wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]       module_transmit_data_ready
+
 );
 
 localparam NUMBER_OF_PORTS = NUMBER_OF_RMII_PORTS + NUMBER_OF_VIRTUAL_PORTS;
@@ -104,6 +106,7 @@ wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]      virutal_port_udp_transmit_data;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_transmit_data_valid;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]      virutal_port_udp_module_receive_data;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_module_receive_data_valid;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virutal_port_udp_module_transmit_data_ready;
 
 generate
     for (i=0; i<NUMBER_OF_VIRTUAL_PORTS; i =i+1) begin
@@ -126,7 +129,8 @@ generate
             .module_receive_data_valid          (virutal_port_udp_module_receive_data_valid),
             .receive_data_ready                 (virutal_port_udp_receive_data_ready[i]),
             .transmit_data                      (virutal_port_udp_transmit_data[i]),
-            .transmit_data_valid                (virutal_port_udp_transmit_data_valid[i])
+            .transmit_data_valid                (virutal_port_udp_transmit_data_valid[i]),
+            .module_transmit_data_ready         (virutal_port_udp_module_transmit_data_ready[i])
         );
     end
 endgenerate
@@ -151,7 +155,8 @@ wire                                    core_data_orchestrator_cam_table_delete_
 
 core_data_orchestrator
 #(  .NUMBER_OF_PORTS    (NUMBER_OF_PORTS),
-    .TABLE_DEPTH        (CAM_TABLE_DEPTH)
+    .TABLE_DEPTH        (CAM_TABLE_DEPTH),
+    .XILINX             (XILINX)
 )
 core_data_orchestrator(
     .clock                      (core_data_orchestrator_clock),
@@ -239,6 +244,7 @@ generate
         assign  module_receive_data_valid[i]                                            =   virutal_port_udp_module_receive_data_valid[i];
         assign  core_data_orchestrator_port_receive_data_enable[i+NUMBER_OF_RMII_PORTS] =   virutal_port_udp_transmit_data_valid[i];
         assign  core_data_orchestrator_port_receive_data[i+NUMBER_OF_RMII_PORTS]        =   virutal_port_udp_transmit_data[i];
+        assign  module_transmit_data_ready[i]                                           =   virutal_port_udp_module_transmit_data_ready[i];
     end
 endgenerate
 

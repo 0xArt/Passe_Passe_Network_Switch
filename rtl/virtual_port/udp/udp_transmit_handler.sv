@@ -110,7 +110,6 @@ logic       [15:0]                                  _number_of_udp_bytes_left;
 reg         [15:0]                                  number_of_udp_bytes_left;
 logic       [7:0]                                   _udp_buffer_data;
 logic                                               _udp_buffer_data_valid;
-logic                                               _data_ready;
 logic                                               _ready;
 logic                                               _transmit_valid;
 logic       [15:0]                                  _ipv4_identification;
@@ -399,7 +398,7 @@ always_comb begin
                 _state  =   S_WAIT_TRANSMIT_DONE;
             end
             if (timeout_cycle_timer_expired) begin
-                _data_ready = 0;
+                data_ready  = 0;
                 _state      = S_IDLE;
             end
         end

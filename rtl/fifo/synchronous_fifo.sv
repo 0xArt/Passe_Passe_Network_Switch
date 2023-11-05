@@ -31,10 +31,10 @@ module synchronous_fifo#(
     input   wire                            write_enable,
     input   wire    [DATA_WIDTH-1:0]        write_data,
 
-    output  reg     [DATA_WIDTH-1:0]        read_data,
-    output  reg                             read_data_valid,
-    output  reg                             full,
-    output  reg                             empty
+    output  wire     [DATA_WIDTH-1:0]       read_data,
+    output  wire                            read_data_valid,
+    output  wire                            full,
+    output  wire                            empty
 );
 
 
@@ -64,7 +64,7 @@ generate
             .READ_DATA_WIDTH        (DATA_WIDTH),
             .READ_MODE              ("std"),
             .SIM_ASSERT_CHK         (0),
-            .USE_ADV_FEATURES       ("0707"),
+            .USE_ADV_FEATURES       ("1707"),
             .WAKEUP_TIME            (0),
             .WRITE_DATA_WIDTH       (DATA_WIDTH),
             .WR_DATA_COUNT_WIDTH    (1)
@@ -87,11 +87,11 @@ generate
             .wr_data_count          (),
             .wr_rst_busy            (),
             .din                    (xpm_fifo_sync_din),
-            .injectdbiterr          (),
-            .injectsbiterr          (),
+            .injectdbiterr          (1'b0),
+            .injectsbiterr          (1'b0),
             .rd_en                  (xpm_fifo_sync_rd_en),
             .rst                    (xpm_fifo_sync_rst),
-            .sleep                  (),
+            .sleep                  (1'b0),
             .wr_clk                 (xpm_fifo_sync_wr_clk),
             .wr_en                  (xpm_fifo_sync_wr_en)
         );
@@ -133,7 +133,7 @@ generate
             .READ_DATA_WIDTH        (DATA_WIDTH),
             .READ_MODE              ("fwft"),
             .SIM_ASSERT_CHK         (0),
-            .USE_ADV_FEATURES       ("0707"),
+            .USE_ADV_FEATURES       ("1707"),
             .WAKEUP_TIME            (0),
             .WRITE_DATA_WIDTH       (DATA_WIDTH),
             .WR_DATA_COUNT_WIDTH    (1)
@@ -156,11 +156,11 @@ generate
             .wr_data_count          (),
             .wr_rst_busy            (),
             .din                    (xpm_fifo_sync_din),
-            .injectdbiterr          (),
-            .injectsbiterr          (),
+            .injectdbiterr          (1'b0),
+            .injectsbiterr          (1'b0),
             .rd_en                  (xpm_fifo_sync_rd_en),
             .rst                    (xpm_fifo_sync_rst),
-            .sleep                  (),
+            .sleep                  (1'b0),
             .wr_clk                 (xpm_fifo_sync_wr_clk),
             .wr_en                  (xpm_fifo_sync_wr_en)
         );

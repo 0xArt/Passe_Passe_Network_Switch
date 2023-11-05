@@ -34,10 +34,10 @@ module asynchronous_fifo#(
     input   wire                            write_enable,
     input   wire    [DATA_WIDTH-1:0]        write_data,
 
-    output  reg     [DATA_WIDTH-1:0]        read_data,
-    output  reg                             read_data_valid,
-    output  reg                             full,
-    output  reg                             empty
+    output  wire     [DATA_WIDTH-1:0]       read_data,
+    output  wire                            read_data_valid,
+    output  wire                            full,
+    output  wire                            empty
 );
 
 
@@ -70,7 +70,7 @@ generate
         .READ_MODE             ("std"),        
         .RELATED_CLOCKS        (0),       
         .SIM_ASSERT_CHK        (0),
-        .USE_ADV_FEATURES      ("0707"),
+        .USE_ADV_FEATURES      ("1707"),
         .WAKEUP_TIME           (0),          
         .WRITE_DATA_WIDTH      (DATA_WIDTH),    
         .WR_DATA_COUNT_WIDTH   (1)   
@@ -94,12 +94,12 @@ generate
         .wr_data_count         (),
         .wr_rst_busy           (),
         .din                   (xpm_fifo_async_din),
-        .injectdbiterr         (),
-        .injectsbiterr         (),
+        .injectdbiterr         (1'b0),
+        .injectsbiterr         (1'b0),
         .rd_clk                (xpm_fifo_async_rd_clk),
         .rd_en                 (xpm_fifo_async_rd_en),
         .rst                   (xpm_fifo_async_rst),
-        .sleep                 (),
+        .sleep                 (1'b0),
         .wr_clk                (xpm_fifo_async_wr_clk),
         .wr_en                 (xpm_fifo_async_wr_en)
       );
@@ -113,7 +113,7 @@ generate
       assign  xpm_fifo_async_din    = write_data;
       assign  xpm_fifo_async_rd_clk = read_clock;
       assign  xpm_fifo_async_rd_en  = read_enable;
-      assign  xpm_fifo_async_rst    = write_reset_n;
+      assign  xpm_fifo_async_rst    = !write_reset_n;
       assign  xpm_fifo_async_wr_en  = write_enable;
       assign  xpm_fifo_async_wr_clk = write_clock;
     end
@@ -145,7 +145,7 @@ generate
         .READ_MODE             ("fwft"),        
         .RELATED_CLOCKS        (0),       
         .SIM_ASSERT_CHK        (0),
-        .USE_ADV_FEATURES      ("0707"),
+        .USE_ADV_FEATURES      ("1707"),
         .WAKEUP_TIME           (0),          
         .WRITE_DATA_WIDTH      (DATA_WIDTH),    
         .WR_DATA_COUNT_WIDTH   (1)   
@@ -169,12 +169,12 @@ generate
         .wr_data_count         (),
         .wr_rst_busy           (),
         .din                   (xpm_fifo_async_din),
-        .injectdbiterr         (),
-        .injectsbiterr         (),
+        .injectdbiterr         (1'b0),
+        .injectsbiterr         (1'b0),
         .rd_clk                (xpm_fifo_async_rd_clk),
         .rd_en                 (xpm_fifo_async_rd_en),
         .rst                   (xpm_fifo_async_rst),
-        .sleep                 (),
+        .sleep                 (1'b0),
         .wr_clk                (xpm_fifo_async_wr_clk),
         .wr_en                 (xpm_fifo_async_wr_en)
       );
@@ -188,7 +188,7 @@ generate
       assign  xpm_fifo_async_din    = write_data;
       assign  xpm_fifo_async_rd_clk = read_clock;
       assign  xpm_fifo_async_rd_en  = read_enable;
-      assign  xpm_fifo_async_rst    = write_reset_n;
+      assign  xpm_fifo_async_rst    = !write_reset_n;
       assign  xpm_fifo_async_wr_en  = write_enable;
       assign  xpm_fifo_async_wr_clk = write_clock;
     end

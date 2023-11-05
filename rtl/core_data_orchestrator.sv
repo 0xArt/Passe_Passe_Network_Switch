@@ -22,7 +22,8 @@
 module core_data_orchestrator#(
     parameter       NUMBER_OF_PORTS     = 2,
     logic [15:0]    TIMEOUT_LIMIT       = 16'h000F,
-    parameter       TABLE_DEPTH         = 32
+    parameter       TABLE_DEPTH         = 32,
+    parameter       XILINX              = 0
 )(
     input   wire                                        clock,
     input   wire                                        reset_n,
@@ -119,7 +120,7 @@ always_comb begin
 
     case (state)
         S_FIND_START_BIT: begin
-            _process_counter    =   5;
+            _process_counter    =   5 - XILINX;
 
             if (port_receive_data_enable[port_select]) begin
                 port_receive_data_ready[port_select]   = 1;
@@ -142,7 +143,7 @@ always_comb begin
                 _process_counter                        = process_counter - 1;
             end
             if(process_counter == 0) begin
-                _process_counter    =   6;
+                _process_counter    =   6 - XILINX;
                 _state              =   S_GET_MAC_SOURCE;
             end
         end
@@ -154,6 +155,7 @@ always_comb begin
                 _process_counter                        = process_counter - 1;
             end
             if(process_counter == 0) begin
+                _process_counter            =   0;
                 _state                      =   S_LOOKUP_SOURCE_PORT;
             end
         end
