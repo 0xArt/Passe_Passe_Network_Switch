@@ -155,8 +155,7 @@ wire                                    core_data_orchestrator_cam_table_delete_
 
 core_data_orchestrator
 #(  .NUMBER_OF_PORTS    (NUMBER_OF_PORTS),
-    .TABLE_DEPTH        (CAM_TABLE_DEPTH),
-    .XILINX             (XILINX)
+    .TABLE_DEPTH        (CAM_TABLE_DEPTH)
 )
 core_data_orchestrator(
     .clock                      (core_data_orchestrator_clock),

@@ -38,7 +38,8 @@ module udp_receieve_handler#(
     output  reg     [7:0]                           push_data,
     output  reg     [FRAGMENT_SLOTS-1:0]            push_data_valid,
     output  reg     [FRAGMENT_SLOTS-1:0]            push_data_last,
-    output  reg     [15:0]                          packet_id
+    output  reg     [15:0]                          packet_id,
+    output  reg                                     data_drop
 );
 
 
@@ -90,6 +91,7 @@ logic   [$clog2(RECEIVE_QUE_SLOTS)-1:0]     _receive_slot_select;
 reg     [$clog2(RECEIVE_QUE_SLOTS)-1:0]     receive_slot_select;
 logic   [7:0]                               _process_counter;
 reg     [7:0]                               process_counter;
+logic                                       _data_drop;
 
 assign  timeout_cycle_timer_clock       =   clock;
 assign  timeout_cycle_timer_reset_n     =   reset_n;
@@ -109,6 +111,7 @@ always_comb begin
     data_ready                      =   0;
     _push_data_last                 =   0;
     _push_data_valid                =   0;
+    _data_drop                      =   0;
     timeout_cycle_timer_load_count  =   0;
 
     case (state)
@@ -149,8 +152,6 @@ always_comb begin
             else begin
                 if (fragment_slot_select == (FRAGMENT_SLOTS - 1)) begin
                     _fragment_slot_select   =   0;
-                    //_fifo_reset_n           =   0; TODO either drain fifo or output a reset to top level?
-                    _state                  =   S_IDLE;
                 end
                 else begin
                     _fragment_slot_select   =   fragment_slot_select + 1;
@@ -166,8 +167,7 @@ always_comb begin
             end
             else begin
                 if (fragment_slot_select == (FRAGMENT_SLOTS - 1)) begin
-                    //_fifo_reset_n           =   0; TODO either drain fifo or output a reset to top level?
-                    _state                  =   S_IDLE;
+                    _fragment_slot_select   =   0;
                 end
                 else begin
                     _fragment_slot_select   =   fragment_slot_select + 1;
@@ -217,6 +217,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         receive_slot_select         <=  0;
         fragment_slot_select        <=  0;
         process_counter             <=  0;
+        data_drop                   <=  0;
     end
     else begin
         state                       <=  _state;

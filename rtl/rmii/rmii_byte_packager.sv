@@ -83,7 +83,7 @@ always_comb  begin
 
             if (data_enable_delayed && !data_error_delayed) begin
                 if (data_delayed == 2'b01) begin
-                    if (counter == 30) begin
+                    if (counter == 27) begin
                         _state      =   S_SPEED_CHECK;
                         _counter    =   0;
                     end

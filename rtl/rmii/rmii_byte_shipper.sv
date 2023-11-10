@@ -76,15 +76,15 @@ always_comb  begin
     case (saved_speed_code)
         SPEED_CODE_100_MEGABIT: begin
             _sample_counter_limit   =   0;
-            _preamble_count_limit   =   29;
+            _preamble_count_limit   =   26;
         end
         SPEED_CODE_10_MEGABIT: begin
             _sample_counter_limit   =   9;
-            _preamble_count_limit   =   290;
+            _preamble_count_limit   =   260;
         end
         default : begin
             _sample_counter_limit   =   0;
-            _preamble_count_limit   =   29;
+            _preamble_count_limit   =   26;
         end
     endcase
 
