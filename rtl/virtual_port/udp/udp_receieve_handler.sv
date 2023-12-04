@@ -33,13 +33,11 @@ module udp_receieve_handler#(
     input   wire    [FRAGMENT_SLOTS-1:0]            fragment_slot_empty,
     input   wire    [FRAGMENT_SLOTS-1:0][15:0]      fragment_slot_packet_id,
 
-    output  reg                                     ready,
     output  logic   [RECEIVE_QUE_SLOTS-1:0]         data_ready,
     output  reg     [7:0]                           push_data,
     output  reg     [FRAGMENT_SLOTS-1:0]            push_data_valid,
     output  reg     [FRAGMENT_SLOTS-1:0]            push_data_last,
-    output  reg     [15:0]                          packet_id,
-    output  reg                                     data_drop
+    output  reg     [15:0]                          packet_id
 );
 
 
@@ -76,7 +74,6 @@ typedef enum
 
 state_type                                  _state;
 state_type                                  state;
-logic                                       _ready;
 logic   [7:0]                               _push_data;
 logic   [FRAGMENT_SLOTS-1:0]                _push_data_valid;
 logic   [15:0]                              _packet_id;
@@ -91,7 +88,6 @@ logic   [$clog2(RECEIVE_QUE_SLOTS)-1:0]     _receive_slot_select;
 reg     [$clog2(RECEIVE_QUE_SLOTS)-1:0]     receive_slot_select;
 logic   [7:0]                               _process_counter;
 reg     [7:0]                               process_counter;
-logic                                       _data_drop;
 
 assign  timeout_cycle_timer_clock       =   clock;
 assign  timeout_cycle_timer_reset_n     =   reset_n;
@@ -100,7 +96,6 @@ assign  timeout_cycle_timer_count       =   TIMEOUT_LIMIT;
 
 always_comb begin
     _state                          =   state;
-    _ready                          =   ready;
     _push_data                      =   push_data;
     _fragment_offset                =   fragment_offset;
     _more_fragments                 =   more_fragments;
@@ -111,12 +106,10 @@ always_comb begin
     data_ready                      =   0;
     _push_data_last                 =   0;
     _push_data_valid                =   0;
-    _data_drop                      =   0;
     timeout_cycle_timer_load_count  =   0;
 
     case (state)
         S_IDLE: begin
-            _ready                  =   0;
             _packet_id              =   ipv4_identification[receive_slot_select];
             _more_fragments         =   ipv4_flags[receive_slot_select][13];
             _fragment_offset        =   ipv4_flags[receive_slot_select][12:0];
@@ -209,7 +202,6 @@ always_ff @(posedge clock or negedge reset_n) begin
         state                       <= S_IDLE;
         push_data                   <=  0;
         push_data_valid             <=  0;
-        ready                       <=  0;
         packet_id                   <=  0;
         more_fragments              <=  0;
         fragment_offset             <=  0;
@@ -217,13 +209,11 @@ always_ff @(posedge clock or negedge reset_n) begin
         receive_slot_select         <=  0;
         fragment_slot_select        <=  0;
         process_counter             <=  0;
-        data_drop                   <=  0;
     end
     else begin
         state                       <=  _state;
         push_data                   <=  _push_data;
         push_data_valid             <=  _push_data_valid;
-        ready                       <=  _ready;
         packet_id                   <=  _packet_id;
         more_fragments              <=  _more_fragments;
         fragment_offset             <=  _fragment_offset;

@@ -81,7 +81,6 @@ always_comb begin
                 end
             end
             else begin
-
                 if (data_enable[que_slot_select]) begin
                     _push_data                      =   data[que_slot_select];
                     _push_data_valid                =   data_enable[que_slot_select];
@@ -94,7 +93,7 @@ end
 
 always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
-        state                       <= S_IDLE;
+        state                       <=  S_IDLE;
         push_data                   <=  0;
         push_data_valid             <=  0;
         que_slot_select             <=  0;

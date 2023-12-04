@@ -99,7 +99,6 @@ wire    [8:0]                       ethernet_packet_parser_data;
 wire                                ethernet_packet_parser_data_enable;
 wire    [31:0]                      ethernet_packet_parser_checksum_result;
 wire                                ethernet_packet_parser_checksum_result_enable;
-wire                                ethernet_packet_parser_checksum_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_packet_parser_receive_slot_enable;
 wire    [1:0]                       ethernet_packet_parser_speed_code;
 wire                                ethernet_packet_parser_data_ready;
@@ -119,7 +118,6 @@ ethernet_packet_parser(
     .data_enable            (ethernet_packet_parser_data_enable),
     .checksum_result        (ethernet_packet_parser_checksum_result),
     .checksum_result_enable (ethernet_packet_parser_checksum_result_enable),
-    .checksum_enable        (ethernet_packet_parser_checksum_enable),
     .receive_slot_enable    (ethernet_packet_parser_receive_slot_enable),
     .speed_code             (ethernet_packet_parser_speed_code),
 
@@ -370,7 +368,6 @@ assign  ethernet_packet_parser_data                             =   frame_fifo_r
 assign  ethernet_packet_parser_data_enable                      =   frame_fifo_read_data_valid;
 assign  ethernet_packet_parser_checksum_result                  =   frame_check_sequence_generator_checksum;
 assign  ethernet_packet_parser_checksum_result_enable           =   frame_check_sequence_generator_checksum_valid;
-assign  ethernet_packet_parser_checksum_enable                  =   frame_check_sequence_generator_ready;
 assign  ethernet_packet_parser_speed_code                       =   rmii_byte_packager_speed_code;
 
 generate

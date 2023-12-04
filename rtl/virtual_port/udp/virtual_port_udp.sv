@@ -450,7 +450,6 @@ wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   udp_receive_handler_ipv4_flags;
 wire    [FRAGMENT_SLOTS-1:0]            udp_receive_handler_fragment_slot_empty;
 wire    [FRAGMENT_SLOTS-1:0][15:0]      udp_receive_handler_fragment_slot_packet_id;
 
-wire                                    udp_receieve_handler_ready;
 wire    [RECEIVE_QUE_SLOTS-1:0]         udp_receieve_handler_data_ready;
 wire    [7:0]                           udp_receieve_handler_push_data;
 wire    [FRAGMENT_SLOTS-1:0]            udp_receieve_handler_push_data_valid;
@@ -471,7 +470,6 @@ udp_receieve_handler(
     .fragment_slot_empty        (udp_receive_handler_fragment_slot_empty),
     .fragment_slot_packet_id    (udp_receive_handler_fragment_slot_packet_id),
 
-    .ready                      (udp_receieve_handler_ready),
     .data_ready                 (udp_receieve_handler_data_ready),
     .push_data                  (udp_receieve_handler_push_data),
     .push_data_valid            (udp_receieve_handler_push_data_valid),

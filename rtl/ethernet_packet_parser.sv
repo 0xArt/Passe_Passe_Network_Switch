@@ -31,7 +31,6 @@ module ethernet_packet_parser#(
     input   wire                            data_enable,
     input   wire    [31:0]                  checksum_result,
     input   wire                            checksum_result_enable,
-    input   wire                            checksum_enable,
     input   wire    [RECEIVE_QUE_SLOTS-1:0] receive_slot_enable,
     input   wire    [1:0]                   speed_code,
 
