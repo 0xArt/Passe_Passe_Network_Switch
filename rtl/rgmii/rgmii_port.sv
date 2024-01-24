@@ -40,6 +40,27 @@ module rgmii_port #(
 genvar i;
 
 
+wire        rgmii_byte_packager_clock;
+wire        rgmii_byte_packager_reset_n;
+wire [3:0]  rgmii_byte_packager_data;
+wire        rgmii_byte_packager_data_control;
+
+wire [7:0]  rgmii_byte_packager_packaged_data;
+wire        rgmii_byte_packager_packaged_data_valid;
+wire [1:0]  rgmii_byte_packager_packaged_data_speed_code;
+
+rgmii_byte_packager rgmii_byte_packager(
+    .clock                  (rgmii_byte_packager_clock),
+    .reset_n                (rgmii_byte_packager_reset_n),
+    .data                   (rgmii_byte_packager_data),
+    .data_control           (rgmii_byte_packager_data_control),
+
+    .packaged_data          (rgmii_byte_packager_packaged_data),
+    .packaged_data_valid    (rgmii_byte_packager_packaged_data_valid),
+    .speed_code             (rgmii_byte_packager_packaged_data_speed_code)
+);
+
+
 wire                                ethernet_packet_parser_clock;
 wire                                ethernet_packet_parser_reset_n;
 wire    [8:0]                       ethernet_packet_parser_data;
@@ -81,5 +102,14 @@ ethernet_packet_parser(
 );
 
 
+assign rgmii_byte_packager_clock            = phy_receive_clock;
+assign rgmii_byte_packager_reset_n          = reset_n;
+assign rgmii_byte_packager_data             = phy_receive_data;
+assign rgmii_byte_packager_data_control     = phy_receive_data_enable;
+
+assign ethernet_packet_parser_clock         = phy_receive_clock;
+assign ethernet_packet_parser_reset_n       = reset_n;
+assign ethernet_packet_parser_data          = rgmii_byte_packager_packaged_data;
+assign ethernet_packet_parser_data_enable   = rgmii_byte_packager_packaged_data_valid;
 
 endmodule

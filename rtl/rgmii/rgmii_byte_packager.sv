@@ -24,7 +24,7 @@ module rgmii_byte_packager
     input   wire            clock,
     input   wire            reset_n,
     input   wire    [3:0]   data,
-    input   wire    [1:0]   data_control,
+    input   wire            data_control,
 
     output  reg     [8:0]   packaged_data,
     output  reg             packaged_data_valid,
@@ -70,6 +70,7 @@ ddr_input_buffer#(
 typedef enum
 {
     S_SYNC,
+    S_PREMABLE,
     S_START_OF_FRAME,
     S_PACK
 } state_type;
@@ -116,13 +117,60 @@ always_comb  begin
 
     case (state)
         S_SYNC: begin
-            _state  =   S_START_OF_FRAME;
+            if (data_enable_delayed) begin
+                if (data_delayed == 8'h55) begin
+                    _counter = 1;
+                    _state   = S_PREMABLE;
+                end
+            end
+        end
+        S_PREMABLE: begin
+            if (data_enable_delayed) begin
+                if (data_delayed == 8'h55) begin
+                    _counter = counter + 1;
+                    
+                    if (counter == 6) begin
+                        _state = S_START_OF_FRAME;
+                    end
+                end
+                else begin
+                    _state = S_SYNC;
+                end
+            end
+            else begin
+                _state = S_SYNC;
+            end
         end
         S_START_OF_FRAME: begin
-            _state  =   S_PACK;
+            if (data_enable_delayed) begin
+                if (data_delayed == 8'hD5) begin
+                    _counter = counter + 1;
+                    
+                    if (counter == 6) begin
+                        _state          = S_PACK;
+                        _is_first_byte  = 1;
+                    end
+                end
+                else begin
+                    _state = S_SYNC;
+                end
+            end
+            else begin
+                _state = S_SYNC;
+            end
         end
         S_PACK: begin
-            _state  =   S_SYNC;
+            if (data_enable_delayed) begin
+                if (is_first_byte) begin
+                    _is_first_byte = 0;
+                end
+
+                _packaged_data[7:0]     = data_ddr_input_buffer_ddr_output;
+                _packaged_data_valid    =   1;
+            end
+            else begin
+                _state = S_SYNC;
+            end
         end
     endcase
 end
