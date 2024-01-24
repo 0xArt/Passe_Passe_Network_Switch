@@ -83,7 +83,7 @@ always_comb  begin
 
             if (data_enable_delayed && !data_error_delayed) begin
                 if (data_delayed == 2'b01) begin
-                    if (counter == 27) begin
+                    if (counter == 30) begin //28 for preamble + 3 for first nibble of SOF
                         _state      =   S_SPEED_CHECK;
                         _counter    =   0;
                     end
@@ -154,7 +154,6 @@ always_comb  begin
                 else if (data_delayed == 2'b11) begin
                     //start of start of frame
                     _state          =   S_START_OF_FRAME_10;
-                    _counter        =   0;
                     _sample_counter =   1;
                 end
                 else begin
@@ -170,14 +169,20 @@ always_comb  begin
         end
         S_START_OF_FRAME_10: begin
             if (data_enable_delayed && !data_error_delayed) begin
-                if (sample_counter == 9) begin
-                    _state          =   S_PACK_10;
-                    _sample_counter =   0;
-                    _counter        =   0;
-                    _speed_code     =   SPEED_CODE_10_MEGABIT;
+                if (data_delayed == 2'b11) begin
+                    if (sample_counter == 9) begin
+                        _state          =   S_PACK_10;
+                        _sample_counter =   0;
+                        _counter        =   0;
+                        _speed_code     =   SPEED_CODE_10_MEGABIT;
+                    end
+                    else begin
+                        _sample_counter     =   sample_counter + 1;
+                    end
                 end
                 else begin
-                    _sample_counter     =   sample_counter + 1;
+                    _state      =   S_SYNC;
+                    _counter    =   0;
                 end
             end
             else  begin
