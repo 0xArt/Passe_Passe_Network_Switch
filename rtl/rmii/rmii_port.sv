@@ -351,7 +351,6 @@ endgenerate
 
 assign  frame_fifo_clock                                        =   clock;
 assign  frame_fifo_reset_n                                      =   reset_n;
-assign  frame_fifo_data                                         =   rmii_byte_packager_packaged_data;
 assign  frame_fifo_read_enable                                  =   ethernet_packet_parser_data_ready;
 assign  frame_fifo_write_data                                   =   rmii_byte_packager_packaged_data;
 assign  frame_fifo_write_enable                                 =   rmii_byte_packager_packaged_data_valid;

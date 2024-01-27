@@ -65,8 +65,8 @@ reg     [7:0]                           timeout_counter;
 logic   [7:0]                           _timeout_counter;
 reg     [7:0]                           timeout_counter_limit;
 logic   [7:0]                           _timeout_counter_limit;
-reg     [12:0][8:0]                     delayed_data;
-logic   [12:0][8:0]                     _delayed_data;
+reg     [3:0][8:0]                      delayed_data;
+logic   [3:0][8:0]                      _delayed_data;
 logic   [7:0]                           _checksum_data;
 logic   [RECEIVE_QUE_SLOTS-1:0]         _packet_data_valid;
 logic   [7:0]                           _packet_data;
@@ -85,8 +85,7 @@ always_comb begin
     _process_counter                    =   process_counter;
     _timeout_counter                    =   timeout_counter;
     _timeout_counter_limit              =   timeout_counter_limit;
-    _delayed_data[12:1]                 =   delayed_data[11:0];
-    _delayed_data[0]                    =   data;
+    _delayed_data                       =   delayed_data;
     _que_slot_select                    =   que_slot_select;
     _frame_check_sequence               =   frame_check_sequence;
     _checksum_data                      =   checksum_data;
@@ -127,6 +126,9 @@ always_comb begin
             if (data_enable) begin
                 data_ready = 1;
 
+                _delayed_data[3:1]                      =   delayed_data[2:0];
+                _delayed_data[0]                        =   data;
+
                 if (data[8])  begin
 
                     if (|receive_slot_enable == 0) begin
@@ -147,10 +149,12 @@ always_comb begin
                 _timeout_counter                        =   0;
                 _frame_check_sequence[31:8]             =   frame_check_sequence[23:0];
                 _frame_check_sequence[7:0]              =   data[7:0];
-                _checksum_data                          =   delayed_data[12][7:0];
+                _checksum_data                          =   delayed_data[3];
                 _packet_data                            =   data[7:0];
                 _packet_data_valid[que_slot_select]     =   1;
                 data_ready                              =   1;
+                _delayed_data[3:1]                      =   delayed_data[2:0];
+                _delayed_data[0]                        =   data;
 
                 if(process_counter < 3) begin
                     _process_counter    = process_counter + 1;

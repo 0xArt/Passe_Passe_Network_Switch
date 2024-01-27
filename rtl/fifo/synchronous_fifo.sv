@@ -213,7 +213,7 @@ generate
         assign  empty                                   =   generic_synchronous_fifo_empty;
 
         assign  generic_synchronous_fifo_clock          =   clock;
-        assign  generic_syncrhonous_fifo_reset_n        =   reset_n;
+        assign  generic_synchronous_fifo_reset_n        =   reset_n;
         assign  generic_synchronous_fifo_read_enable    =   read_enable;
         assign  generic_synchronous_fifo_write_enable   =   write_enable;
         assign  generic_synchronous_fifo_write_data     =   write_data;

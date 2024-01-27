@@ -16,7 +16,7 @@
 // 
 // Revision:
 // Revision 0.01 - File Created
-// Additional Comments:
+// Additional Comments: SIMULATION ONLY
 // 
 //////////////////////////////////////////////////////////////////////////////////
 module ddr_input_buffer #(
@@ -26,38 +26,34 @@ module ddr_input_buffer #(
     input   wire                            reset_n,
     input   wire    [INPUT_WIDTH-1:0]       ddr_input,
 
-    output  logic   [(INPUT_WIDTH*2)-1:0]   ddr_output
+    output  reg     [(INPUT_WIDTH*2)-1:0]   ddr_output
 );
 
 
-logic   [INPUT_WIDTH-1:0]   _positive_edge_capture;
-logic   [INPUT_WIDTH-1:0]   _negative_edge_capture;
-reg     [INPUT_WIDTH-1:0]   positive_edge_capture;
-reg     [INPUT_WIDTH-1:0]   negative_edge_capture;
+logic     [INPUT_WIDTH-1:0]     positive_edge_capture;
+logic     [INPUT_WIDTH-1:0]     negative_edge_capture;
+logic     [(INPUT_WIDTH*2)-1:0] _ddr_output;
+
 
 always_comb begin
-    _positive_edge_capture  =   positive_edge_capture;
-    _negative_edge_capture  =   negative_edge_capture;
-
-    ddr_output              = {positive_edge_capture,negative_edge_capture};
+    _ddr_output              = {positive_edge_capture,negative_edge_capture};
 end
 
 
-always_ff @(posedge clock or negedge reset_n) begin
-    if (!reset_n) begin
-        positive_edge_capture   <=  0;
-    end
-    else begin
-        positive_edge_capture   <=  _positive_edge_capture;
-    end
+always begin
+    @(posedge clock);
+    positive_edge_capture   =   ddr_input;
+    @(negedge clock);
+    negative_edge_capture   =   ddr_input;
 end
+
 
 always_ff @(negedge clock or negedge reset_n) begin
     if (!reset_n) begin
-        negative_edge_capture       <=  0;
+        ddr_output   <=  0;
     end
     else begin
-        negative_edge_capture       <=  _negative_edge_capture;
+        ddr_output   <=  _ddr_output;
     end
 end
 

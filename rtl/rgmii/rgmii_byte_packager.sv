@@ -109,7 +109,7 @@ always_comb  begin
     _packaged_data          =   packaged_data;
     _data_enable_delayed    =   data_control_ddr_input_buffer_ddr_output[0];
     _data_error_delayed     =   data_control_ddr_input_buffer_ddr_output[1];
-    _data_delayed           =   data_ddr_input_buffer_ddr_input;
+    _data_delayed           =   data_ddr_input_buffer_ddr_output;
     _is_first_byte          =   is_first_byte;
     _packaged_data[8]       =   is_first_byte;
     _speed_code             =   speed_code;
@@ -142,14 +142,13 @@ always_comb  begin
             end
         end
         S_START_OF_FRAME: begin
+            _counter = 0;
+
             if (data_enable_delayed) begin
                 if (data_delayed == 8'hD5) begin
-                    _counter = counter + 1;
-                    
-                    if (counter == 6) begin
-                        _state          = S_PACK;
-                        _is_first_byte  = 1;
-                    end
+
+                    _state          = S_PACK;
+                    _is_first_byte  = 1;
                 end
                 else begin
                     _state = S_SYNC;
@@ -165,8 +164,8 @@ always_comb  begin
                     _is_first_byte = 0;
                 end
 
-                _packaged_data[7:0]     = data_ddr_input_buffer_ddr_output;
-                _packaged_data_valid    =   1;
+                _packaged_data[7:0]     = data_delayed;
+                _packaged_data_valid    = 1;
             end
             else begin
                 _state = S_SYNC;

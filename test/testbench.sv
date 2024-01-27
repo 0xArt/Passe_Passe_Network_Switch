@@ -25,6 +25,7 @@
 `include "./case_004/case_004.svh"
 `include "./case_005/case_005.svh"
 `include "./case_006/case_006.svh"
+`include "./case_007/case_007.svh"
 
 module testbench;
 
@@ -32,9 +33,11 @@ localparam  CLOCK_FREQUENCY             =   100_000_000;
 localparam  CLOCK_PERIOD                =   1e9/CLOCK_FREQUENCY;
 localparam  MODULE_CLOCK_FREQUENCY      =   50_000_000;
 localparam  MODULE_CLOCK_PERIOD         =   1e9/MODULE_CLOCK_FREQUENCY;
-
+localparam  RGMII_CLOCK_FREQUENCY       =   125_000_000;
+localparam  RGMII_CLOCK_PERIOD          =   1e9/RGMII_CLOCK_FREQUENCY;
 localparam  NUMBER_OF_RMII_PORTS        =   2;
 localparam  NUMBER_OF_VIRTUAL_PORTS     =   1;
+localparam  NUMBER_OF_RGMII_PORTS       =   1;
 localparam  RECEIVE_QUE_SLOTS           =   4;
 localparam  XILINX                      =   0;
 
@@ -50,6 +53,11 @@ logic                                           module_transmit_data_valid      
 logic                                           module_clock                    =   0;
 logic [8:0]                                     module_transmit_buffer [0:8888];
 
+logic                                           rgmii_clock                     =   0;
+logic [3:0]                                     rgmii_data                      =   0;
+logic                                           rgmii_data_control              =   0;
+
+
 wire                                        switch_core_clock;
 wire                                        switch_core_reset_n;
 wire                                        switch_core_rmii_clock;
@@ -61,11 +69,14 @@ wire    [NUMBER_OF_RMII_PORTS-1:0]          switch_core_rmii_phy_transmit_data_v
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]       switch_core_module_clock;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]       switch_core_module_transmit_data_enable;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]  switch_core_module_transmit_data;
-
+wire    [NUMBER_OF_RGMII_PORTS-1:0][3:0]    switch_core_rgmii_phy_receive_data;
+wire    [NUMBER_OF_RGMII_PORTS-1:0]         switch_core_rgmii_phy_receive_data_control;
+wire    [NUMBER_OF_RGMII_PORTS-1:0]         switch_core_rgmii_phy_receive_data_clock;
 
 switch_core #(
     .NUMBER_OF_RMII_PORTS       (NUMBER_OF_RMII_PORTS),
     .NUMBER_OF_VIRTUAL_PORTS    (NUMBER_OF_VIRTUAL_PORTS),
+    .NUMBER_OF_RGMII_PORTS      (NUMBER_OF_RGMII_PORTS),
     .RECEIVE_QUE_SLOTS          (RECEIVE_QUE_SLOTS),
     .XILINX                     (XILINX)
 )
@@ -76,6 +87,10 @@ switch_core(
     .rmii_phy_receive_data          (switch_core_rmii_phy_receive_data),
     .rmii_phy_receive_data_enable   (switch_core_rmii_phy_receive_data_enable),
     .rmii_phy_receive_data_error    (switch_core_rmii_phy_receive_data_error),
+    .rgmii_phy_receive_data         (switch_core_rgmii_phy_receive_data),
+    .rgmii_phy_receive_data_control (switch_core_rgmii_phy_receive_data_control),
+    .rgmii_phy_receive_clock        (switch_core_rgmii_phy_receive_data_clock),
+
     .module_clock                   (switch_core_module_clock),
     .module_transmit_data_enable    (switch_core_module_transmit_data_enable),
     .module_transmit_data           (switch_core_module_transmit_data),
@@ -118,6 +133,10 @@ assign  switch_core_rmii_phy_receive_data[1]            =   ethernet_transmit_da
 assign  switch_core_rmii_phy_receive_data_enable[1]     =   ethernet_transmit_data_valid[1];
 assign  switch_core_rmii_phy_receive_data_error[1]      =   0;
 
+assign  switch_core_rgmii_phy_receive_data_clock        =   rgmii_clock;
+assign  switch_core_rgmii_phy_receive_data              =   rgmii_data;
+assign  switch_core_rgmii_phy_receive_data_control      =   rgmii_data_control;
+
 assign  switch_core_module_transmit_data                =   module_transmit_data;
 assign  switch_core_module_transmit_data_enable         =   module_transmit_data_valid;
 assign  switch_core_module_clock                        =   module_clock;
@@ -148,6 +167,15 @@ initial begin
 end
 
 initial begin
+    rgmii_clock   =   0;
+
+    forever begin
+        #(RGMII_CLOCK_PERIOD/2);
+        rgmii_clock   =   ~rgmii_clock;
+    end
+end
+
+initial begin
     reset_n =   0;
     repeat(100) @(posedge module_clock);
     reset_n =   1;
@@ -162,6 +190,7 @@ initial begin
     case_004();
     case_005();
     case_006();
+    case_007();
     $stop();
 end
 
