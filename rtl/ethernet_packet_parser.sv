@@ -124,13 +124,11 @@ always_comb begin
                 end
             end
             if (data_enable) begin
-                data_ready = 1;
-
-                _delayed_data[3:1]                      =   delayed_data[2:0];
-                _delayed_data[0]                        =   data;
+                data_ready              =   1;
+                _delayed_data[3:1]      =   delayed_data[2:0];
+                _delayed_data[0]        =   data;
 
                 if (data[8])  begin
-
                     if (|receive_slot_enable == 0) begin
                         _state       = S_DROP_PACKET;
                     end
@@ -224,7 +222,7 @@ end
 always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
         state                           <=  S_IDLE;
-        for (i=0;i< 13;i++) begin
+        for (i=0; i<4; i++) begin
             delayed_data[i]             <=  0;
         end
         checksum_data                   <=  0;

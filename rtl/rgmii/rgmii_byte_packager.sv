@@ -19,8 +19,9 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-module rgmii_byte_packager
-(
+module rgmii_byte_packager#(
+    parameter XILINX    = 0
+)(
     input   wire            clock,
     input   wire            reset_n,
     input   wire    [3:0]   data,

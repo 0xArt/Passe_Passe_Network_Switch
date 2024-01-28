@@ -30,21 +30,21 @@ module ddr_output_buffer #(
 );
 
 
-logic   [OUTPUT_WIDTH-1:0]  _ddr_output;
+logic     [(OUTPUT_WIDTH*2)-1:0]    positive_edge_capture;
+logic     [(OUTPUT_WIDTH*2)-1:0]    negative_edge_capture;
+logic     [OUTPUT_WIDTH-1:0]        _ddr_output;
 
 
 always_comb begin
-    _ddr_output  =   ddr_output;
+    _ddr_output              = {positive_edge_capture,negative_edge_capture};
 end
 
 
-always_ff @(posedge clock or negedge reset_n) begin
-    if (!reset_n) begin
-        ddr_output   <=  0;
-    end
-    else begin
-        ddr_output   <=  ddr_input[(OUTPUT_WIDTH*2)-1:OUTPUT_WIDTH];
-    end
+always begin
+    @(posedge clock);
+    positive_edge_capture   =   ddr_input;
+    @(negedge clock);
+    negative_edge_capture   =   ddr_input;
 end
 
 
@@ -53,7 +53,7 @@ always_ff @(negedge clock or negedge reset_n) begin
         ddr_output   <=  0;
     end
     else begin
-        ddr_output   <=  ddr_input[OUTPUT_WIDTH-1:0];
+        ddr_output   <=  _ddr_output;
     end
 end
 
