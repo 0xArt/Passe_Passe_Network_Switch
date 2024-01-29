@@ -83,6 +83,23 @@ ddr_output_buffer#(
 );
 
 
+wire            data_valid_ddr_output_buffer_clock;
+wire            data_valid_ddr_output_buffer_reset_n;
+wire    [1:0]   data_valid_ddr_output_buffer_ddr_input;
+
+wire            data_valid__ddr_output_buffer_ddr_output;
+
+ddr_output_buffer#(
+  .OUTPUT_WIDTH              (1)
+)data_valid_ddr_output_buffer(
+    .clock          (data_ddr_output_buffer_clock),
+    .reset_n        (data_ddr_output_buffer_reset_n),
+    .ddr_input      (data_ddr_output_buffer_ddr_input),
+
+    .ddr_output     (data_ddr_output_buffer_ddr_output)
+);
+
+
 typedef enum
 {
     S_FIND_START_BIT,
@@ -105,8 +122,6 @@ reg     [7:0]   frame_data;
 logic   [7:0]   _frame_data;
 reg             frame_data_valid;
 logic           _frame_data_valid;
-reg             frame_data_valid_delayed;
-logic           _frame_data_valid_delayed;
 reg             stage_fifo_flush;
 logic           _stage_fifo_flush;
 
@@ -121,8 +136,12 @@ assign  data_ddr_output_buffer_clock                =   clock;
 assign  data_ddr_output_buffer_reset_n              =   reset_n;
 assign  data_ddr_output_buffer_ddr_input            =   frame_data;
 
+assign  data_valid_ddr_output_buffer_clock          =   clock;
+assign  data_valid_ddr_output_buffer_reset_n        =   reset_n;
+assign  data_valid_ddr_output_buffer_ddr_input      =   {frame_data_valid,frame_data_valid};
+
 assign  shipped_data                                =   data_ddr_output_buffer_ddr_output;
-assign  shipped_data_valid                          =   frame_data_valid_delayed;
+assign  shipped_data_valid                          =   data_ddr_output_buffer_ddr_output;
 
 
 always_comb  begin
@@ -130,7 +149,6 @@ always_comb  begin
     _counter                    =   counter;
     _frame_data                 =   frame_data;
     _frame_data_valid           =   0;
-    _frame_data_valid_delayed   =   frame_data_valid;
     data_ready                  =   0;
     _stage_data_valid           =   0;
     _stage_fifo_flush           =   0;
@@ -205,7 +223,6 @@ always_ff @(posedge clock) begin
         frame_data                  <=  0;
         frame_data_valid            <=  0;
         stage_fifo_flush            <=  0;
-        frame_data_valid_delayed    <=  0;
     end
     else begin
         state                       <=  _state;
@@ -215,7 +232,6 @@ always_ff @(posedge clock) begin
         frame_data                  <=  _frame_data;
         frame_data_valid            <=  _frame_data_valid;
         stage_fifo_flush            <=  _stage_fifo_flush; 
-        frame_data_valid_delayed    <=  _frame_data_valid_delayed;
     end
 end
 

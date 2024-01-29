@@ -247,10 +247,68 @@ outbound_fifo(
 );
 
 
+wire        rgmii_byte_shipper_clock;
+wire        rgmii_byte_shipper_reset_n;
+wire [8:0]  rgmii_byte_shipper_data;
+wire        rgmii_byte_shipper_data_enable;
+
+wire        rgmii_byte_shipper_data_ready;
+wire [3:0]  rgmii_byte_shipper_shipped_data;
+wire        rgmii_byte_shipper_shipped_data_valid;
+
+rgmii_byte_shipper  rgmii_byte_shipper(
+    .clock              (rgmii_byte_shipper_clock),
+    .reset_n            (rgmii_byte_shipper_reset_n),
+    .data               (rgmii_byte_shipper_data),
+    .data_enable        (rgmii_byte_shipper_data_enable),
+
+    .data_ready         (rgmii_byte_shipper_data_ready),
+    .shipped_data       (rgmii_byte_shipper_shipped_data),
+    .shipped_data_valid (rgmii_byte_shipper_shipped_data_valid)
+);
+
+
+wire            inbound_fifo_read_clock;
+wire            inbound_fifo_read_reset_n;
+wire            inbound_fifo_write_clock;
+wire            inbound_fifo_write_reset_n;
+wire            inbound_fifo_read_enable;
+wire            inbound_fifo_write_enable;
+wire    [8:0]   inbound_fifo_write_data;
+
+wire    [8:0]   inbound_fifo_read_data;
+wire            inbound_fifo_read_data_valid;
+wire            inbound_fifo_full;
+wire            inbound_fifo_empty;
+
+asynchronous_fifo#(
+    .DATA_WIDTH                 (9),
+    .DATA_DEPTH                 (4096),
+    .FIRST_WORD_FALL_THROUGH    (1),
+    .XILINX                     (XILINX)
+)
+inbound_fifo(
+    .read_clock         (inbound_fifo_read_clock),
+    .read_reset_n       (inbound_fifo_read_reset_n),
+    .write_clock        (inbound_fifo_write_clock),
+    .write_reset_n      (inbound_fifo_write_reset_n),
+    .read_enable        (inbound_fifo_read_enable),
+    .write_enable       (inbound_fifo_write_enable),
+    .write_data         (inbound_fifo_write_data),
+
+    .read_data          (inbound_fifo_read_data),
+    .read_data_valid    (inbound_fifo_read_data_valid),
+    .full               (inbound_fifo_full),
+    .empty              (inbound_fifo_empty)
+);
+
+
 assign rgmii_byte_packager_clock                                = phy_receive_clock;
 assign rgmii_byte_packager_reset_n                              = reset_n;
 assign rgmii_byte_packager_data                                 = phy_receive_data;
 assign rgmii_byte_packager_data_control                         = phy_receive_data_control;
+
+assign  transmit_data_ready                                     = !inbound_fifo_full;
 
 assign  frame_fifo_clock                                        = phy_receive_clock;
 assign  frame_fifo_reset_n                                      = reset_n;
@@ -309,5 +367,21 @@ assign  outbound_fifo_read_reset_n                              = reset_n;
 assign  outbound_fifo_write_clock                               = phy_receive_clock;
 assign  outbound_fifo_write_enable                              = que_slot_receieve_handler_push_data_valid;
 assign  outbound_fifo_write_reset_n                             = reset_n;
+
+assign inbound_fifo_read_clock                                  = phy_receive_clock;
+assign inbound_fifo_read_reset_n                                = reset_n;
+assign inbound_fifo_write_clock                                 = core_clock;
+assign inbound_fifo_write_reset_n                               = reset_n;
+assign inbound_fifo_read_enable                                 = rgmii_byte_shipper_data_ready;
+assign inbound_fifo_write_enable                                = transmit_data_enable;
+assign inbound_fifo_write_data                                  = transmit_data;
+
+assign rgmii_byte_shipper_clock                                 = phy_receive_clock;
+assign rgmii_byte_shipper_reset_n                               = reset_n;
+assign rgmii_byte_shipper_data                                  = inbound_fifo_read_data;
+assign rgmii_byte_shipper_data_enable                           = inbound_fifo_read_data_valid;
+
+assign phy_transmit_data                                        = rgmii_byte_shipper_shipped_data;
+assign phy_transmit_data_valid                                  = rgmii_byte_shipper_shipped_data_valid;
 
 endmodule
