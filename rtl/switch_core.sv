@@ -43,6 +43,9 @@ module switch_core#(
 
     output  wire    [NUMBER_OF_RMII_PORTS-1:0][1:0]     rmii_phy_transmit_data,
     output  wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_phy_transmit_data_vaid,
+    output  wire    [NUMBER_OF_RGMII_PORTS-1:0][3:0]    rgmii_phy_transmit_data,
+    output  wire    [NUMBER_OF_RGMII_PORTS-1:0]         rgmii_phy_transmit_data_control,
+    output  wire    [NUMBER_OF_RGMII_PORTS-1:0]         rgmii_phy_transmit_clock,
     output  wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]  module_receive_data,
     output  wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]       module_receive_data_valid,
     output  wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]       module_transmit_data_ready
@@ -64,6 +67,7 @@ wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_port_rmii_receive_data_error;
 wire    [NUMBER_OF_RMII_PORTS-1:0][8:0]     rmii_port_transmit_data;
 wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_port_transmit_data_enable;
 wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_port_receive_data_enable;
+
 wire    [NUMBER_OF_RMII_PORTS-1:0][8:0]     rmii_port_receive_data;
 wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_port_receive_data_valid;
 wire    [NUMBER_OF_RMII_PORTS-1:0][1:0]     rmii_port_rmii_transmit_data;
@@ -149,6 +153,8 @@ wire    [NUMBER_OF_RGMII_PORTS-1:0][8:0]    rgmii_port_transmit_data;
 wire    [NUMBER_OF_RGMII_PORTS-1:0]         rgmii_port_transmit_data_enable;
 wire    [NUMBER_OF_RGMII_PORTS-1:0]         rgmii_port_receive_data_enable;
 
+wire    [NUMBER_OF_RGMII_PORTS-1:0][8:0]    rgmii_port_receive_data;
+wire    [NUMBER_OF_RGMII_PORTS-1:0]         rgmii_port_receive_data_valid;
 wire    [NUMBER_OF_RGMII_PORTS-1:0]         rgmii_port_phy_transmit_clock;
 wire    [NUMBER_OF_RGMII_PORTS-1:0][3:0]    rgmii_port_phy_transmit_data;
 wire    [NUMBER_OF_RGMII_PORTS-1:0]         rgmii_port_phy_transmit_data_valid;
@@ -168,6 +174,8 @@ generate
             .transmit_data_enable               (rgmii_port_transmit_data_enable[i]),
             .receive_data_enable                (rgmii_port_receive_data_enable[i]),
 
+            .receive_data                       (rgmii_port_receive_data[i]),
+            .receive_data_valid                 (rgmii_port_receive_data_valid[i]),
             .phy_transmit_clock                 (rgmii_port_phy_transmit_clock[i]),
             .phy_transmit_data                  (rgmii_port_phy_transmit_data[i]),
             .phy_transmit_data_valid            (rgmii_port_phy_transmit_data_valid[i])
@@ -261,8 +269,8 @@ generate
         assign  rmii_port_receive_data_enable[i]                    =   core_data_orchestrator_port_receive_data_ready[i];
         assign  rmii_port_transmit_data_enable[i]                   =   core_data_orchestrator_port_transmit_data_valid[i];
         assign  rmii_port_transmit_data[i]                          =   core_data_orchestrator_port_transmit_data;
-        assign  core_data_orchestrator_port_receive_data_enable[i]  =   rmii_port_receive_data_valid[i];
-        assign  core_data_orchestrator_port_receive_data[i]         =   rmii_port_receive_data[i];
+        assign  core_data_orchestrator_port_receive_data_enable[i]  =   rgmii_port_receive_data_valid[i];
+        assign  core_data_orchestrator_port_receive_data[i]         =   rgmii_port_receive_data[i];
     end
 endgenerate
 
@@ -289,19 +297,17 @@ endgenerate
 
 generate
     for (i=0; i<NUMBER_OF_RGMII_PORTS; i=i+1) begin
-        assign  rgmii_port_core_clock[i]                            =   clock;
-        assign  rgmii_port_reset_n[i]                               =   reset_n;
-        assign  rgmii_port_phy_receive_data[i]                      =   rgmii_phy_receive_data[i];
-        assign  rgmii_port_phy_receive_data_control[i]              =   rgmii_phy_receive_data_control[i];
-        assign  rgmii_port_phy_receive_clock[i]                     =   rgmii_phy_receive_clock[i];
+        assign  rgmii_port_core_clock[i]                                                                        =   clock;
+        assign  rgmii_port_reset_n[i]                                                                           =   reset_n;
+        assign  rgmii_port_phy_receive_data[i]                                                                  =   rgmii_phy_receive_data[i];
+        assign  rgmii_port_phy_receive_data_control[i]                                                          =   rgmii_phy_receive_data_control[i];
+        assign  rgmii_port_phy_receive_clock[i]                                                                 =   rgmii_phy_receive_clock[i];
 
-        //assign  rmii_phy_transmit_data[i]                           =   rmii_port_rmii_transmit_data[i];
-        //assign  rmii_phy_transmit_data_vaid[i]                      =   rmii_port_rmii_transmit_data_valid[i];
-        //assign  rmii_port_receive_data_enable[i]                    =   core_data_orchestrator_port_receive_data_ready[i];
-        //assign  rmii_port_transmit_data_enable[i]                   =   core_data_orchestrator_port_transmit_data_valid[i];
-        //assign  rmii_port_transmit_data[i]                          =   core_data_orchestrator_port_transmit_data;
-        //assign  core_data_orchestrator_port_receive_data_enable[i]  =   rmii_port_receive_data_valid[i];
-        //assign  core_data_orchestrator_port_receive_data[i]         =   rmii_port_receive_data[i];
+        assign  rgmii_phy_transmit_data[i]                                                                      =   rgmii_port_phy_transmit_data[i];
+        assign  rgmii_phy_transmit_data_control[i]                                                              =   rgmii_port_phy_transmit_data_valid[i];
+        assign  rgmii_phy_transmit_data_clock[i]                                                                =   rgmii_port_phy_transmit_clock[i];
+        assign  core_data_orchestrator_port_receive_data_enable[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS] =   virutal_port_udp_transmit_data_valid[i];
+        assign  core_data_orchestrator_port_receive_data[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]        =   virutal_port_udp_transmit_data[i];
     end
 endgenerate
 

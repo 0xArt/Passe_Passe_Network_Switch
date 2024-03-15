@@ -32,6 +32,8 @@ module rgmii_port #(
     input   wire            transmit_data_enable,
     input   wire            receive_data_enable,
 
+    output  wire    [8:0]   receive_data,
+    output  wire            receive_data_valid,
     output  wire            phy_transmit_clock,
     output  wire            phy_transmit_data_valid,
     output  wire    [3:0]   phy_transmit_data,
@@ -99,6 +101,7 @@ wire    [31:0]                      ethernet_packet_parser_checksum_result;
 wire                                ethernet_packet_parser_checksum_result_enable;
 wire    [RECEIVE_QUE_SLOTS-1:0]     ethernet_packet_parser_receive_slot_enable;
 wire    [1:0]                       ethernet_packet_parser_speed_code;
+
 wire                                ethernet_packet_parser_data_ready;
 wire    [7:0]                       ethernet_packet_parser_checksum_data;
 wire                                ethernet_packet_parser_checksum_data_valid;
@@ -302,6 +305,8 @@ inbound_fifo(
     .empty              (inbound_fifo_empty)
 );
 
+assign  receive_data_valid                                      =  outbound_fifo_read_data_valid;
+assign  receive_data                                            =  outbound_fifo_read_data;
 
 assign rgmii_byte_packager_clock                                = phy_receive_clock;
 assign rgmii_byte_packager_reset_n                              = reset_n;
