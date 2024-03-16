@@ -269,8 +269,8 @@ generate
         assign  rmii_port_receive_data_enable[i]                    =   core_data_orchestrator_port_receive_data_ready[i];
         assign  rmii_port_transmit_data_enable[i]                   =   core_data_orchestrator_port_transmit_data_valid[i];
         assign  rmii_port_transmit_data[i]                          =   core_data_orchestrator_port_transmit_data;
-        assign  core_data_orchestrator_port_receive_data_enable[i]  =   rgmii_port_receive_data_valid[i];
-        assign  core_data_orchestrator_port_receive_data[i]         =   rgmii_port_receive_data[i];
+        assign  core_data_orchestrator_port_receive_data_enable[i]  =   rmii_port_receive_data_valid[i];
+        assign  core_data_orchestrator_port_receive_data[i]         =   rmii_port_receive_data[i];
     end
 endgenerate
 
@@ -306,8 +306,8 @@ generate
         assign  rgmii_phy_transmit_data[i]                                                                      =   rgmii_port_phy_transmit_data[i];
         assign  rgmii_phy_transmit_data_control[i]                                                              =   rgmii_port_phy_transmit_data_valid[i];
         assign  rgmii_phy_transmit_data_clock[i]                                                                =   rgmii_port_phy_transmit_clock[i];
-        assign  core_data_orchestrator_port_receive_data_enable[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS] =   virutal_port_udp_transmit_data_valid[i];
-        assign  core_data_orchestrator_port_receive_data[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]        =   virutal_port_udp_transmit_data[i];
+        assign  core_data_orchestrator_port_receive_data_enable[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS] =   rgmii_port_receive_data_valid[i];
+        assign  core_data_orchestrator_port_receive_data[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]        =   rgmii_port_receive_data[i];
     end
 endgenerate
 
