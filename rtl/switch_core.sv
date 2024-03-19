@@ -52,7 +52,7 @@ module switch_core#(
 
 );
 
-localparam NUMBER_OF_PORTS = NUMBER_OF_RMII_PORTS + NUMBER_OF_VIRTUAL_PORTS;
+localparam NUMBER_OF_PORTS = NUMBER_OF_RMII_PORTS + NUMBER_OF_VIRTUAL_PORTS + NUMBER_OF_RGMII_PORTS;
 
 genvar i;
 
@@ -302,11 +302,11 @@ generate
         assign  rgmii_port_phy_receive_data[i]                                                                  =   rgmii_phy_receive_data[i];
         assign  rgmii_port_phy_receive_data_control[i]                                                          =   rgmii_phy_receive_data_control[i];
         assign  rgmii_port_phy_receive_clock[i]                                                                 =   rgmii_phy_receive_clock[i];
-        assign  rgmii_port_receive_data_enable[i]                                                               =   core_data_orchestrator_port_receive_data_ready[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORT];
+        assign  rgmii_port_receive_data_enable[i]                                                               =   core_data_orchestrator_port_receive_data_ready[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS];
         
         assign  rgmii_phy_transmit_data[i]                                                                      =   rgmii_port_phy_transmit_data[i];
         assign  rgmii_phy_transmit_data_control[i]                                                              =   rgmii_port_phy_transmit_data_valid[i];
-        assign  rgmii_phy_transmit_data_clock[i]                                                                =   rgmii_port_phy_transmit_clock[i];
+        assign  rgmii_phy_transmit_clock[i]                                                                     =   rgmii_port_phy_transmit_clock[i];
         assign  core_data_orchestrator_port_receive_data_enable[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS] =   rgmii_port_receive_data_valid[i];
         assign  core_data_orchestrator_port_receive_data[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]        =   rgmii_port_receive_data[i];
     end
