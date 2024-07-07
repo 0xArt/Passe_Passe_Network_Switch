@@ -16,44 +16,33 @@
 // 
 // Revision:
 // Revision 0.01 - File Created
-// Additional Comments:
+// Additional Comments: SIMULATION ONLY
 // 
 //////////////////////////////////////////////////////////////////////////////////
 module ddr_output_buffer #(
-    parameter OUTPUT_WIDTH = 4
+    parameter OUTPUT_WIDTH  = 4,
+    parameter SWAP_ENABLE   = 0
 )(
     input   wire                            clock,
     input   wire                            reset_n,
     input   wire    [(OUTPUT_WIDTH*2)-1:0]  ddr_input,
     
-    output  reg     [OUTPUT_WIDTH-1:0]      ddr_output
+    output  logic   [OUTPUT_WIDTH-1:0]      ddr_output
 );
 
 
-logic     [(OUTPUT_WIDTH*2)-1:0]    positive_edge_capture;
-logic     [(OUTPUT_WIDTH*2)-1:0]    negative_edge_capture;
-logic     [OUTPUT_WIDTH-1:0]        _ddr_output;
-
-
-always_comb begin
-    _ddr_output              = {positive_edge_capture,negative_edge_capture};
-end
-
-
 always begin
-    @(posedge clock);
-    positive_edge_capture   =   ddr_input;
-    @(negedge clock);
-    negative_edge_capture   =   ddr_input;
-end
-
-
-always_ff @(negedge clock or negedge reset_n) begin
-    if (!reset_n) begin
-        ddr_output   <=  0;
+    if (SWAP_ENABLE) begin
+        @(posedge clock);
+        ddr_output =   ddr_input[OUTPUT_WIDTH-1:0];
+        @(negedge clock);
+        ddr_output =   ddr_input[(OUTPUT_WIDTH*2)-1:OUTPUT_WIDTH];
     end
     else begin
-        ddr_output   <=  _ddr_output;
+        @(posedge clock);
+        ddr_output =   ddr_input[(OUTPUT_WIDTH*2)-1:OUTPUT_WIDTH];
+        @(negedge clock);
+        ddr_output =   ddr_input[OUTPUT_WIDTH-1:0];
     end
 end
 

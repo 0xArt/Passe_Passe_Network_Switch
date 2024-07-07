@@ -305,21 +305,60 @@ inbound_fifo(
     .empty              (inbound_fifo_empty)
 );
 
-assign  receive_data_valid                                      =  outbound_fifo_read_data_valid;
-assign  receive_data                                            =  outbound_fifo_read_data;
+
+wire    rgmii_pll_clock;
+wire    rgmii_pll_enable;
+
+wire    rgmii_pll_phase_shifted_clock;
+
+rgmii_pll rgmii_pll(
+    .clock                  (rgmii_pll_clock),
+    .enable                 (rgmii_pll_enable),
+
+    .phase_shifted_clock    (rgmii_pll_phase_shifted_clock)
+);
+
+
+wire            transmit_clock_ddr_output_buffer_clock;
+wire            transmit_clock_ddr_output_buffer_reset_n;
+wire    [1:0]   transmit_clock_ddr_output_buffer_ddr_input;
+
+wire            transmit_clock_ddr_output_buffer_ddr_output;
+
+ddr_output_buffer#(
+  .OUTPUT_WIDTH              (1)
+)transmit_clock_ddr_output_buffer(
+    .clock          (transmit_clock_ddr_output_buffer_clock),
+    .reset_n        (transmit_clock_ddr_output_buffer_reset_n),
+    .ddr_input      (transmit_clock_ddr_output_buffer_ddr_input),
+
+    .ddr_output     (transmit_clock_ddr_output_buffer_ddr_output)
+);
+
+
+
+
+assign phy_transmit_clock                                       = transmit_clock_ddr_output_buffer_ddr_output;
+
+assign receive_data_valid                                       = outbound_fifo_read_data_valid;
+assign receive_data                                             = outbound_fifo_read_data;
+
+assign transmit_clock_ddr_output_buffer_clock                   = rgmii_pll_phase_shifted_clock;
+assign transmit_clock_ddr_output_buffer_reset_n                 = reset_n;
+assign transmit_clock_ddr_output_buffer_ddr_input               = {rgmii_pll_phase_shifted_clock,rgmii_pll_phase_shifted_clock};
 
 assign rgmii_byte_packager_clock                                = phy_receive_clock;
 assign rgmii_byte_packager_reset_n                              = reset_n;
 assign rgmii_byte_packager_data                                 = phy_receive_data;
 assign rgmii_byte_packager_data_control                         = phy_receive_data_control;
 
-assign  transmit_data_ready                                     = !inbound_fifo_full;
+assign transmit_data_ready                                      = !inbound_fifo_full;
 
-assign  frame_fifo_clock                                        = phy_receive_clock;
-assign  frame_fifo_reset_n                                      = reset_n;
-assign  frame_fifo_read_enable                                  = ethernet_packet_parser_data_ready;
-assign  frame_fifo_write_data                                   = rgmii_byte_packager_packaged_data;
-assign  frame_fifo_write_enable                                 = rgmii_byte_packager_packaged_data_valid;
+assign frame_fifo_clock                                         = phy_receive_clock;
+assign frame_fifo_reset_n                                       = reset_n;
+assign frame_fifo_read_enable                                   = ethernet_packet_parser_data_ready;
+assign frame_fifo_write_data                                    = rgmii_byte_packager_packaged_data;
+assign frame_fifo_write_enable                                  = rgmii_byte_packager_packaged_data_valid;
 
 assign ethernet_packet_parser_clock                             = phy_receive_clock;
 assign ethernet_packet_parser_reset_n                           = reset_n;
@@ -388,5 +427,8 @@ assign rgmii_byte_shipper_data_enable                           = inbound_fifo_r
 
 assign phy_transmit_data                                        = rgmii_byte_shipper_shipped_data;
 assign phy_transmit_data_valid                                  = rgmii_byte_shipper_shipped_data_valid;
+
+assign rgmii_pll_clock                                          = phy_receive_clock;
+assign rgmii_pll_enable                                         = 1;
 
 endmodule
