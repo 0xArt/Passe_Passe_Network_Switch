@@ -41,7 +41,8 @@ wire    [7:0]   data_ddr_input_buffer_ddr_output;
 
 
 ddr_input_buffer#(
-  .INPUT_WIDTH              (4)
+  .INPUT_WIDTH              (4),
+  .XILINX                   (XILINX)
 )data_ddr_input_buffer(
     .clock          (data_ddr_input_buffer_clock),
     .reset_n        (data_ddr_input_buffer_reset_n),
@@ -58,7 +59,8 @@ wire            data_control_ddr_input_buffer_ddr_input;
 wire    [1:0]   data_control_ddr_input_buffer_ddr_output;
 
 ddr_input_buffer#(
-  .INPUT_WIDTH              (1)
+  .INPUT_WIDTH              (1),
+  .XILINX                   (XILINX)
 )data_control_ddr_input_buffer(
     .clock          (data_control_ddr_input_buffer_clock),
     .reset_n        (data_control_ddr_input_buffer_reset_n),

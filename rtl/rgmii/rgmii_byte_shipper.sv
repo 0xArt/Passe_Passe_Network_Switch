@@ -73,7 +73,8 @@ wire    [7:0]   data_ddr_output_buffer_ddr_input;
 wire    [3:0]   data_ddr_output_buffer_ddr_output;
 
 ddr_output_buffer#(
-  .OUTPUT_WIDTH              (4)
+  .OUTPUT_WIDTH             (4),
+  .XILINX                   (XILINX)
 )data_ddr_output_buffer(
     .clock          (data_ddr_output_buffer_clock),
     .reset_n        (data_ddr_output_buffer_reset_n),
@@ -90,7 +91,8 @@ wire    [1:0]   data_valid_ddr_output_buffer_ddr_input;
 wire            data_valid__ddr_output_buffer_ddr_output;
 
 ddr_output_buffer#(
-  .OUTPUT_WIDTH              (1)
+  .OUTPUT_WIDTH             (1),
+  .XILINX                   (XILINX)
 )data_valid_ddr_output_buffer(
     .clock          (data_valid_ddr_output_buffer_clock),
     .reset_n        (data_valid_ddr_output_buffer_reset_n),
@@ -169,6 +171,7 @@ assign  timeout_cycle_timer_count                   = TIMEOUT_LIMIT;
 always_comb  begin
     _state                          = state;
     _counter                        = counter;
+    _stage_data                     = stage_data;
     _frame_data                     = frame_data;
     _frame_data_valid               = 0;
     data_ready                      = 0;

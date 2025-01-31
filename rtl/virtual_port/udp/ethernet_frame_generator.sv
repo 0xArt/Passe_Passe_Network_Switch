@@ -631,6 +631,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         saved_mac_destination           <=  0;
         saved_mac_source                <=  0;
         saved_ipv4_destination          <=  0;
+        saved_ipv4_identification       <=  0;
         saved_ipv4_source               <=  0;
         saved_udp_destination           <=  0;
         saved_udp_source                <=  0;

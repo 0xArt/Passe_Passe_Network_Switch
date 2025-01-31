@@ -25,30 +25,32 @@ module synchronous_fifo#(
     parameter FIRST_WORD_FALL_THROUGH   = 0,
     parameter XILINX                    = 0
 )(
-    input   wire                            clock,
-    input   wire                            reset_n,
-    input   wire                            read_enable,
-    input   wire                            write_enable,
-    input   wire    [DATA_WIDTH-1:0]        write_data,
+    input   wire                                clock,
+    input   wire                                reset_n,
+    input   wire                                read_enable,
+    input   wire                                write_enable,
+    input   wire    [DATA_WIDTH-1:0]            write_data,
 
-    output  wire     [DATA_WIDTH-1:0]       read_data,
-    output  wire                            read_data_valid,
-    output  wire                            full,
-    output  wire                            empty
+    output  wire    [DATA_WIDTH-1:0]            read_data,
+    output  wire                                read_data_valid,
+    output  wire                                full,
+    output  wire                                empty,
+    output  wire    [$clog2(DATA_DEPTH)-1:0]    words_available
 );
 
 
 generate
     if (XILINX && !FIRST_WORD_FALL_THROUGH) begin
-        wire                        xpm_fifo_sync_data_valid;
-        wire    [DATA_WIDTH-1:0]    xpm_fifo_sync_dout;
-        wire                        xpm_fifo_sync_empty;
-        wire                        xpm_fifo_sync_full;
-        wire    [DATA_WIDTH-1:0]    xpm_fifo_sync_din;
-        wire                        xpm_fifo_sync_rd_en;
-        wire                        xpm_fifo_sync_rst;
-        wire                        xpm_fifo_sync_wr_clk;
-        wire                        xpm_fifo_sync_wr_en;
+        wire                                xpm_fifo_sync_data_valid;
+        wire    [DATA_WIDTH-1:0]            xpm_fifo_sync_dout;
+        wire                                xpm_fifo_sync_empty;
+        wire                                xpm_fifo_sync_full;
+        wire    [DATA_WIDTH-1:0]            xpm_fifo_sync_din;
+        wire                                xpm_fifo_sync_rd_en;
+        wire                                xpm_fifo_sync_rst;
+        wire                                xpm_fifo_sync_wr_clk;
+        wire                                xpm_fifo_sync_wr_en;
+        wire    [$clog2(DATA_DEPTH)-1:0]    xpm_fifo_sync_rd_data_count;
 
         xpm_fifo_sync #(
             .CASCADE_HEIGHT         (0),
@@ -79,7 +81,7 @@ generate
             .overflow               (),
             .prog_empty             (),
             .prog_full              (),
-            .rd_data_count          (),
+            .rd_data_count          (xpm_fifo_sync_rd_data_count),
             .rd_rst_busy            (),
             .sbiterr                (),
             .underflow              (),
@@ -97,27 +99,29 @@ generate
         );
 
 
-        assign  read_data_valid         =   xpm_fifo_sync_data_valid;
-        assign  read_data               =   xpm_fifo_sync_dout;
-        assign  full                    =   xpm_fifo_sync_full;
-        assign  empty                   =   xpm_fifo_sync_empty;
+        assign read_data_valid      =   xpm_fifo_sync_data_valid;
+        assign read_data            =   xpm_fifo_sync_dout;
+        assign full                 =   xpm_fifo_sync_full;
+        assign empty                =   xpm_fifo_sync_empty;
+        assign words_available      =   xpm_fifo_sync_rd_data_count;
 
-        assign  xpm_fifo_sync_din       =   write_data;
-        assign  xpm_fifo_sync_rd_en     =   read_enable;
-        assign  xpm_fifo_sync_rst       =   !reset_n;
-        assign  xpm_fifo_sync_wr_clk    =   clock;
-        assign  xpm_fifo_sync_wr_en     =   write_enable;
+        assign xpm_fifo_sync_din    =   write_data;
+        assign xpm_fifo_sync_rd_en  =   read_enable;
+        assign xpm_fifo_sync_rst    =   !reset_n;
+        assign xpm_fifo_sync_wr_clk =   clock;
+        assign xpm_fifo_sync_wr_en  =   write_enable;
     end
     else if (XILINX && FIRST_WORD_FALL_THROUGH) begin
-        wire                        xpm_fifo_sync_data_valid;
-        wire    [DATA_WIDTH-1:0]    xpm_fifo_sync_dout;
-        wire                        xpm_fifo_sync_empty;
-        wire                        xpm_fifo_sync_full;
-        wire    [DATA_WIDTH-1:0]    xpm_fifo_sync_din;
-        wire                        xpm_fifo_sync_rd_en;
-        wire                        xpm_fifo_sync_rst;
-        wire                        xpm_fifo_sync_wr_clk;
-        wire                        xpm_fifo_sync_wr_en;
+        wire                                xpm_fifo_sync_data_valid;
+        wire    [DATA_WIDTH-1:0]            xpm_fifo_sync_dout;
+        wire                                xpm_fifo_sync_empty;
+        wire                                xpm_fifo_sync_full;
+        wire    [DATA_WIDTH-1:0]            xpm_fifo_sync_din;
+        wire                                xpm_fifo_sync_rd_en;
+        wire                                xpm_fifo_sync_rst;
+        wire                                xpm_fifo_sync_wr_clk;
+        wire                                xpm_fifo_sync_wr_en;
+        wire    [$clog2(DATA_DEPTH)-1:0]    xpm_fifo_sync_rd_data_count;
 
         xpm_fifo_sync #(
             .CASCADE_HEIGHT         (0),
@@ -148,7 +152,7 @@ generate
             .overflow               (),
             .prog_empty             (),
             .prog_full              (),
-            .rd_data_count          (),
+            .rd_data_count          (xpm_fifo_sync_rd_data_count),
             .rd_rst_busy            (),
             .sbiterr                (),
             .underflow              (),
@@ -166,28 +170,30 @@ generate
         );
         
 
-        assign  read_data_valid         =   xpm_fifo_sync_data_valid;
-        assign  read_data               =   xpm_fifo_sync_dout;
-        assign  full                    =   xpm_fifo_sync_full;
-        assign  empty                   =   xpm_fifo_sync_empty;
+        assign read_data_valid      =   xpm_fifo_sync_data_valid;
+        assign read_data            =   xpm_fifo_sync_dout;
+        assign full                 =   xpm_fifo_sync_full;
+        assign empty                =   xpm_fifo_sync_empty;
+        assign words_available      =   xpm_fifo_sync_rd_data_count;
 
-        assign  xpm_fifo_sync_din       =   write_data;
-        assign  xpm_fifo_sync_rd_en     =   read_enable;
-        assign  xpm_fifo_sync_rst       =   !reset_n;
-        assign  xpm_fifo_sync_wr_clk    =   clock;
-        assign  xpm_fifo_sync_wr_en     =   write_enable;
+        assign xpm_fifo_sync_din    =   write_data;
+        assign xpm_fifo_sync_rd_en  =   read_enable;
+        assign xpm_fifo_sync_rst    =   !reset_n;
+        assign xpm_fifo_sync_wr_clk =   clock;
+        assign xpm_fifo_sync_wr_en  =   write_enable;
     end
     else begin
-        wire                        generic_synchronous_fifo_clock;
-        wire                        generic_synchronous_fifo_reset_n;
-        wire                        generic_synchronous_fifo_read_enable;
-        wire                        generic_synchronous_fifo_write_enable;
-        wire    [DATA_WIDTH-1:0]    generic_synchronous_fifo_write_data;
+        wire                                generic_synchronous_fifo_clock;
+        wire                                generic_synchronous_fifo_reset_n;
+        wire                                generic_synchronous_fifo_read_enable;
+        wire                                generic_synchronous_fifo_write_enable;
+        wire    [DATA_WIDTH-1:0]            generic_synchronous_fifo_write_data;
 
-        wire    [DATA_WIDTH-1:0]    generic_synchronous_fifo_read_data;
-        wire                        generic_synchronous_fifo_read_data_valid;
-        wire                        generic_synchronous_fifo_full;
-        wire                        generic_synchronous_fifo_empty;
+        wire    [$clog2(DATA_DEPTH)-1:0]    generic_synchronous_fifo_available_words;
+        wire    [DATA_WIDTH-1:0]            generic_synchronous_fifo_read_data;
+        wire                                generic_synchronous_fifo_read_data_valid;
+        wire                                generic_synchronous_fifo_full;
+        wire                                generic_synchronous_fifo_empty;
 
         generic_synchronous_fifo#(
             .DATA_WIDTH               (DATA_WIDTH),
@@ -200,6 +206,7 @@ generate
             .write_enable       (generic_synchronous_fifo_write_enable),
             .write_data         (generic_synchronous_fifo_write_data),
 
+            .available_words    (generic_synchronous_fifo_available_words),
             .read_data          (generic_synchronous_fifo_read_data),
             .read_data_valid    (generic_synchronous_fifo_read_data_valid),
             .full               (generic_synchronous_fifo_full),
@@ -207,16 +214,17 @@ generate
         );
 
         
-        assign  read_data                               =   generic_synchronous_fifo_read_data;
-        assign  read_data_valid                         =   generic_synchronous_fifo_read_data_valid;
-        assign  full                                    =   generic_synchronous_fifo_full;
-        assign  empty                                   =   generic_synchronous_fifo_empty;
+        assign read_data                                = generic_synchronous_fifo_read_data;
+        assign read_data_valid                          = generic_synchronous_fifo_read_data_valid;
+        assign full                                     = generic_synchronous_fifo_full;
+        assign empty                                    = generic_synchronous_fifo_empty;
+        assign words_available                          = generic_synchronous_fifo_available_words;
 
-        assign  generic_synchronous_fifo_clock          =   clock;
-        assign  generic_synchronous_fifo_reset_n        =   reset_n;
-        assign  generic_synchronous_fifo_read_enable    =   read_enable;
-        assign  generic_synchronous_fifo_write_enable   =   write_enable;
-        assign  generic_synchronous_fifo_write_data     =   write_data;
+        assign generic_synchronous_fifo_clock           = clock;
+        assign generic_synchronous_fifo_reset_n         = reset_n;
+        assign generic_synchronous_fifo_read_enable     = read_enable;
+        assign generic_synchronous_fifo_write_enable    = write_enable;
+        assign generic_synchronous_fifo_write_data      = write_data;
     end
 endgenerate
 

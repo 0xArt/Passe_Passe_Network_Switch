@@ -36,8 +36,7 @@ module rgmii_port #(
     output  wire            receive_data_valid,
     output  wire            phy_transmit_clock,
     output  wire            phy_transmit_data_valid,
-    output  wire    [3:0]   phy_transmit_data,
-    output  wire            transmit_data_ready
+    output  wire    [3:0]   phy_transmit_data
 );
 
 genvar i;
@@ -52,7 +51,9 @@ wire [8:0]  rgmii_byte_packager_packaged_data;
 wire        rgmii_byte_packager_packaged_data_valid;
 wire [1:0]  rgmii_byte_packager_packaged_data_speed_code;
 
-rgmii_byte_packager rgmii_byte_packager(
+rgmii_byte_packager#(
+    .XILINX                 (XILINX) 
+)rgmii_byte_packager(
     .clock                  (rgmii_byte_packager_clock),
     .reset_n                (rgmii_byte_packager_reset_n),
     .data                   (rgmii_byte_packager_data),
@@ -259,7 +260,10 @@ wire        rgmii_byte_shipper_data_ready;
 wire [3:0]  rgmii_byte_shipper_shipped_data;
 wire        rgmii_byte_shipper_shipped_data_valid;
 
-rgmii_byte_shipper  rgmii_byte_shipper(
+rgmii_byte_shipper#(
+  .XILINX               (XILINX)                
+)   
+rgmii_byte_shipper(
     .clock              (rgmii_byte_shipper_clock),
     .reset_n            (rgmii_byte_shipper_reset_n),
     .data               (rgmii_byte_shipper_data),
@@ -307,15 +311,19 @@ inbound_fifo(
 
 
 wire    rgmii_pll_clock;
-wire    rgmii_pll_enable;
+wire    rgmii_pll_reset_n;
 
 wire    rgmii_pll_phase_shifted_clock;
+wire    rgmii_pll_phase_shifted_clock_lock;
 
-rgmii_pll rgmii_pll(
-    .clock                  (rgmii_pll_clock),
-    .enable                 (rgmii_pll_enable),
+rgmii_pll#(
+    .XILINX                     (XILINX)
+)rgmii_pll(
+    .clock                      (rgmii_pll_clock),
+    .reset_n                    (rgmii_pll_reset_n),
 
-    .phase_shifted_clock    (rgmii_pll_phase_shifted_clock)
+    .phase_shifted_clock        (rgmii_pll_phase_shifted_clock),
+    .phase_shifted_clock_lock   (rgmii_pll_phase_shifted_clock_lock)
 );
 
 
@@ -326,7 +334,8 @@ wire    [1:0]   transmit_clock_ddr_output_buffer_ddr_input;
 wire            transmit_clock_ddr_output_buffer_ddr_output;
 
 ddr_output_buffer#(
-  .OUTPUT_WIDTH              (1)
+  .OUTPUT_WIDTH              (1),
+  .XILINX                    (XILINX)
 )transmit_clock_ddr_output_buffer(
     .clock          (transmit_clock_ddr_output_buffer_clock),
     .reset_n        (transmit_clock_ddr_output_buffer_reset_n),
@@ -345,14 +354,12 @@ assign receive_data                                             = outbound_fifo_
 
 assign transmit_clock_ddr_output_buffer_clock                   = rgmii_pll_phase_shifted_clock;
 assign transmit_clock_ddr_output_buffer_reset_n                 = reset_n;
-assign transmit_clock_ddr_output_buffer_ddr_input               = {rgmii_pll_phase_shifted_clock,rgmii_pll_phase_shifted_clock};
+assign transmit_clock_ddr_output_buffer_ddr_input               = {1'b0,1'b1};
 
 assign rgmii_byte_packager_clock                                = phy_receive_clock;
 assign rgmii_byte_packager_reset_n                              = reset_n;
 assign rgmii_byte_packager_data                                 = phy_receive_data;
 assign rgmii_byte_packager_data_control                         = phy_receive_data_control;
-
-assign transmit_data_ready                                      = !inbound_fifo_full;
 
 assign frame_fifo_clock                                         = phy_receive_clock;
 assign frame_fifo_reset_n                                       = reset_n;
@@ -404,13 +411,13 @@ generate
     end
 endgenerate
 
-assign  outbound_fifo_write_data                                = que_slot_receieve_handler_push_data;
-assign  outbound_fifo_read_clock                                = core_clock;
-assign  outbound_fifo_read_enable                               = receive_data_enable;
-assign  outbound_fifo_read_reset_n                              = reset_n;
-assign  outbound_fifo_write_clock                               = phy_receive_clock;
-assign  outbound_fifo_write_enable                              = que_slot_receieve_handler_push_data_valid;
-assign  outbound_fifo_write_reset_n                             = reset_n;
+assign outbound_fifo_write_data                                 = que_slot_receieve_handler_push_data;
+assign outbound_fifo_read_clock                                 = core_clock;
+assign outbound_fifo_read_enable                                = receive_data_enable;
+assign outbound_fifo_read_reset_n                               = reset_n;
+assign outbound_fifo_write_clock                                = phy_receive_clock;
+assign outbound_fifo_write_enable                               = que_slot_receieve_handler_push_data_valid;
+assign outbound_fifo_write_reset_n                              = reset_n;
 
 assign inbound_fifo_read_clock                                  = phy_receive_clock;
 assign inbound_fifo_read_reset_n                                = reset_n;
@@ -429,6 +436,6 @@ assign phy_transmit_data                                        = rgmii_byte_shi
 assign phy_transmit_data_valid                                  = rgmii_byte_shipper_shipped_data_valid;
 
 assign rgmii_pll_clock                                          = phy_receive_clock;
-assign rgmii_pll_enable                                         = 1;
+assign rgmii_pll_reset_n                                        = reset_n;
 
 endmodule

@@ -23,29 +23,54 @@ module rgmii_pll #(
     parameter XILINX    = 0
 )(
     input   wire                            clock,
-    input   wire                            enable,
+    input   wire                            reset_n,
     
-    output  logic                           phase_shifted_clock
+    output  logic                           phase_shifted_clock,
+    output  wire                            phase_shifted_clock_lock
 );
 
-logic _phase_shifted_clock;
 
-always begin
-    @(posedge clock);
-    #2ns;
-    _phase_shifted_clock   =   0;
-    @(negedge clock);
-    #2ns
-    _phase_shifted_clock   =   1;
-end
+generate
+    if (XILINX) begin
+        wire    rgmii_pll_clock_wiz_reset;
+        wire    rgmii_pll_clock_wiz_clk_in1;
+        wire    rgmii_pll_clock_wiz_locked;
+        wire    rgmii_pll_clock_wiz_clk_out1;
 
-always_comb begin
-    phase_shifted_clock = 0;
+        rgmii_pll_clock_wiz rgmii_pll_clock_wiz(
+            .reset      (rgmii_pll_clock_wiz_reset),
+            .clk_in1    (rgmii_pll_clock_wiz_clk_in1),
 
-    if (enable) begin
-        phase_shifted_clock = _phase_shifted_clock;
+            .locked     (rgmii_pll_clock_wiz_locked),
+            .clk_out1   (rgmii_pll_clock_wiz_clk_out1)
+        );
+
+        assign phase_shifted_clock          = rgmii_pll_clock_wiz_clk_out1;
+        assign phase_shifted_clock_lock     = rgmii_pll_clock_wiz_locked;
+        assign rgmii_pll_clock_wiz_reset    = !reset_n;
+        assign rgmii_pll_clock_wiz_clk_in1  = clock; 
     end
-end
+    else begin
+        logic _phase_shifted_clock;
+
+        always begin
+            @(posedge clock);
+            #2ns;
+            _phase_shifted_clock   =   0;
+            @(negedge clock);
+            #2ns
+            _phase_shifted_clock   =   1;
+        end
+
+        always_comb begin
+            phase_shifted_clock = _phase_shifted_clock;
+        end
+
+        assign phase_shifted_clock_lock  = 1;
+    end
+endgenerate
+
+
 
 
 endmodule

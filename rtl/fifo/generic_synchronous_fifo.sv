@@ -24,16 +24,17 @@ module generic_synchronous_fifo#(
     parameter DATA_DEPTH                = 4096,
     parameter FIRST_WORD_FALL_THROUGH   = 0
 )(
-    input   wire                            clock,
-    input   wire                            reset_n,
-    input   wire                            read_enable,
-    input   wire                            write_enable,
-    input   wire    [DATA_WIDTH-1:0]        write_data,
+    input   wire                                clock,
+    input   wire                                reset_n,
+    input   wire                                read_enable,
+    input   wire                                write_enable,
+    input   wire    [DATA_WIDTH-1:0]            write_data,
 
-    output  reg     [DATA_WIDTH-1:0]        read_data,
-    output  reg                             read_data_valid,
-    output  reg                             full,
-    output  reg                             empty
+    output  reg     [$clog2(DATA_DEPTH)-1:0]    available_words,
+    output  reg     [DATA_WIDTH-1:0]            read_data,
+    output  reg                                 read_data_valid,
+    output  reg                                 full,
+    output  reg                                 empty
 );
 
 
@@ -43,19 +44,23 @@ reg     [DATA_DEPTH-1:0]                write_pointer;
 logic   [DATA_DEPTH-1:0]                _write_pointer;
 logic   [DATA_WIDTH-1:0]                _read_data;
 logic                                   _read_data_valid;
+logic   [$clog2(DATA_DEPTH)-1:0]        _available_words;
 reg     [DATA_WIDTH-1:0]                memory   [DATA_DEPTH-1:0];
 logic   [DATA_WIDTH-1:0]                _memory  [DATA_DEPTH-1:0];
 integer                                 i;
 integer                                 j;
 
+assign data_count   = write_pointer;
 
 always_comb begin
     _read_data          =   read_data;
     _read_data_valid    =   read_data_valid;
     _read_pointer       =   read_pointer;
     _write_pointer      =   write_pointer;
+    _available_words    =   available_words;
     full                =   0;
     empty               =   ( (write_pointer == read_pointer) && !full ) ? 1 : 0;
+
 
     for (i=0; i<DATA_DEPTH; i=i+1) begin
         _memory[i]      =   memory[i];
@@ -73,12 +78,14 @@ always_comb begin
     end
 
     if (read_enable && read_data_valid) begin
-        _read_data_valid    =   0;
+        _read_data_valid    = 0;
+        _available_words    = available_words - 1;
     end
 
     if (write_enable && !read_enable) begin
         if (!full) begin
-            _memory[write_pointer] = write_data;
+            _memory[write_pointer]  = write_data;
+            _available_words        = available_words + 1;
 
             if (write_pointer == (DATA_DEPTH -1)) begin
                 _write_pointer  =   0;
@@ -138,7 +145,7 @@ always_comb begin
             if (!read_enable && !read_data_valid) begin
                 _read_data          =   memory[read_pointer];
                 _read_data_valid    =   1;
-
+                
                 if (read_pointer == (DATA_DEPTH -1)) begin
                     _read_pointer  =   0;
                 end
@@ -156,6 +163,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         read_data_valid                 <=  0;
         read_pointer                    <=  0;
         write_pointer                   <=  0;
+        available_words                 <=  0;
 
         for (j=0; j<DATA_DEPTH; j=j+1) begin
             memory[j]                   <=  0;
@@ -166,6 +174,7 @@ always_ff @(posedge clock or negedge reset_n) begin
         read_data_valid                 <=  _read_data_valid;
         read_pointer                    <=  _read_pointer;
         write_pointer                   <=  _write_pointer;
+        available_words                 <=  _available_words;
 
         for (j=0; j<DATA_DEPTH; j=j+1) begin
             memory[j]                   <=  _memory[j];
