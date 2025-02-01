@@ -46,8 +46,49 @@ end
 testbench.module_transmit_data_valid       =   0;
 testbench.module_transmit_data             =   0;
 
-#100;
+fork : f0
+    begin
+        #1ms;
+        $fatal(0, "%t : timeout while waiting for RMII port 0 to start trasmitting", $time);
+        disable f0;
+    end
+    begin
+        wait (testbench.switch_core.genblk1[0].rmii_port.rmii_transmit_data_valid == 1);
+        wait (testbench.switch_core.genblk1[0].rmii_port.rmii_transmit_data_valid == 0);
+        $display("Switch routed first fragment of packet correctly to RMII port 0");
+        disable f0;
+    end
+join
 
+fork : f1
+    begin
+        #1ms;
+        $fatal(0, "%t : timeout while waiting for RMII port 0 to start trasmitting", $time);
+        disable f1;
+    end
+    begin
+        wait (testbench.switch_core.genblk1[0].rmii_port.rmii_transmit_data_valid == 1);
+        wait (testbench.switch_core.genblk1[0].rmii_port.rmii_transmit_data_valid == 0);
+        $display("Switch routed second fragment of packet correctly to RMII port 0");
+        disable f1;
+    end
+join
+
+fork : f2
+    begin
+        #1ms;
+        $fatal(0, "%t : timeout while waiting for RMII port 0 to start trasmitting", $time);
+        disable f2;
+    end
+    begin
+        wait (testbench.switch_core.genblk1[0].rmii_port.rmii_transmit_data_valid == 1);
+        wait (testbench.switch_core.genblk1[0].rmii_port.rmii_transmit_data_valid == 0);
+        $display("Switch routed third fragment of packet correctly to RMII port 0");
+        disable f2;
+    end
+join
+
+$display("Packet was fragmented correctly and routed from virtual port to RMII port 0");
 
 endtask: case_004
 

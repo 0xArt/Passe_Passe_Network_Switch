@@ -22,7 +22,7 @@ automatic logic [31:0]  frame_check_sequence    = 0;
 automatic logic [15:0]  ipv4_flags              = 0;
 
 $display("Running case 006");
-$display("Transmitting a fragmented IP packet with a UDP data size of 2000 via RMII0 destined for the virtual port");
+$display("Transmitting a fragmented IP packet with a UDP data size of 2000 via RMII port 0 destined for the virtual port");
 
 
 testbench.ethernet_message[0]   = 8'h55;
@@ -179,8 +179,18 @@ for (i=0; i<udp_total_size; i=i+fragment_size) begin
     end
 end
 
-
-#100;
+fork : f0
+    begin
+        #1ms;
+        $fatal(0, "%t : timeout while waiting for virtual port to receive data", $time);
+        disable f0;
+    end
+    begin
+        wait (testbench.switch_core.genblk2[0].virutal_port_udp.module_receive_data_valid == 1);
+        $display("Fragmented IPV4 packets from RMII port 0 were combined and received by the virtual port");
+        disable f0;
+    end
+join
 
 
 endtask: case_006

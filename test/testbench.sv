@@ -20,6 +20,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 `include "./case_000/case_000.svh"
+`include "./case_001/case_001.svh"
 `include "./case_002/case_002.svh"
 `include "./case_003/case_003.svh"
 `include "./case_004/case_004.svh"
@@ -185,6 +186,7 @@ initial begin
     wait(reset_n);
     repeat(100) @(posedge clock);
     case_000();
+    case_001();
     case_002();
     case_003();
     case_004();

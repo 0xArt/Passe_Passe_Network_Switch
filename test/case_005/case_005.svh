@@ -121,8 +121,18 @@ end
 testbench.ethernet_transmit_data[0]          =   0;
 testbench.ethernet_transmit_data_valid[0]    =   0;
 
-#100;
-
+fork : f0
+    begin
+        #1ms;
+        $fatal(0, "%t : timeout while waiting for virtual port to receive data", $time);
+        disable f0;
+    end
+    begin
+        wait (testbench.switch_core.genblk2[0].virutal_port_udp.module_receive_data_valid == 1);
+        $display("Packet from RMII port 0 was received by the virtual port");
+        disable f0;
+    end
+join
 
 endtask: case_005
 

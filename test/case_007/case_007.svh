@@ -8,6 +8,7 @@ automatic integer       i                       = 0;
 automatic integer       j                       = 0;
 
 $display("Running case 007");
+$display("Transmitting a proper packet to RGMII port 0 with the MAC destination of RMII port 0");
 
 testbench.ethernet_message[0]   = 8'h55;
 testbench.ethernet_message[1]   = 8'h55;
@@ -115,7 +116,34 @@ end
 testbench.rgmii_data_control            =   0;
 testbench.rgmii_data                    =   0;
 
-#100;
+fork : f0
+    begin
+        #1ms;
+        $fatal(0, "%t : timeout while waiting for checksum valid", $time);
+        disable f0;
+    end
+    begin
+        wait (testbench.switch_core.genblk3[0].rgmii_port.ethernet_packet_parser_checksum_result_enable == 1);
+        disable f0;
+    end
+join
+@(posedge testbench.switch_core.genblk3[0].rgmii_port.phy_receive_clock);
+@(posedge testbench.switch_core.genblk3[0].rgmii_port.phy_receive_clock);
+assert (testbench.switch_core.genblk3[0].rgmii_port.ethernet_packet_parser_good_packet != 0) $display ("Good packet detected correctly on RMII port 0");
+    else $fatal(0, "Packet was detected as bad when it should have been good");
+
+fork : f1
+    begin
+        #1ms;
+        $fatal(0, "%t : timeout while waiting for RMII port 0 to transmit routed data", $time);
+        disable f1;
+    end
+    begin
+        wait (testbench.switch_core.genblk1[0].rmii_port.rmii_transmit_data_valid == 1);
+        $display("Packet was routed correctly from RGMII port 0 out to RMII port 0");
+        disable f1;
+    end
+join
 
 
 endtask: case_007

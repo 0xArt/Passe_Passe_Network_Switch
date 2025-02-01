@@ -7,7 +7,7 @@ automatic integer   i = 0;
 automatic integer   j = 0;
 
 $display("Running case 003");
-$display("Transmitting a via the virtual port");
+$display("Transmitting a via the virtual port with a MAC destination of RMII port 0");
 
 /*
 1. MAC  Destination
@@ -70,8 +70,18 @@ end
 testbench.module_transmit_data_valid       =   0;
 testbench.module_transmit_data             =   0;
 
-#100;
-
+fork : f0
+    begin
+        #1ms;
+        $fatal(0, "%t : timeout while waiting for RMII port 0 to start trasmitting", $time);
+        disable f0;
+    end
+    begin
+        wait (testbench.switch_core.genblk1[0].rmii_port.rmii_transmit_data_valid == 1);
+        $display("Switch routed packet correctly to RMII port 0");
+        disable f0;
+    end
+join
 
 endtask: case_003
 

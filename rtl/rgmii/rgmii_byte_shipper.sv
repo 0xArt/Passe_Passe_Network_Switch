@@ -21,7 +21,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 module rgmii_byte_shipper #(
     parameter XILINX                    = 0,
-    parameter INTER_PACKET_GAP_CYCLES   = 10
+    parameter INTER_PACKET_GAP_CYCLES   = 12 //96ns with a RGMII clock of 125MHz
 )(
     input   wire            clock,
     input   wire            reset_n,

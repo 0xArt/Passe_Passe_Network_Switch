@@ -34,6 +34,7 @@ module rmii_byte_shipper#(
     output  logic           data_ready
 );
 
+localparam  INTER_PACKET_GAP_CYCLES = 480; //9.6us with RMII clock of 50 MHz
 
 typedef enum
 {
@@ -41,6 +42,7 @@ typedef enum
     S_SEND_PREMABLE,
     S_SEND_START_OF_FRAME,
     S_SEND_DATA,
+    S_INTERPACKET_GRAP,
     S_RESTART
 } state_type;
 
@@ -48,14 +50,14 @@ state_type      state;
 state_type      _state;
 reg     [15:0]  counter;
 logic   [15:0]  _counter;
-reg     [7:0]   sample_counter;
-logic   [7:0]   _sample_counter;
+reg     [8:0]   sample_counter;
+logic   [8:0]   _sample_counter;
 logic   [1:0]   _shipped_data;
 logic           _shipped_data_valid;
 logic   [7:0]   _byte_to_ship;
 reg     [7:0]   byte_to_ship;
-reg     [7:0]   sample_counter_limit;
-logic   [7:0]   _sample_counter_limit;
+reg     [8:0]   sample_counter_limit;
+logic   [8:0]   _sample_counter_limit;
 reg     [15:0]  preamble_count_limit;
 logic   [15:0]  _preamble_count_limit;
 reg     [1:0]   saved_speed_code;
@@ -92,6 +94,7 @@ always_comb  begin
         S_IDLE: begin
             _shipped_data_valid =   0;
             _saved_speed_code   =   speed_code;
+            _sample_counter     =   0;
 
             if (data_enable) begin
                 data_ready              =   1;
@@ -151,7 +154,8 @@ always_comb  begin
                 if (counter == 3) begin
                     if (data_enable) begin
                         if (data[8]) begin
-                            _state          =   S_IDLE;
+                            _state              =   S_INTERPACKET_GRAP;
+                            _sample_counter     =   INTER_PACKET_GAP_CYCLES;
                         end
                         else begin
                             _byte_to_ship   =   data[7:0];
@@ -159,12 +163,21 @@ always_comb  begin
                         end
                     end
                     else begin
-                        _state              =   S_IDLE;
+                        _state              =   S_INTERPACKET_GRAP;
+                        _sample_counter     =   INTER_PACKET_GAP_CYCLES;
                     end
                 end
             end
             else begin
                 _sample_counter =   sample_counter + 1;
+            end
+        end
+        S_INTERPACKET_GRAP: begin
+            _sample_counter     =   sample_counter - 1;
+            _shipped_data_valid =   0;
+
+            if (sample_counter == 0) begin
+                _state  =   S_IDLE;
             end
         end
     endcase
