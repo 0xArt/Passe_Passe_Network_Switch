@@ -18,7 +18,7 @@
 // Revision 0.01 - File Created
 // Additional Comments: NON XILINX IS SIMULATION ONLY
 //                      PLL produces a 90 degree phase shifted version of the input clock
-//                      Purspoed for gigabit transmit setup time requirements
+//                      Purposed for gigabit transmit 1.8 nano second setup time requirements (2 nano seconds with PLL)
 //                      If your PHY has programmable delays, you can nix this altogether and use that instead
 //////////////////////////////////////////////////////////////////////////////////
 module rgmii_pll #(

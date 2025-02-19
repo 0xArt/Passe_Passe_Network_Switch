@@ -36,7 +36,7 @@ genvar i;
 
 generate
     if (XILINX) begin
-        //ULTRASCALE ddr input buffer, replace with one for your fabric technology otherwise
+        //ULTRASCALE ddr output buffer, replace with one for your fabric technology otherwise
         for (i = 0; i < OUTPUT_WIDTH; i = i + 1) begin
             ODDRE1 #(
                 .IS_C_INVERTED  (0),                    
