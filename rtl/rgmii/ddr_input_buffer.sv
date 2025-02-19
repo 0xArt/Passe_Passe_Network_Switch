@@ -16,7 +16,7 @@
 // 
 // Revision:
 // Revision 0.01 - File Created
-// Additional Comments: SIMULATION ONLY
+// Additional Comments: NON XILINX IS SIMULATION ONLY
 // 
 //////////////////////////////////////////////////////////////////////////////////
 module ddr_input_buffer #(
@@ -36,6 +36,7 @@ genvar i;
 
 generate 
     if (XILINX) begin
+        //ULTRASCALE ddr input buffer, replace with one for your fabric technology otherwise
         for (i = 0; i < INPUT_WIDTH; i = i + 1) begin
             IDDRE1 #(
                 .DDR_CLK_EDGE   ("SAME_EDGE_PIPELINED"),

@@ -129,7 +129,7 @@ fork : f0
 join
 @(posedge testbench.switch_core.genblk3[0].rgmii_port.phy_receive_clock);
 @(posedge testbench.switch_core.genblk3[0].rgmii_port.phy_receive_clock);
-assert (testbench.switch_core.genblk3[0].rgmii_port.ethernet_packet_parser_good_packet != 0) $display ("Good packet detected correctly on RMII port 0");
+assert (testbench.switch_core.genblk3[0].rgmii_port.ethernet_packet_parser_good_packet != 0) $display ("Good packet detected correctly on RGMII port 0");
     else $fatal(0, "Packet was detected as bad when it should have been good");
 
 fork : f1

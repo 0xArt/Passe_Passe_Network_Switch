@@ -16,7 +16,7 @@
 // 
 // Revision:
 // Revision 0.01 - File Created
-// Additional Comments: SIMULATION ONLY
+// Additional Comments: NON XILINX IS SIMULATION ONLY
 // 
 //////////////////////////////////////////////////////////////////////////////////
 module ddr_output_buffer #(
@@ -36,6 +36,7 @@ genvar i;
 
 generate
     if (XILINX) begin
+        //ULTRASCALE ddr input buffer, replace with one for your fabric technology otherwise
         for (i = 0; i < OUTPUT_WIDTH; i = i + 1) begin
             ODDRE1 #(
                 .IS_C_INVERTED  (0),                    
