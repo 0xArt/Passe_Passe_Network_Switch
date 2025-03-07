@@ -109,6 +109,7 @@ always_comb begin
         S_FINISH: begin
             _result         =   accumator_carry;
             _result_valid   =   1;
+            _accumulator    =   0;
             _state          =   S_IDLE;
         end
     endcase
