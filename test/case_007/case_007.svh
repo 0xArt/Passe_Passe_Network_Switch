@@ -107,30 +107,27 @@ testbench.ethernet_message[71]  = 8'hC5;
 
 for (i=0;i<72;i=i+1) begin
     @(posedge testbench.rgmii_clock);
-    testbench.rgmii_data_control        =   1;
-    testbench.rgmii_data                =   testbench.ethernet_message[i][3:0];
+    testbench.rgmii_data_control        = 1;
+    testbench.rgmii_data                = testbench.ethernet_message[i][3:0];
     @(negedge testbench.rgmii_clock);
-    testbench.rgmii_data                =   testbench.ethernet_message[i][7:4];
+    testbench.rgmii_data                = testbench.ethernet_message[i][7:4];
 end
 @(posedge testbench.rgmii_clock);
-testbench.rgmii_data_control            =   0;
-testbench.rgmii_data                    =   0;
+testbench.rgmii_data_control            = 0;
+testbench.rgmii_data                    = 0;
 
 fork : f0
     begin
         #1ms;
-        $fatal(0, "%t : timeout while waiting for checksum valid", $time);
+        $fatal(0, "%t : timeout while waiting for good checksum", $time);
         disable f0;
     end
     begin
         wait (testbench.switch_core.genblk3[0].rgmii_port.ethernet_packet_parser_checksum_result_enable == 1);
+        wait ((testbench.switch_core.genblk3[0].rgmii_port.ethernet_packet_parser_good_packet != 0));
         disable f0;
     end
 join
-@(posedge testbench.switch_core.genblk3[0].rgmii_port.phy_receive_clock);
-@(posedge testbench.switch_core.genblk3[0].rgmii_port.phy_receive_clock);
-assert (testbench.switch_core.genblk3[0].rgmii_port.ethernet_packet_parser_good_packet != 0) $display ("Good packet detected correctly on RGMII port 0");
-    else $fatal(0, "Packet was detected as bad when it should have been good");
 
 fork : f1
     begin

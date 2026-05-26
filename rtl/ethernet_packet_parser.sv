@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:  www.circuitden.com
-// Engineer: Artin Isagholian
-//           artinisagholian@gmail.com
+// Company:     circuitden
+// Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 //
 // Create Date: 04/12/2023
 // Design Name:
@@ -17,6 +18,18 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
 //
 //////////////////////////////////////////////////////////////////////////////////
 module ethernet_packet_parser#(
@@ -25,34 +38,34 @@ module ethernet_packet_parser#(
     parameter logic [1:0]   SPEED_CODE_100_MEGABIT  = 1,
     parameter logic [1:0]   SPEED_CODE_10_MEGABIT   = 0
 )(
-    input   wire                            clock,
-    input   wire                            reset_n,
-    input   wire    [8:0]                   data,
-    input   wire                            data_enable,
-    input   wire    [31:0]                  checksum_result,
-    input   wire                            checksum_result_enable,
-    input   wire    [RECEIVE_QUE_SLOTS-1:0] receive_slot_enable,
-    input   wire    [1:0]                   speed_code,
+    input   wire                                    clock,
+    input   wire                                    reset_n,
+    input   wire    [8:0]                           data,
+    input   wire                                    data_enable,
+    input   wire    [31:0]                          checksum_result,
+    input   wire                                    checksum_result_enable,
+    input   wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_enable,
+    input   wire    [1:0]                           speed_code,
 
-    output  logic                           data_ready,
-    output  reg     [7:0]                   checksum_data,
-    output  reg                             checksum_data_valid,
-    output  reg                             checksum_data_last,
-    output  reg     [7:0]                   packet_data,
-    output  reg     [RECEIVE_QUE_SLOTS-1:0] packet_data_valid,
-    output  reg     [RECEIVE_QUE_SLOTS-1:0] good_packet,
-    output  reg     [RECEIVE_QUE_SLOTS-1:0] bad_packet
+    output  logic                                   data_ready,
+    output  reg     [7:0]                           checksum_data,
+    output  reg                                     checksum_data_valid,
+    output  reg                                     checksum_data_last,
+    output  reg     [7:0]                           packet_data,
+    output  reg     [RECEIVE_QUE_SLOTS-1:0]         packet_data_valid,
+    output  reg     [RECEIVE_QUE_SLOTS-1:0]         good_packet,
+    output  reg     [RECEIVE_QUE_SLOTS-1:0]         bad_packet,
+    output  reg     [7:0]                           next_que_slot
 );
 
 
 typedef enum
 {
-    S_IDLE,
-    S_PARSE_DATA,
-    S_PARSE_CRC,
-    S_CHECK_CRC,
-    S_DROP_PACKET,
-    S_RESTART
+    S_IDLE          = 0,
+    S_PARSE_DATA    = 1,
+    S_PARSE_CRC     = 2,
+    S_CHECK_CRC     = 3,
+    S_DROP_PACKET   = 4
 } state_type;
 
 integer                                 i;
@@ -72,41 +85,46 @@ logic   [RECEIVE_QUE_SLOTS-1:0]         _packet_data_valid;
 logic   [7:0]                           _packet_data;
 logic                                   _checksum_data_valid;
 logic                                   _checksum_data_last;
-reg     [$clog2(RECEIVE_QUE_SLOTS)-1:0] que_slot_select;
-logic   [$clog2(RECEIVE_QUE_SLOTS)-1:0] _que_slot_select;
+reg     [$clog2(RECEIVE_QUE_SLOTS):0]   que_slot_select;
+logic   [$clog2(RECEIVE_QUE_SLOTS):0]   _que_slot_select;
 logic   [31:0]                          _frame_check_sequence;
 reg     [31:0]                          frame_check_sequence;
 logic   [RECEIVE_QUE_SLOTS-1:0]         _good_packet;
 logic   [RECEIVE_QUE_SLOTS-1:0]         _bad_packet;
 logic                                   timeout_flag;
+logic   [7:0]                           _next_que_slot;
+logic                                   _first_byte;
+reg                                     first_byte;
 
 always_comb begin
-    _state                              =   state;
-    _process_counter                    =   process_counter;
-    _timeout_counter                    =   timeout_counter;
-    _timeout_counter_limit              =   timeout_counter_limit;
-    _delayed_data                       =   delayed_data;
-    _que_slot_select                    =   que_slot_select;
-    _frame_check_sequence               =   frame_check_sequence;
-    _checksum_data                      =   checksum_data;
-    _packet_data                        =   packet_data;
-    timeout_flag                        =   (timeout_counter >= timeout_counter_limit) ? 1 : 0;
-    _checksum_data_valid                =   0;
-    _checksum_data_last                 =   0;
-    _packet_data_valid                  =   0;
-    _good_packet                        =   0;
-    _bad_packet                         =   0;
-    data_ready                          =   0;
+    _state                              = state;
+    _process_counter                    = process_counter;
+    _timeout_counter                    = timeout_counter;
+    _timeout_counter_limit              = timeout_counter_limit;
+    _delayed_data                       = delayed_data;
+    _que_slot_select                    = que_slot_select;
+    _frame_check_sequence               = frame_check_sequence;
+    _checksum_data                      = checksum_data;
+    _next_que_slot                      = next_que_slot;
+    _packet_data                        = packet_data;
+    _first_byte                         = first_byte;
+    timeout_flag                        = (timeout_counter >= timeout_counter_limit) ? 1 : 0;
+    _checksum_data_valid                = 0;
+    _checksum_data_last                 = 0;
+    _packet_data_valid                  = 0;
+    _good_packet                        = 0;
+    _bad_packet                         = 0;
+    data_ready                          = 0;
 
     case (speed_code)
         SPEED_CODE_10_MEGABIT: begin
-            _timeout_counter_limit = 40;
+            _timeout_counter_limit = 64;
         end
         SPEED_CODE_100_MEGABIT: begin
-            _timeout_counter_limit = 4;
+            _timeout_counter_limit = 32;
         end
         SPEED_CODE_GIGABIT: begin
-            _timeout_counter_limit = 1;
+            _timeout_counter_limit = 8;
         end
         default: begin
             _timeout_counter_limit = 0;
@@ -115,8 +133,9 @@ always_comb begin
 
     case (state)
         S_IDLE: begin
-            _process_counter                 = 0;
-            _timeout_counter                 = 0;
+            _process_counter    = '0;
+            _timeout_counter    = '0;
+            _first_byte         = 1;
 
             for (index=0; index<RECEIVE_QUE_SLOTS; index=index+1) begin
                 if (receive_slot_enable[index]) begin
@@ -124,137 +143,142 @@ always_comb begin
                 end
             end
             if (data_enable) begin
-                data_ready              =   1;
-                _delayed_data[3:1]      =   delayed_data[2:0];
-                _delayed_data[0]        =   data;
-
                 if (data[8])  begin
                     if (|receive_slot_enable == 0) begin
-                        _state       = S_DROP_PACKET;
+                        _state      = S_DROP_PACKET;
+                        data_ready  = 1;
                     end
                     else begin
-                        _state                                  =   S_PARSE_DATA;
-                        _packet_data                            =   data[7:0];
-                        _packet_data_valid[que_slot_select]     =   1;
+                        _state      = S_PARSE_DATA;
+                        data_ready  = 0;
                     end
+                end
+                else begin
+                    data_ready  = 1;
                 end
             end
         end
         S_PARSE_DATA: begin
-            _timeout_counter    =   timeout_counter + 1;
+            _timeout_counter    = timeout_counter + 1;
+            _next_que_slot      = que_slot_select;
+            _first_byte         = 0;
 
-            if (data_enable) begin
-                _timeout_counter                        =   0;
-                _frame_check_sequence[31:8]             =   frame_check_sequence[23:0];
-                _frame_check_sequence[7:0]              =   data[7:0];
-                _checksum_data                          =   delayed_data[3];
-                _packet_data                            =   data[7:0];
-                _packet_data_valid[que_slot_select]     =   1;
-                data_ready                              =   1;
-                _delayed_data[3:1]                      =   delayed_data[2:0];
-                _delayed_data[0]                        =   data;
+            if (timeout_flag)  begin
+                _checksum_data_last     = 1;
+                _state                  = S_CHECK_CRC;
+            end
 
-                if(process_counter < 3) begin
+           if (data_enable) begin
+                _state                                  = S_PARSE_DATA;
+                _checksum_data_last                     = '0;
+                _timeout_counter                        = '0;
+                _frame_check_sequence[31:8]             = frame_check_sequence[23:0];
+                _frame_check_sequence[7:0]              = data[7:0];
+                _checksum_data                          = delayed_data[3];
+                _packet_data                            = data[7:0];
+                _packet_data_valid[que_slot_select]     = 1;
+                data_ready                              = 1;
+                _delayed_data[3:1]                      = delayed_data[2:0];
+                _delayed_data[0]                        = data;
+
+                if(process_counter < 4) begin
                     _process_counter    = process_counter + 1;
                 end
                 else begin
-                    _checksum_data_valid    =   1;
+                    _checksum_data_valid    = 1;
                 end
 
-                if (data[8]) begin
-                    _checksum_data_last =   1;
-                    _state              =   S_CHECK_CRC;
-                    data_ready          =   0;
-                    _process_counter    =   0;
+                if (data[8] && !first_byte) begin
+                    _checksum_data_last = 1;
+                    _state              = S_CHECK_CRC;
+                    data_ready          = '0;
+                    _process_counter    = '0;
                 end
-            end
-
-            if (timeout_flag)  begin
-                _checksum_data_last     =   1;
-                _state                  =   S_CHECK_CRC;
-                data_ready              =   0;
-                _process_counter        =   0;
             end
         end
         S_CHECK_CRC: begin
             if (checksum_result_enable) begin
-                _state              =   S_IDLE;
+                _state  = S_IDLE;
 
                 if (checksum_result == frame_check_sequence) begin
                     _good_packet[que_slot_select]   = 1;
                 end
                 else begin
-                    _bad_packet[que_slot_select]   = 1;
+                    _bad_packet[que_slot_select]    = 1;
                 end
             end
         end
         S_DROP_PACKET: begin
-            if (data_enable) begin
-                data_ready = 1;
-
-                if (data[8]) begin
-                    _state      =   S_RESTART;
-                    data_ready  =   0;
-                end
-            end
-        end
-        S_RESTART: begin
-            _process_counter        =   0;
-            _timeout_counter        =   0;
+            _process_counter        = '0;
+            _timeout_counter        = '0;
+            _first_byte             = 1;
 
             for (index=0; index<RECEIVE_QUE_SLOTS; index=index+1) begin
                 if (receive_slot_enable[index]) begin
                     _que_slot_select =  index;
                 end
             end
-            if (|receive_slot_enable == 0) begin
-                _state       = S_DROP_PACKET;
+
+            if (data_enable) begin
+                data_ready = 1;
+
+                if (data[8]) begin
+                    if (|receive_slot_enable == 0) begin
+                        _state       = S_DROP_PACKET;
+                    end
+                    else begin
+                        _state      = S_PARSE_DATA;
+                        data_ready  = 0;
+                    end
+                end
             end
             else begin
-                _state                                  =   S_PARSE_DATA;
-                _packet_data                            =   data[7:0];
-                _packet_data_valid[que_slot_select]     =   1;
+                _state   = S_IDLE;
             end
         end
     endcase
 end
 
-always_ff @(posedge clock or negedge reset_n) begin
+always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                           <=  S_IDLE;
         for (i=0; i<4; i++) begin
-            delayed_data[i]             <=  0;
+            delayed_data[i]             <= '0;
         end
-        checksum_data                   <=  0;
-        checksum_data_valid             <=  0;
-        checksum_data_last              <=  0;
-        packet_data                     <=  0;
-        packet_data_valid               <=  0;
-        que_slot_select                 <=  0;
-        frame_check_sequence            <=  0;
-        good_packet                     <=  0;
-        bad_packet                      <=  0;
-        process_counter                 <=  0;
-        timeout_counter                 <=  0;
-        timeout_counter_limit           <=  0;
-        checksum_data                   <=  0;
+        checksum_data                   <= '0;
+        checksum_data_valid             <= '0;
+        checksum_data_last              <= '0;
+        packet_data                     <= '0;
+        packet_data_valid               <= '0;
+        que_slot_select                 <= '0;
+        frame_check_sequence            <= '0;
+        good_packet                     <= '0;
+        bad_packet                      <= '0;
+        process_counter                 <= '0;
+        timeout_counter                 <= '0;
+        timeout_counter_limit           <= '0;
+        checksum_data                   <= '0;
+        next_que_slot                   <= '0;
+        first_byte                      <= '0;
     end
     else begin
-        state                           <=  _state;
-        delayed_data                    <=  _delayed_data;
-        checksum_data                   <=  _checksum_data;
-        checksum_data_valid             <=  _checksum_data_valid;
-        checksum_data_last              <=  _checksum_data_last;
-        packet_data                     <=  _packet_data;
-        packet_data_valid               <=  _packet_data_valid;
-        que_slot_select                 <=  _que_slot_select;
-        frame_check_sequence            <=  _frame_check_sequence;
-        good_packet                     <=  _good_packet;
-        bad_packet                      <=  _bad_packet;
-        process_counter                 <=  _process_counter;
-        timeout_counter                 <=  _timeout_counter;
-        timeout_counter_limit           <=  _timeout_counter_limit;
-        checksum_data                   <=  _checksum_data;
+        state                           <= _state;
+        delayed_data                    <= _delayed_data;
+        checksum_data                   <= _checksum_data;
+        checksum_data_valid             <= _checksum_data_valid;
+        checksum_data_last              <= _checksum_data_last;
+        packet_data                     <= _packet_data;
+        packet_data_valid               <= _packet_data_valid;
+        que_slot_select                 <= _que_slot_select;
+        frame_check_sequence            <= _frame_check_sequence;
+        good_packet                     <= _good_packet;
+        bad_packet                      <= _bad_packet;
+        process_counter                 <= _process_counter;
+        timeout_counter                 <= _timeout_counter;
+        timeout_counter_limit           <= _timeout_counter_limit;
+        checksum_data                   <= _checksum_data;
+        next_que_slot                   <= _next_que_slot;
+        first_byte                      <= _first_byte;
     end
 end
 

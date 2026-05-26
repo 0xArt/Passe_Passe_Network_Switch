@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:  www.circuitden.com
-// Engineer: Artin Isagholian
-//           artinisagholian@gmail.com
+// Company:     circuitden
+// Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 // 
 // Create Date: 07/06/2024
 // Design Name: 
@@ -16,24 +17,35 @@
 // 
 // Revision:
 // Revision 0.01 - File Created
-// Additional Comments: NON XILINX IS SIMULATION ONLY
-//                      PLL produces a 90 degree phase shifted version of the input clock
-//                      Purposed for gigabit transmit 1.8 nano second setup time requirements (2 nano seconds with PLL)
-//                      If your PHY has programmable delays, you can nix this altogether and use that instead
+// Additional Comments:
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
+// SIMULATION ONLY
+// 
 //////////////////////////////////////////////////////////////////////////////////
 module rgmii_pll #(
-    parameter XILINX    = 0
+    parameter TECHNOLOGY    = "SIMULATION"
 )(
     input   wire                            clock,
     input   wire                            reset_n,
     
     output  logic                           phase_shifted_clock,
-    output  wire                            phase_shifted_clock_lock
+    output  wire                            lock
 );
 
 
 generate
-    if (XILINX) begin
+    if (TECHNOLOGY == "XILINX") begin
         wire    rgmii_pll_clock_wiz_reset;
         wire    rgmii_pll_clock_wiz_clk_in1;
         wire    rgmii_pll_clock_wiz_locked;
@@ -58,10 +70,10 @@ generate
         always begin
             @(posedge clock);
             #2ns;
-            _phase_shifted_clock   =   0;
+            _phase_shifted_clock   = 0;
             @(negedge clock);
             #2ns
-            _phase_shifted_clock   =   1;
+            _phase_shifted_clock   = 1;
         end
 
         always_comb begin

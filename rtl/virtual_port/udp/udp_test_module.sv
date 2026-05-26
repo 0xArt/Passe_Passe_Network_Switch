@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:     Phantom Motorsports
-//              www.phantomtuned.com
+// Company:     circuitden
 // Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 // 
 // Create Date: 11/02/2023
 // Design Name: 
@@ -17,11 +18,23 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
+//
 //////////////////////////////////////////////////////////////////////////////////
 module udp_test_module#(
     parameter logic [15:0]  UDP_SOURCE   = 16'h8888,
-    parameter               XILINX       = 0
+    parameter               TECHNOLOGY   = "SIMULATION"
 )(
     input   wire                            clock,
     input   wire                            reset_n,
@@ -55,7 +68,7 @@ synchronous_fifo
 #(  .DATA_WIDTH                 (9),
     .DATA_DEPTH                 (1024),
     .FIRST_WORD_FALL_THROUGH    (1),
-    .XILINX                     (XILINX)
+    .TECHNOLOGY                 (TECHNOLOGY)
 ) transmit_fifo(
     .clock              (transmit_fifo_clock),
     .reset_n            (transmit_fifo_reset_n),
@@ -84,7 +97,7 @@ synchronous_fifo
 #(  .DATA_WIDTH                 (9),
     .DATA_DEPTH                 (1024),
     .FIRST_WORD_FALL_THROUGH    (1),
-    .XILINX                     (XILINX)
+    .TECHNOLOGY                 (TECHNOLOGY)
 ) receive_fifo(
     .clock              (receive_fifo_clock),
     .reset_n            (receive_fifo_reset_n),
@@ -139,23 +152,23 @@ logic           _blink;
 logic   [8:0]   _received_data;
 logic           _received_data_valid;
 
-assign packet_data                  =   transmit_fifo_read_data;
-assign packet_data_valid            =   transmit_fifo_read_data_valid;
+assign packet_data                  = transmit_fifo_read_data;
+assign packet_data_valid            = transmit_fifo_read_data_valid;
 
-assign transmit_fifo_clock          =   clock;
-assign transmit_fifo_reset_n        =   reset_n;
-assign transmit_fifo_read_enable    =   packet_data_enable && transmit_fifo_read_data_valid;
-assign transmit_fifo_write_enable   =   internal_packet_data_valid;
-assign transmit_fifo_write_data     =   internal_packet_data;
+assign transmit_fifo_clock          = clock;
+assign transmit_fifo_reset_n        = reset_n;
+assign transmit_fifo_read_enable    = packet_data_enable && transmit_fifo_read_data_valid;
+assign transmit_fifo_write_enable   = internal_packet_data_valid;
+assign transmit_fifo_write_data     = internal_packet_data;
 
-assign receive_fifo_clock           =   clock;
-assign receive_fifo_reset_n         =   reset_n;
-assign receive_fifo_read_enable     =   data_ready;
-assign receive_fifo_write_enable    =   data_enable;
-assign receive_fifo_write_data      =   data;
+assign receive_fifo_clock           = clock;
+assign receive_fifo_reset_n         = reset_n;
+assign receive_fifo_read_enable     = data_ready;
+assign receive_fifo_write_enable    = data_enable;
+assign receive_fifo_write_data      = data;
 
 
-wire [8:0] transmit_que [0:23]  =   
+wire [8:0] transmit_que [0:23]  = 
 {   
     {1'b1, mac_destination[47:40]}, {1'b0, mac_destination[39:32]}, {1'b0, mac_destination[31:24]},     {1'b0, mac_destination[23:16]}, 
     {1'b0, mac_destination[15:8]},  {1'b0, mac_destination[7:0]},   {1'b0, ipv4_destination[31:24]},    {1'b0, ipv4_destination[23:16]},
@@ -166,23 +179,23 @@ wire [8:0] transmit_que [0:23]  =
 };
 
 always_comb begin
-    _state                      =   state;
-    _process_counter            =   process_counter;
-    _byte_counter               =   byte_counter;
-    _received_mac_source        =   received_mac_source;
-    _internal_packet_data       =   internal_packet_data;
-    _received_mac_source        =   received_mac_source;
-    _received_ipv4_source       =   received_ipv4_source;
-    _received_ipv4_destination  =   received_ipv4_destination;
-    _received_udp_destination   =   received_udp_destination;
-    _received_udp_source        =   received_udp_source;
-    _received_udp_length        =   received_udp_length;
-    _received_data              =   received_data;
-    _received_data_valid        =   0;
-    udp_payload_size            =   received_udp_length - 8;
-    _blink                      =   blink;
-    _internal_packet_data_valid =   0;
-    data_ready                  =   0;
+    _state                      = state;
+    _process_counter            = process_counter;
+    _byte_counter               = byte_counter;
+    _received_mac_source        = received_mac_source;
+    _internal_packet_data       = internal_packet_data;
+    _received_mac_source        = received_mac_source;
+    _received_ipv4_source       = received_ipv4_source;
+    _received_ipv4_destination  = received_ipv4_destination;
+    _received_udp_destination   = received_udp_destination;
+    _received_udp_source        = received_udp_source;
+    _received_udp_length        = received_udp_length;
+    _received_data              = received_data;
+    _received_data_valid        = 0;
+    udp_payload_size            = received_udp_length - 8;
+    _blink                      = blink;
+    _internal_packet_data_valid = 0;
+    data_ready                  = 0;
 
     if (enable && packet_data_enable) begin
         _internal_packet_data       = transmit_que[byte_counter];
@@ -342,7 +355,7 @@ always_comb begin
     endcase
 end
 
-always_ff @(posedge clock or negedge reset_n) begin
+always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                       <=  S_IDLE;
         byte_counter                <=  0;

@@ -160,22 +160,22 @@ for (i=0; i<udp_total_size; i=i+fragment_size) begin
     ethernet_frame_size                                 = ethernet_frame_size + 4;
 
     for (k=0; k<ethernet_frame_size; k=k+1) begin
-        @(posedge testbench.clock);
-        testbench.ethernet_transmit_data_valid[0]       =   1;
-        testbench.ethernet_transmit_data[0]             =   testbench.ethernet_message[k][1:0];
-        @(posedge testbench.clock);
-        testbench.ethernet_transmit_data[0]             =   testbench.ethernet_message[k][3:2];
-        @(posedge testbench.clock);
-        testbench.ethernet_transmit_data[0]             =   testbench.ethernet_message[k][5:4];
-        @(posedge testbench.clock);
-        testbench.ethernet_transmit_data[0]             =   testbench.ethernet_message[k][7:6];
+        @(posedge testbench.rmii_clock);
+        testbench.ethernet_transmit_data_valid[0]       = 1;
+        testbench.ethernet_transmit_data[0]             = testbench.ethernet_message[k][1:0];
+        @(posedge testbench.rmii_clock);
+        testbench.ethernet_transmit_data[0]             = testbench.ethernet_message[k][3:2];
+        @(posedge testbench.rmii_clock);
+        testbench.ethernet_transmit_data[0]             = testbench.ethernet_message[k][5:4];
+        @(posedge testbench.rmii_clock);
+        testbench.ethernet_transmit_data[0]             = testbench.ethernet_message[k][7:6];
     end
-    @(posedge testbench.clock);
-    testbench.ethernet_transmit_data[0]          =   0;
-    testbench.ethernet_transmit_data_valid[0]    =   0;
+    @(posedge testbench.rmii_clock);
+    testbench.ethernet_transmit_data[0]          = 0;
+    testbench.ethernet_transmit_data_valid[0]    = 0;
 
     repeat(40) begin
-        @(posedge testbench.clock);
+        @(posedge testbench.rmii_clock);
     end
 end
 

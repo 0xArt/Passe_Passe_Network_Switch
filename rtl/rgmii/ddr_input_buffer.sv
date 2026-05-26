@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:  www.circuitden.com
-// Engineer: Artin Isagholian
-//           artinisagholian@gmail.com
+// Company:     circuitden
+// Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 // 
 // Create Date: 09/02/2023
 // Design Name: 
@@ -16,12 +17,25 @@
 // 
 // Revision:
 // Revision 0.01 - File Created
-// Additional Comments: NON XILINX IS SIMULATION ONLY
+// Additional Comments:
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
+// SIMULATION ONLY
 // 
 //////////////////////////////////////////////////////////////////////////////////
 module ddr_input_buffer #(
     parameter INPUT_WIDTH   = 4,
-    parameter XILINX        = 0  
+    parameter TECHNOLOGY    = "SIMULATION"  
 )(
     input   wire                            clock,
     input   wire                            reset_n,
@@ -35,20 +49,37 @@ module ddr_input_buffer #(
 genvar i;
 
 generate 
-    if (XILINX) begin
-        //ULTRASCALE ddr input buffer, replace with one for your fabric technology otherwise
+    if ( TECHNOLOGY == "ULTRASCALE" ) begin
         for (i = 0; i < INPUT_WIDTH; i = i + 1) begin
             IDDRE1 #(
                 .DDR_CLK_EDGE   ("SAME_EDGE_PIPELINED"),
                 .IS_C_INVERTED  (1'b0),                 
                 .IS_CB_INVERTED (1'b0)                  
             ) ddr_input (
-                .Q1             (ddr_output[2*i]),   
-                .Q2             (ddr_output[(2*i)+1]),
+                .Q1             (ddr_output[i]),   
+                .Q2             (ddr_output[i+INPUT_WIDTH]),
                 .C              (clock),             
                 .CB             (!clock),                 
                 .D              (ddr_input[i]),      
                 .R              (!reset_n)
+            );
+        end
+    end
+    else if ( TECHNOLOGY == "7_SERIES" ) begin
+        for (i = 0; i < INPUT_WIDTH; i = i + 1) begin
+            IDDR #(
+                .DDR_CLK_EDGE("SAME_EDGE_PIPELINED"),
+                .INIT_Q1(1'b0), 
+                .INIT_Q2(1'b0), 
+                .SRTYPE("ASYNC") 
+            ) ddr_input (
+                .Q1             (ddr_output[i]),   
+                .Q2             (ddr_output[i+INPUT_WIDTH]),
+                .C              (clock),             
+                .CE             (1'b1),                 
+                .D              (ddr_input[i]),      
+                .R              (!reset_n),
+                .S              (1'b0)
             );
         end
     end
@@ -65,9 +96,9 @@ generate
 
         always begin
             @(posedge clock);
-            positive_edge_capture   =   ddr_input;
+            positive_edge_capture   = ddr_input;
             @(negedge clock);
-            negative_edge_capture   =   ddr_input;
+            negative_edge_capture   = ddr_input;
         end
 
 

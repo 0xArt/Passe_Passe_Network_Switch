@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:     Phantom Motorsports
-//              www.phantomtuned.com
+// Company:     circuitden
 // Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 // 
 // Create Date: 04/25/2023
 // Design Name: 
@@ -17,7 +18,19 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
+//
 //////////////////////////////////////////////////////////////////////////////////
 module ethernet_frame_parser#(
     parameter RECEIVE_QUE_SLOTS = 4
@@ -134,41 +147,41 @@ reg     [15:0]                          udp_payload_byte_count;
 logic   [15:0]                          _udp_payload_byte_count;
 
 always_comb begin
-    _state                              =   state;
-    _process_counter                    =   process_counter;
-    _checksum_data_valid                =   checksum_data_valid;
-    _que_slot_select                    =   que_slot_select;
-    _mac_destination                    =   mac_destination;
-    _mac_source                         =   mac_source;
-    _frame_check_sequence               =   frame_check_sequence;
-    _calculated_frame_check_sequence    =   calculated_frame_check_sequence;
-    _ether_type                         =   ether_type;
-    _ipv4_version                       =   ipv4_version;
-    _ipv4_header_length                 =   ipv4_header_length;
-    _ipv4_source_address                =   ipv4_source_address;
-    _ipv4_destination_address           =   ipv4_destination_address;
-    _ipv4_total_length                  =   ipv4_total_length;
-    _ipv4_identification                =   ipv4_identification;
-    _ipv4_flags                         =   ipv4_flags;
-    _ipv4_time_to_live                  =   ipv4_time_to_live;
-    _ipv4_protocol                      =   ipv4_protocol;
-    _ipv4_services                      =   ipv4_services;
-    _ipv4_header_checksum               =   ipv4_header_checksum;
-    _udp_source_port                    =   udp_source_port;
-    _udp_destination_port               =   udp_destination_port;
-    _udp_length                         =   udp_length;
-    _udp_checksum                       =   udp_checksum;
-    _udp_payload_pad_byte_count         =   udp_payload_pad_byte_count;
-    _udp_payload_byte_count             =   udp_payload_byte_count;
-    _checksum_data                      =   checksum_data;
-    _packet_data                        =   packet_data;
-    _checksum_data_valid                =   0;
-    _checksum_data_last                 =   0;
-    _packet_data_valid                  =   0;
-    _good_packet                        =   0;
-    _bad_packet                         =   0;
-    data_ready                          =   0;
-    udp_destination                     =   udp_destination_port;
+    _state                              = state;
+    _process_counter                    = process_counter;
+    _checksum_data_valid                = checksum_data_valid;
+    _que_slot_select                    = que_slot_select;
+    _mac_destination                    = mac_destination;
+    _mac_source                         = mac_source;
+    _frame_check_sequence               = frame_check_sequence;
+    _calculated_frame_check_sequence    = calculated_frame_check_sequence;
+    _ether_type                         = ether_type;
+    _ipv4_version                       = ipv4_version;
+    _ipv4_header_length                 = ipv4_header_length;
+    _ipv4_source_address                = ipv4_source_address;
+    _ipv4_destination_address           = ipv4_destination_address;
+    _ipv4_total_length                  = ipv4_total_length;
+    _ipv4_identification                = ipv4_identification;
+    _ipv4_flags                         = ipv4_flags;
+    _ipv4_time_to_live                  = ipv4_time_to_live;
+    _ipv4_protocol                      = ipv4_protocol;
+    _ipv4_services                      = ipv4_services;
+    _ipv4_header_checksum               = ipv4_header_checksum;
+    _udp_source_port                    = udp_source_port;
+    _udp_destination_port               = udp_destination_port;
+    _udp_length                         = udp_length;
+    _udp_checksum                       = udp_checksum;
+    _udp_payload_pad_byte_count         = udp_payload_pad_byte_count;
+    _udp_payload_byte_count             = udp_payload_byte_count;
+    _checksum_data                      = checksum_data;
+    _packet_data                        = packet_data;
+    _checksum_data_valid                = '0;
+    _checksum_data_last                 = '0;
+    _packet_data_valid                  = '0;
+    _good_packet                        = '0;
+    _bad_packet                         = '0;
+    data_ready                          = '0;
+    udp_destination                     = udp_destination_port;
 
     case (state)
         S_IDLE: begin
@@ -183,12 +196,12 @@ always_comb begin
                 data_ready = 1;
 
                 if (data[8]) begin
-                    _mac_destination[7:0]   =   data;
-                    _mac_destination[47:8]  =   mac_destination[39:0];
-                    _process_counter        =   4;
-                    _state                  =   S_MAC_DESTINATION;
-                    _checksum_data          =   data;
-                    _checksum_data_valid    =   1;
+                    _mac_destination[7:0]   = data;
+                    _mac_destination[47:8]  = mac_destination[39:0];
+                    _process_counter        = 4;
+                    _state                  = S_MAC_DESTINATION;
+                    _checksum_data          = data;
+                    _checksum_data_valid    = 1;
                 end
 
                 if (|receive_slot_enable == 0) begin
@@ -198,428 +211,428 @@ always_comb begin
         end
         S_MAC_DESTINATION: begin
             if (data_enable) begin
-                data_ready                          =   1;
-                _process_counter                    =   process_counter - 1;
-                _mac_destination[7:0]               =   data;
-                _mac_destination[47:8]              =   mac_destination[39:0];
-                _checksum_data                      =   data;
-                _checksum_data_valid                =   1;
+                data_ready                          = 1;
+                _process_counter                    = process_counter - 1;
+                _mac_destination[7:0]               = data;
+                _mac_destination[47:8]              = mac_destination[39:0];
+                _checksum_data                      = data;
+                _checksum_data_valid                = 1;
 
                 if (process_counter == 0) begin
-                    _state                              =   S_MAC_SOURCE;
-                    _process_counter                    =   5;
+                    _state                              = S_MAC_SOURCE;
+                    _process_counter                    = 5;
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
         end
         S_MAC_SOURCE: begin
             if (data_enable) begin
-                data_ready                          =   1;
-                _process_counter                    =   process_counter - 1;
-                _mac_source[7:0]                    =   data;
-                _mac_source[47:8]                   =   mac_source[39:0];
-                _checksum_data                      =   data;
-                _packet_data                        =   data;
-                _packet_data_valid[que_slot_select] =   1;
-                _checksum_data_valid                =   1;
+                data_ready                          = 1;
+                _process_counter                    = process_counter - 1;
+                _mac_source[7:0]                    = data;
+                _mac_source[47:8]                   = mac_source[39:0];
+                _checksum_data                      = data;
+                _packet_data                        = data;
+                _packet_data_valid[que_slot_select] = 1;
+                _checksum_data_valid                = 1;
 
                 if (process_counter == 0) begin
-                    _state              =   S_TYPE;
-                    _process_counter    =   1;
+                    _state              = S_TYPE;
+                    _process_counter    = 1;
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
         end
         S_TYPE: begin
             if (data_enable) begin
-                data_ready                          =   1;
-                _process_counter                    =   process_counter - 1;
-                _ether_type[7:0]                    =   data;
-                _ether_type[15:8]                   =   ether_type[7:0];
-                _checksum_data                      =   data;
-                _checksum_data_valid                =   1;
+                data_ready                          = 1;
+                _process_counter                    = process_counter - 1;
+                _ether_type[7:0]                    = data;
+                _ether_type[15:8]                   = ether_type[7:0];
+                _checksum_data                      = data;
+                _checksum_data_valid                = 1;
 
                 if (process_counter == 0) begin
-                    _state              =   S_IPV4_VERSION;
-                    _process_counter    =   1;
+                    _state              = S_IPV4_VERSION;
+                    _process_counter    = 1;
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
         end
         S_IPV4_VERSION: begin
             if (data_enable) begin
-                _ipv4_version           =   data[7:4];
-                _ipv4_header_length     =   data[3:0];
-                _checksum_data          =   data;
-                _checksum_data_valid    =   1;
-                _state                  =   S_IPV4_SERVICES;
-                data_ready              =   1;
+                _ipv4_version           = data[7:4];
+                _ipv4_header_length     = data[3:0];
+                _checksum_data          = data;
+                _checksum_data_valid    = 1;
+                _state                  = S_IPV4_SERVICES;
+                data_ready              = 1;
 
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
             if (ether_type != IPV4_ETHER_TYPE) begin
-                _checksum_data_valid    =   1;
-                _checksum_data_last     =   1;
-                _state                  =   S_DROP_PACKET;
+                _checksum_data_valid    = 1;
+                _checksum_data_last     = 1;
+                _state                  = S_DROP_PACKET;
             end
         end
         S_IPV4_SERVICES: begin
             if (data_enable) begin
-                _ipv4_services          =   data;
-                _state                  =   S_IPV4_TOTAL_LENGTH;
-                _process_counter        =   1;
-                _checksum_data          =   data;
-                _checksum_data_valid    =   1;
-                data_ready              =   1;
+                _ipv4_services          = data;
+                _state                  = S_IPV4_TOTAL_LENGTH;
+                _process_counter        = 1;
+                _checksum_data          = data;
+                _checksum_data_valid    = 1;
+                data_ready              = 1;
 
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
         end
         S_IPV4_TOTAL_LENGTH: begin
             if (data_enable) begin
-                _process_counter            =   process_counter - 1;
-                _ipv4_total_length[7:0]     =   data;
-                _ipv4_total_length[15:8]    =   ipv4_total_length[7:0];
-                _checksum_data              =   data;
-                _checksum_data_valid        =   1;
-                data_ready                  =   1;
+                _process_counter            = process_counter - 1;
+                _ipv4_total_length[7:0]     = data;
+                _ipv4_total_length[15:8]    = ipv4_total_length[7:0];
+                _checksum_data              = data;
+                _checksum_data_valid        = 1;
+                data_ready                  = 1;
 
                 if (process_counter == 0) begin
-                    _process_counter    =   1;
-                    _state              =   S_IPV4_IDENTIFICATION;
+                    _process_counter    = 1;
+                    _state              = S_IPV4_IDENTIFICATION;
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
         end
         S_IPV4_IDENTIFICATION: begin
             if (data_enable) begin
-                _process_counter                    =   process_counter - 1;
-                _ipv4_identification[7:0]           =   data;
-                _ipv4_identification[15:8]          =   ipv4_identification[7:0];
-                _checksum_data                      =   data;
-                _checksum_data_valid                =   1;
-                data_ready                          =   1;
+                _process_counter                    = process_counter - 1;
+                _ipv4_identification[7:0]           = data;
+                _ipv4_identification[15:8]          = ipv4_identification[7:0];
+                _checksum_data                      = data;
+                _checksum_data_valid                = 1;
+                data_ready                          = 1;
 
                 if (process_counter == 0) begin
-                    _process_counter    =   1;
-                    _state              =   S_IPV4_FLAGS;
+                    _process_counter    = 1;
+                    _state              = S_IPV4_FLAGS;
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
         end
         S_IPV4_FLAGS: begin
             if (data_enable) begin
-                _process_counter                    =   process_counter - 1;
-                _ipv4_flags[7:0]                    =   data;
-                _ipv4_flags[15:8]                   =   ipv4_flags[7:0];
-                _checksum_data                      =   data;
-                _checksum_data_valid                =   1;
-                data_ready                          =   1;
+                _process_counter                    = process_counter - 1;
+                _ipv4_flags[7:0]                    = data;
+                _ipv4_flags[15:8]                   = ipv4_flags[7:0];
+                _checksum_data                      = data;
+                _checksum_data_valid                = 1;
+                data_ready                          = 1;
 
                 if(process_counter == 0) begin
-                    _process_counter    =   1;
-                    _state              =   S_IPV4_TIME_TO_LIVE;
+                    _process_counter    = 1;
+                    _state              = S_IPV4_TIME_TO_LIVE;
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
         end
         S_IPV4_TIME_TO_LIVE: begin
             if (data_enable) begin
-                _ipv4_time_to_live          =   data;
-                _checksum_data              =   data;
-                _checksum_data_valid        =   1;
-                _state                      =   S_IPV4_PROTOCOL;
-                data_ready                  =   1;
+                _ipv4_time_to_live          = data;
+                _checksum_data              = data;
+                _checksum_data_valid        = 1;
+                _state                      = S_IPV4_PROTOCOL;
+                data_ready                  = 1;
 
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
         end
         S_IPV4_PROTOCOL: begin
             if (data_enable) begin
-                _process_counter            =   1;
-                _ipv4_protocol              =   data;
-                _checksum_data              =   data;
-                _checksum_data_valid        =   1;
-                _state                      =   S_IPV4_HEADER_CHECKSUM;
-                data_ready                  =   1;
+                _process_counter            = 1;
+                _ipv4_protocol              = data;
+                _checksum_data              = data;
+                _checksum_data_valid        = 1;
+                _state                      = S_IPV4_HEADER_CHECKSUM;
+                data_ready                  = 1;
 
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
         end
         S_IPV4_HEADER_CHECKSUM: begin
             if (data_enable) begin
-                _process_counter                =   process_counter - 1;
-                _ipv4_header_checksum[7:0]      =   data;
-                _ipv4_header_checksum[15:8]     =   ipv4_header_checksum[7:0];
-                _checksum_data                  =   data;
-                _checksum_data_valid            =   1;
-                data_ready                      =   1;
+                _process_counter                = process_counter - 1;
+                _ipv4_header_checksum[7:0]      = data;
+                _ipv4_header_checksum[15:8]     = ipv4_header_checksum[7:0];
+                _checksum_data                  = data;
+                _checksum_data_valid            = 1;
+                data_ready                      = 1;
 
                 if (process_counter == 0) begin
-                    _process_counter    =   3;
-                    _state              =   S_IPV4_SOURCE_ADDRESS;
+                    _process_counter    = 3;
+                    _state              = S_IPV4_SOURCE_ADDRESS;
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
             if (ipv4_protocol != IPV4_PROTOCOL_UDP) begin
-                _checksum_data_valid    =   1;
-                _checksum_data_last     =   1;
-                _state                  =   S_DROP_PACKET;
+                _checksum_data_valid    = 1;
+                _checksum_data_last     = 1;
+                _state                  = S_DROP_PACKET;
             end
         end
         S_IPV4_SOURCE_ADDRESS: begin
             if (data_enable) begin
-                _process_counter                    =   process_counter - 1;
-                _ipv4_source_address[7:0]           =   data;
-                _ipv4_source_address[31:8]          =   ipv4_source_address[23:0];
-                _checksum_data                      =   data;
-                _packet_data                        =   data;
-                _packet_data_valid[que_slot_select] =   1;
-                _checksum_data_valid                =   1;
-                data_ready                          =   1;
+                _process_counter                    = process_counter - 1;
+                _ipv4_source_address[7:0]           = data;
+                _ipv4_source_address[31:8]          = ipv4_source_address[23:0];
+                _checksum_data                      = data;
+                _packet_data                        = data;
+                _packet_data_valid[que_slot_select] = 1;
+                _checksum_data_valid                = 1;
+                data_ready                          = 1;
 
                 if (process_counter == 0) begin
-                    _process_counter    =   3;
-                    _state              =   S_IPV4_DESTINATION_ADDRESS;
+                    _process_counter    = 3;
+                    _state              = S_IPV4_DESTINATION_ADDRESS;
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
         end
         S_IPV4_DESTINATION_ADDRESS: begin
             if (data_enable) begin
-                _process_counter                    =   process_counter - 1;
-                _ipv4_destination_address[7:0]      =   data;
-                _ipv4_destination_address[31:8]     =   ipv4_destination_address[23:0];
-                _checksum_data                      =   data;
-                _packet_data                        =   data;
-                _packet_data_valid[que_slot_select] =   1;
-                _checksum_data_valid                =   1;
-                data_ready                          =   1;
+                _process_counter                    = process_counter - 1;
+                _ipv4_destination_address[7:0]      = data;
+                _ipv4_destination_address[31:8]     = ipv4_destination_address[23:0];
+                _checksum_data                      = data;
+                _packet_data                        = data;
+                _packet_data_valid[que_slot_select] = 1;
+                _checksum_data_valid                = 1;
+                data_ready                          = 1;
 
                 if (process_counter == 0) begin
-                    _process_counter    =   1;
+                    _process_counter    = 1;
 
                     if (ipv4_flags[12:0] == 0) begin
-                        _state              =   S_UDP_SOURCE_PORT;
+                        _state              = S_UDP_SOURCE_PORT;
                     end
                     else begin
-                        _process_counter    =   ipv4_total_length - 21;
-                        _state              =   S_UDP_PAYLOAD;
+                        _process_counter    = ipv4_total_length - 21;
+                        _state              = S_UDP_PAYLOAD;
                     end
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
         end
         S_UDP_SOURCE_PORT: begin
             if (data_enable) begin
-                _process_counter                    =   process_counter - 1;
-                _udp_source_port[7:0]               =   data;
-                _udp_source_port[15:8]              =   udp_source_port[7:0];
-                _checksum_data                      =   data;
-                _checksum_data_valid                =   1;
-                data_ready                          =   1;
-                _packet_data                        =   data;
-                _packet_data_valid[que_slot_select] =   1;
+                _process_counter                    = process_counter - 1;
+                _udp_source_port[7:0]               = data;
+                _udp_source_port[15:8]              = udp_source_port[7:0];
+                _checksum_data                      = data;
+                _checksum_data_valid                = 1;
+                data_ready                          = 1;
+                _packet_data                        = data;
+                _packet_data_valid[que_slot_select] = 1;
 
                 if (process_counter == 0) begin
-                    _process_counter    =   1;
-                    _state              =   S_UDP_DESTINATION_PORT;
+                    _process_counter    = 1;
+                    _state              = S_UDP_DESTINATION_PORT;
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
         end
         S_UDP_DESTINATION_PORT: begin
             if (data_enable) begin
-                _process_counter                    =   process_counter - 1;
-                _udp_destination_port[7:0]          =   data;
-                _udp_destination_port[15:8]         =   udp_destination_port[7:0];
-                _checksum_data                      =   data;
-                _checksum_data_valid                =   1;
-                data_ready                          =   1;
-                _packet_data                        =   data;
-                _packet_data_valid[que_slot_select] =   1;
+                _process_counter                    = process_counter - 1;
+                _udp_destination_port[7:0]          = data;
+                _udp_destination_port[15:8]         = udp_destination_port[7:0];
+                _checksum_data                      = data;
+                _checksum_data_valid                = 1;
+                data_ready                          = 1;
+                _packet_data                        = data;
+                _packet_data_valid[que_slot_select] = 1;
 
                 if (process_counter == 0) begin
-                    _process_counter    =   1;
-                    _state              =   S_UDP_LENGTH;
+                    _process_counter    = 1;
+                    _state              = S_UDP_LENGTH;
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
         end
         S_UDP_LENGTH: begin
             if (data_enable) begin
-                _process_counter                    =   process_counter - 1;
-                _udp_length[7:0]                    =   data;
-                _udp_length[15:8]                   =   udp_length[7:0];
-                _checksum_data                      =   data;
-                _checksum_data_valid                =   1;
-                data_ready                          =   1;
-                _packet_data                        =   data;
-                _packet_data_valid[que_slot_select] =   1;
+                _process_counter                    = process_counter - 1;
+                _udp_length[7:0]                    = data;
+                _udp_length[15:8]                   = udp_length[7:0];
+                _checksum_data                      = data;
+                _checksum_data_valid                = 1;
+                data_ready                          = 1;
+                _packet_data                        = data;
+                _packet_data_valid[que_slot_select] = 1;
 
                 if (process_counter == 0) begin
-                    _process_counter    =   1;
-                    _state              =   S_UDP_CHECKSUM;
+                    _process_counter    = 1;
+                    _state              = S_UDP_CHECKSUM;
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    data_ready                      =   0;
-                    _checksum_data_last             =   1;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    data_ready                      = 0;
+                    _checksum_data_last             = 1;
                 end
             end
         end
         S_UDP_CHECKSUM: begin
             if (ipv4_total_length < 46) begin
-                _udp_payload_pad_byte_count =   46 - ipv4_total_length;
-                _udp_payload_byte_count     =   ipv4_total_length - 28;
+                _udp_payload_pad_byte_count = 46 - ipv4_total_length;
+                _udp_payload_byte_count     = ipv4_total_length - 28;
             end
             else begin
-                _udp_payload_pad_byte_count =   0;
-                _udp_payload_byte_count     =   ipv4_total_length  -  28;
+                _udp_payload_pad_byte_count = 0;
+                _udp_payload_byte_count     = ipv4_total_length  -  28;
             end
 
             if (data_enable) begin
-                _process_counter                =   process_counter - 1;
-                _udp_checksum[7:0]              =   data;
-                _udp_checksum[15:8]             =   udp_checksum[7:0];
-                _checksum_data                  =   data;
-                _checksum_data_valid            =   1;
-                data_ready                      =   1;
+                _process_counter                = process_counter - 1;
+                _udp_checksum[7:0]              = data;
+                _udp_checksum[15:8]             = udp_checksum[7:0];
+                _checksum_data                  = data;
+                _checksum_data_valid            = 1;
+                data_ready                      = 1;
 
                 if (process_counter == 0) begin
-                    _process_counter    =   udp_payload_byte_count - 1;
-                    _state              =   S_UDP_PAYLOAD;
+                    _process_counter    = udp_payload_byte_count - 1;
+                    _state              = S_UDP_PAYLOAD;
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    _checksum_data_last             =   1;
-                    data_ready                      =   0;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    _checksum_data_last             = 1;
+                    data_ready                      = 0;
                 end
             end
         end
         S_UDP_PAYLOAD: begin
             if (data_enable) begin
-                _process_counter                    =   process_counter - 1;
-                _packet_data                        =   data;
-                _packet_data_valid[que_slot_select] =   1;
-                _checksum_data                      =   data;
-                _checksum_data_valid                =   1;
-                data_ready                          =   1;
+                _process_counter                    = process_counter - 1;
+                _packet_data                        = data;
+                _packet_data_valid[que_slot_select] = 1;
+                _checksum_data                      = data;
+                _checksum_data_valid                = 1;
+                data_ready                          = 1;
 
                 if (process_counter == 0) begin
                     if (udp_payload_byte_count < 18) begin
-                        _process_counter    =   18 - udp_payload_byte_count - 1;
-                        _state              =   S_PAD;
+                        _process_counter    = 18 - udp_payload_byte_count - 1;
+                        _state              = S_PAD;
                     end
                     else begin
-                        _process_counter    =   3;
-                        _checksum_data_last =   1;
-                        _state              =   S_FRAME_CHECK_SEQUENCE;
+                        _process_counter    = 3;
+                        _checksum_data_last = 1;
+                        _state              = S_FRAME_CHECK_SEQUENCE;
 
                     end
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    _checksum_data_last             =   1;
-                    data_ready                      =   0;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    _checksum_data_last             = 1;
+                    data_ready                      = 0;
                 end
             end
         end
         S_PAD: begin
             if (data_enable) begin
-                _process_counter                    =   process_counter - 1;
-                _checksum_data                      =   data;
-                _checksum_data_valid                =   1;
-                data_ready                          =   1;
+                _process_counter                    = process_counter - 1;
+                _checksum_data                      = data;
+                _checksum_data_valid                = 1;
+                data_ready                          = 1;
 
                 if (process_counter == 0) begin
-                    _process_counter    =   3;
-                    _checksum_data_last =   1;
-                    _state              =   S_FRAME_CHECK_SEQUENCE;
+                    _process_counter    = 3;
+                    _checksum_data_last = 1;
+                    _state              = S_FRAME_CHECK_SEQUENCE;
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    _checksum_data_last             =   1;
-                    data_ready                      =   0;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    _checksum_data_last             = 1;
+                    data_ready                      = 0;
                 end
             end
         end
@@ -632,21 +645,21 @@ always_comb begin
                 _process_counter                    = process_counter - 1;
                 _frame_check_sequence[7:0]          = data;
                 _frame_check_sequence[31:8]         = frame_check_sequence[23:0];
-                data_ready                          =   1;
+                data_ready                          = 1;
 
                 if (process_counter == 0) begin
-                    _state      =   S_CHECK_CRC;
+                    _state      = S_CHECK_CRC;
                 end
                 if (data[8]) begin
-                    _state                          =   S_RESTART;
-                    _bad_packet[que_slot_select]    =   1;
-                    _checksum_data_last             =   1;
-                    data_ready                      =   0;
+                    _state                          = S_RESTART;
+                    _bad_packet[que_slot_select]    = 1;
+                    _checksum_data_last             = 1;
+                    data_ready                      = 0;
                 end
             end
         end
         S_CHECK_CRC: begin
-            _state      =   S_IDLE;
+            _state      = S_IDLE;
 
             if (calculated_frame_check_sequence == frame_check_sequence) begin
                 _good_packet[que_slot_select]   = 1;
@@ -657,11 +670,12 @@ always_comb begin
         end
         S_DROP_PACKET: begin
             if (data_enable) begin
-                data_ready  =   1;
+                data_ready  = 1;
 
                 if (data[8]) begin
-                    _state      =   S_RESTART;
-                    data_ready =   0;
+                    data_ready              = '0;
+                    _checksum_data_last     = '1;
+                    _state                  = S_RESTART;
                 end
             end
         end
@@ -672,25 +686,25 @@ always_comb begin
                 end
             end
             if (checksum_result_enable) begin
-                data_ready =   1;
+                data_ready = 1;
 
                 if (|receive_slot_enable == 0) begin
                     _state       = S_DROP_PACKET;
                 end
                 else begin
-                    _mac_destination[7:0]   =   data;
-                    _mac_destination[47:8]  =   mac_destination[39:0];
-                    _process_counter        =   4;
-                    _state                  =   S_MAC_DESTINATION;
-                    _checksum_data          =   data;
-                    _checksum_data_valid    =   1;
+                    _mac_destination[7:0]   = data;
+                    _mac_destination[47:8]  = mac_destination[39:0];
+                    _process_counter        = 4;
+                    _state                  = S_MAC_DESTINATION;
+                    _checksum_data          = data;
+                    _checksum_data_valid    = 1;
                 end
             end
         end
     endcase
 end
 
-always_ff @(posedge clock or negedge reset_n) begin
+always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                           <=  S_IDLE;
         process_counter                 <=  0;

@@ -1,7 +1,8 @@
 //////////////////////////////////////////////////////////////////////////////////
-// Company:     Phantom Motorsports
-//              www.phantomtuned.com
+// Company:     circuitden
 // Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 //
 // Create Date: 04/29/2023
 // Design Name:
@@ -16,13 +17,25 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
 //
 //////////////////////////////////////////////////////////////////////////////////
 module virutal_port_udp#(
     parameter RECEIVE_QUE_SLOTS         = 4,
     parameter FRAGMENT_SLOTS            = 4,
     parameter UDP_TRANSMIT_BUFFER_SIZE  = 4096,
-    parameter XILINX                    = 0
+    parameter TECHNOLOGY                = "SIMULATION"
 )(
     input   wire            clock,
     input   wire            reset_n,
@@ -63,7 +76,8 @@ asynchronous_fifo#(
     .DATA_WIDTH                 (9),
     .DATA_DEPTH                 (8192),
     .FIRST_WORD_FALL_THROUGH    (1),
-    .XILINX                     (XILINX)
+    .TECHNOLOGY                 (TECHNOLOGY),
+    .NUMBER_OF_CDC_STAGES       (2)
 )
 module_inbound_fifo(
     .read_clock         (module_inbound_fifo_read_clock),
@@ -169,7 +183,7 @@ block_ram
 #(.DATA_WIDTH       (8),
   .DATA_DEPTH       (UDP_TRANSMIT_BUFFER_SIZE),
   .PIPELINED_OUTPUT (0),
-  .XILINX           (XILINX)
+  .TECHNOLOGY       (TECHNOLOGY)
 )
 udp_data_buffer(
     .clock                  (udp_data_buffer_clock),
@@ -313,7 +327,9 @@ asynchronous_fifo#(
     .DATA_WIDTH                 (9),
     .DATA_DEPTH                 (2048),
     .FIRST_WORD_FALL_THROUGH    (1),
-    .XILINX                     (XILINX)
+    .TECHNOLOGY                 (TECHNOLOGY),
+    .NUMBER_OF_CDC_STAGES       (2)
+
 )
 switch_inbound_fifo(
     .read_clock         (switch_inbound_fifo_read_clock),
@@ -417,7 +433,7 @@ wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_push_data_valid;
 
 generate
     for (i=0; i<RECEIVE_QUE_SLOTS; i =i+1) begin
-        receive_slot#(.XILINX(XILINX))
+        receive_slot#(.TECHNOLOGY(TECHNOLOGY))
         receive_slot(
             .clock                          (receive_slot_clock),
             .reset_n                        (receive_slot_reset_n),
@@ -494,7 +510,7 @@ wire    [FRAGMENT_SLOTS-1:0][15:0]  udp_fragment_slot_push_current_packet_id;
 
 generate
     for (j=0; j<FRAGMENT_SLOTS; j = j+1) begin
-        udp_fragment_slot#(.XILINX(XILINX))    
+        udp_fragment_slot#(.TECHNOLOGY(TECHNOLOGY))    
         udp_fragment_slot(
             .clock              (udp_fragment_slot_clock),
             .reset_n            (udp_fragment_slot_reset_n),
@@ -554,7 +570,8 @@ asynchronous_fifo#(
     .DATA_WIDTH                 (9),
     .DATA_DEPTH                 (8192),
     .FIRST_WORD_FALL_THROUGH    (1),
-    .XILINX                     (XILINX)
+    .TECHNOLOGY                 (TECHNOLOGY),
+    .NUMBER_OF_CDC_STAGES       (2)
 )
 outbound_fifo(
     .read_clock         (outbound_fifo_read_clock),
@@ -571,135 +588,135 @@ outbound_fifo(
     .empty              (outbound_fifo_empty)
 );
 
-assign  receive_data_ready                                      =   !switch_inbound_fifo_full;
-assign  transmit_data                                           =   outbound_fifo_read_data;
-assign  transmit_data_valid                                     =   outbound_fifo_read_data_valid;
-assign  module_transmit_data_ready                              =   !module_inbound_fifo_full;
-assign  module_receive_data                                     =   receive_slot_arbiter_push_data;
-assign  module_receive_data_valid                               =   receive_slot_arbiter_push_data_valid;
+assign  receive_data_ready                                      = !switch_inbound_fifo_full;
+assign  transmit_data                                           = outbound_fifo_read_data;
+assign  transmit_data_valid                                     = outbound_fifo_read_data_valid;
+assign  module_transmit_data_ready                              = !module_inbound_fifo_full;
+assign  module_receive_data                                     = receive_slot_arbiter_push_data;
+assign  module_receive_data_valid                               = receive_slot_arbiter_push_data_valid;
 
-assign  outbound_fifo_read_clock                                =   clock;
-assign  outbound_fifo_read_enable                               =   transmit_data_enable;
-assign  outbound_fifo_read_reset_n                              =   reset_n;
-assign  outbound_fifo_write_clock                               =   clock;
-assign  outbound_fifo_write_data                                =   ethernet_frame_generator_frame_data;
-assign  outbound_fifo_write_enable                              =   ethernet_frame_generator_frame_data_valid;
-assign  outbound_fifo_write_reset_n                             =   reset_n;
+assign  outbound_fifo_read_clock                                = clock;
+assign  outbound_fifo_read_enable                               = transmit_data_enable;
+assign  outbound_fifo_read_reset_n                              = reset_n;
+assign  outbound_fifo_write_clock                               = clock;
+assign  outbound_fifo_write_data                                = ethernet_frame_generator_frame_data;
+assign  outbound_fifo_write_enable                              = ethernet_frame_generator_frame_data_valid;
+assign  outbound_fifo_write_reset_n                             = reset_n;
 
-assign  udp_transmit_handler_clock                              =   clock;
-assign  udp_transmit_handler_reset_n                            =   reset_n;
-assign  udp_transmit_handler_enable                             =   ethernet_frame_generator_ready;
-assign  udp_transmit_handler_data_enable                        =   module_inbound_fifo_read_data_valid;
-assign  udp_transmit_handler_data                               =   module_inbound_fifo_read_data;
-assign  udp_transmit_handler_ipv4_source                        =   ipv4_source;
+assign  udp_transmit_handler_clock                              = clock;
+assign  udp_transmit_handler_reset_n                            = reset_n;
+assign  udp_transmit_handler_enable                             = ethernet_frame_generator_ready;
+assign  udp_transmit_handler_data_enable                        = module_inbound_fifo_read_data_valid;
+assign  udp_transmit_handler_data                               = module_inbound_fifo_read_data;
+assign  udp_transmit_handler_ipv4_source                        = ipv4_source;
 
-assign  module_inbound_fifo_read_clock                          =   clock;
-assign  module_inbound_fifo_read_reset_n                        =   reset_n;
-assign  module_inbound_fifo_write_clock                         =   module_clock;
-assign  module_inbound_fifo_write_reset_n                       =   reset_n;
-assign  module_inbound_fifo_read_enable                         =   udp_transmit_handler_data_ready;
-assign  module_inbound_fifo_write_enable                        =   module_transmit_data_enable;
-assign  module_inbound_fifo_write_data                          =   module_transmit_data;
+assign  module_inbound_fifo_read_clock                          = clock;
+assign  module_inbound_fifo_read_reset_n                        = reset_n;
+assign  module_inbound_fifo_write_clock                         = module_clock;
+assign  module_inbound_fifo_write_reset_n                       = reset_n;
+assign  module_inbound_fifo_read_enable                         = udp_transmit_handler_data_ready;
+assign  module_inbound_fifo_write_enable                        = module_transmit_data_enable;
+assign  module_inbound_fifo_write_data                          = module_transmit_data;
 
-assign  udp_data_buffer_clock                                   =   clock;
-assign  udp_data_buffer_reset_n                                 =   reset_n;
-assign  udp_data_buffer_write_enable                            =   udp_transmit_handler_udp_buffer_data_valid;
-assign  udp_data_buffer_write_data                              =   udp_transmit_handler_udp_buffer_data;
-assign  udp_data_buffer_write_address                           =   udp_transmit_handler_udp_buffer_write_address;
-assign  udp_data_buffer_read_address                            =   ethernet_frame_generator_udp_buffer_read_address;
+assign  udp_data_buffer_clock                                   = clock;
+assign  udp_data_buffer_reset_n                                 = reset_n;
+assign  udp_data_buffer_write_enable                            = udp_transmit_handler_udp_buffer_data_valid;
+assign  udp_data_buffer_write_data                              = udp_transmit_handler_udp_buffer_data;
+assign  udp_data_buffer_write_address                           = udp_transmit_handler_udp_buffer_write_address;
+assign  udp_data_buffer_read_address                            = ethernet_frame_generator_udp_buffer_read_address;
 
-assign  udp_checksum_calculator_clock                           =   clock;
-assign  udp_checksum_calculator_reset_n                         =   reset_n;
-assign  udp_checksum_calculator_data                            =   udp_transmit_handler_udp_checksum_data;
-assign  udp_checksum_calculator_data_enable                     =   udp_transmit_handler_udp_checksum_data_valid;
-assign  udp_checksum_calculator_data_last                       =   udp_transmit_handler_udp_checksum_data_last;
+assign  udp_checksum_calculator_clock                           = clock;
+assign  udp_checksum_calculator_reset_n                         = reset_n;
+assign  udp_checksum_calculator_data                            = udp_transmit_handler_udp_checksum_data;
+assign  udp_checksum_calculator_data_enable                     = udp_transmit_handler_udp_checksum_data_valid;
+assign  udp_checksum_calculator_data_last                       = udp_transmit_handler_udp_checksum_data_last;
 
-assign  ethernet_frame_generator_clock                          =   clock;
-assign  ethernet_frame_generator_reset_n                        =   reset_n;
-assign  ethernet_frame_generator_enable                         =   udp_transmit_handler_transmit_valid;
-assign  ethenret_frame_generator_checksum_result                =   frame_check_sequence_generator_checksum;
-assign  ethernet_frame_generator_checksum_result_enable         =   frame_check_sequence_generator_checksum_valid;
-assign  ethernet_frame_generator_ipv4_checksum_result           =   ipv4_checksum_calculator_result;
-assign  ethernet_frame_generator_ipv4_checksum_result_enable    =   ipv4_checksum_calculator_result_valid;
-assign  ethernet_frame_generator_udp_buffer_read_data           =   udp_data_buffer_read_data;
-assign  ethernet_frame_generator_mac_destination                =   udp_transmit_handler_mac_destination;
-assign  ethernet_frame_generator_mac_source                     =   mac_source;
-assign  ethernet_frame_generator_ipv4_destination               =   udp_transmit_handler_ipv4_destination;
-assign  ethernet_frame_generator_ipv4_source                    =   ipv4_source;
-assign  ethernet_frame_generator_udp_checksum                   =   udp_checksum_calculator_result;
-assign  ethernet_frame_generator_udp_destination                =   udp_transmit_handler_udp_destination;
-assign  ethernet_frame_generator_udp_source                     =   udp_transmit_handler_udp_source;
-assign  ethernet_frame_generator_udp_payload_size               =   udp_transmit_handler_udp_total_payload_size;
-assign  ethernet_frame_generator_udp_fragment_size              =   udp_transmit_handler_udp_fragment_size;
-assign  ethernet_frame_generator_ipv4_flags                     =   udp_transmit_handler_ipv4_flags;
-assign  ethernet_frame_generator_ipv4_identification            =   udp_transmit_handler_ipv4_identification;
+assign  ethernet_frame_generator_clock                          = clock;
+assign  ethernet_frame_generator_reset_n                        = reset_n;
+assign  ethernet_frame_generator_enable                         = udp_transmit_handler_transmit_valid;
+assign  ethenret_frame_generator_checksum_result                = frame_check_sequence_generator_checksum;
+assign  ethernet_frame_generator_checksum_result_enable         = frame_check_sequence_generator_checksum_valid;
+assign  ethernet_frame_generator_ipv4_checksum_result           = ipv4_checksum_calculator_result;
+assign  ethernet_frame_generator_ipv4_checksum_result_enable    = ipv4_checksum_calculator_result_valid;
+assign  ethernet_frame_generator_udp_buffer_read_data           = udp_data_buffer_read_data;
+assign  ethernet_frame_generator_mac_destination                = udp_transmit_handler_mac_destination;
+assign  ethernet_frame_generator_mac_source                     = mac_source;
+assign  ethernet_frame_generator_ipv4_destination               = udp_transmit_handler_ipv4_destination;
+assign  ethernet_frame_generator_ipv4_source                    = ipv4_source;
+assign  ethernet_frame_generator_udp_checksum                   = udp_checksum_calculator_result;
+assign  ethernet_frame_generator_udp_destination                = udp_transmit_handler_udp_destination;
+assign  ethernet_frame_generator_udp_source                     = udp_transmit_handler_udp_source;
+assign  ethernet_frame_generator_udp_payload_size               = udp_transmit_handler_udp_total_payload_size;
+assign  ethernet_frame_generator_udp_fragment_size              = udp_transmit_handler_udp_fragment_size;
+assign  ethernet_frame_generator_ipv4_flags                     = udp_transmit_handler_ipv4_flags;
+assign  ethernet_frame_generator_ipv4_identification            = udp_transmit_handler_ipv4_identification;
 
-assign  ipv4_checksum_calculator_clock                          =   clock;
-assign  ipv4_checksum_calculator_reset_n                        =   reset_n;
-assign  ipv4_checksum_calculator_data                           =   ethernet_frame_generator_ipv4_checksum_data;
-assign  ipv4_checksum_calculator_data_enable                    =   ethernet_frame_generator_ipv4_checksum_data_valid;
-assign  ipv4_checksum_calculator_data_last                      =   ethernet_frame_generator_ipv4_checksum_data_last;
+assign  ipv4_checksum_calculator_clock                          = clock;
+assign  ipv4_checksum_calculator_reset_n                        = reset_n;
+assign  ipv4_checksum_calculator_data                           = ethernet_frame_generator_ipv4_checksum_data;
+assign  ipv4_checksum_calculator_data_enable                    = ethernet_frame_generator_ipv4_checksum_data_valid;
+assign  ipv4_checksum_calculator_data_last                      = ethernet_frame_generator_ipv4_checksum_data_last;
 
-assign  frame_check_sequence_generator_clock                    =   clock;
-assign  frame_check_sequence_generator_reset_n                  =   reset_n;
-assign  frame_check_sequence_generator_data                     =   ethernet_frame_generator_checksum_data;
-assign  frame_check_sequence_generator_data_enable              =   ethernet_frame_generator_checksum_data_valid;
-assign  frame_check_sequence_generator_data_last                =   ethernet_frame_generator_checksum_data_last;
+assign  frame_check_sequence_generator_clock                    = clock;
+assign  frame_check_sequence_generator_reset_n                  = reset_n;
+assign  frame_check_sequence_generator_data                     = ethernet_frame_generator_checksum_data;
+assign  frame_check_sequence_generator_data_enable              = ethernet_frame_generator_checksum_data_valid;
+assign  frame_check_sequence_generator_data_last                = ethernet_frame_generator_checksum_data_last;
 
-assign  switch_inbound_fifo_read_clock                          =   clock;
-assign  switch_inbound_fifo_read_reset_n                        =   reset_n;
-assign  switch_inbound_fifo_write_clock                         =   clock;
-assign  switch_inbound_fifo_write_reset_n                       =   reset_n;
-assign  switch_inbound_fifo_read_enable                         =   ethernet_frame_parser_data_ready;
-assign  switch_inbound_fifo_write_enable                        =   receive_data_enable;
-assign  switch_inbound_fifo_write_data                          =   receive_data;
+assign  switch_inbound_fifo_read_clock                          = clock;
+assign  switch_inbound_fifo_read_reset_n                        = reset_n;
+assign  switch_inbound_fifo_write_clock                         = clock;
+assign  switch_inbound_fifo_write_reset_n                       = reset_n;
+assign  switch_inbound_fifo_read_enable                         = ethernet_frame_parser_data_ready;
+assign  switch_inbound_fifo_write_enable                        = receive_data_enable;
+assign  switch_inbound_fifo_write_data                          = receive_data;
 
-assign  ethernet_frame_parser_clock                             =   clock;
-assign  ethernet_frame_parser_reset_n                           =   reset_n;
-assign  ethernet_frame_parser_data                              =   switch_inbound_fifo_read_data;
-assign  ethernet_frame_parser_data_enable                       =   switch_inbound_fifo_read_data_valid;
-assign  ethernet_frame_parser_receive_slot_enable               =   receive_slot_ready;
-assign  ethernet_frame_parser_checksum_result                   =   receive_frame_check_sequence_generator_checksum;
-assign  ethernet_frame_parser_checksum_result_enable            =   receive_frame_check_sequence_generator_checksum_valid;
+assign  ethernet_frame_parser_clock                             = clock;
+assign  ethernet_frame_parser_reset_n                           = reset_n;
+assign  ethernet_frame_parser_data                              = switch_inbound_fifo_read_data;
+assign  ethernet_frame_parser_data_enable                       = switch_inbound_fifo_read_data_valid;
+assign  ethernet_frame_parser_receive_slot_enable               = receive_slot_ready;
+assign  ethernet_frame_parser_checksum_result                   = receive_frame_check_sequence_generator_checksum;
+assign  ethernet_frame_parser_checksum_result_enable            = receive_frame_check_sequence_generator_checksum_valid;
 
-assign  receive_frame_check_sequence_generator_clock            =   clock;
-assign  receive_frame_check_sequence_generator_reset_n          =   reset_n;
-assign  receive_frame_check_sequence_generator_data             =   ethernet_frame_parser_checksum_data;
-assign  receive_frame_check_sequence_generator_data_enable      =   ethernet_frame_parser_checksum_data_valid;
-assign  receive_frame_check_sequence_generator_data_last        =   ethernet_frame_parser_checksum_data_last;
+assign  receive_frame_check_sequence_generator_clock            = clock;
+assign  receive_frame_check_sequence_generator_reset_n          = reset_n;
+assign  receive_frame_check_sequence_generator_data             = ethernet_frame_parser_checksum_data;
+assign  receive_frame_check_sequence_generator_data_enable      = ethernet_frame_parser_checksum_data_valid;
+assign  receive_frame_check_sequence_generator_data_last        = ethernet_frame_parser_checksum_data_last;
 
-assign  receive_slot_clock                                      =   clock;
-assign  receive_slot_reset_n                                    =   reset_n;
-assign  receive_slot_data                                       =   ethernet_frame_parser_packet_data;
-assign  receive_slot_data_enable                                =   ethernet_frame_parser_packet_data_valid;
-assign  receive_slot_good_packet                                =   ethernet_frame_parser_good_packet;
-assign  receive_slot_bad_packet                                 =   ethernet_frame_parser_bad_packet;
-assign  receive_slot_ipv4_flags                                 =   ethernet_frame_parser_ipv4_flags;
-assign  receive_slot_ipv4_identification                        =   ethernet_frame_parser_ipv4_identification;
-assign  receive_slot_push_data_enable                           =   udp_receieve_handler_data_ready;
+assign  receive_slot_clock                                      = clock;
+assign  receive_slot_reset_n                                    = reset_n;
+assign  receive_slot_data                                       = ethernet_frame_parser_packet_data;
+assign  receive_slot_data_enable                                = ethernet_frame_parser_packet_data_valid;
+assign  receive_slot_good_packet                                = ethernet_frame_parser_good_packet;
+assign  receive_slot_bad_packet                                 = ethernet_frame_parser_bad_packet;
+assign  receive_slot_ipv4_flags                                 = ethernet_frame_parser_ipv4_flags;
+assign  receive_slot_ipv4_identification                        = ethernet_frame_parser_ipv4_identification;
+assign  receive_slot_push_data_enable                           = udp_receieve_handler_data_ready;
 
-assign  udp_receieve_handler_clock                              =   clock;
-assign  udp_receieve_handler_reset_n                            =   reset_n;
-assign  udp_receieve_handler_enable                             =   receive_slot_data_ready;
-assign  udp_receieve_handler_data                               =   receive_slot_push_data;
-assign  udp_receieve_handler_data_enable                        =   receive_slot_push_data_valid;
-assign  udp_receive_handler_ipv4_identification                 =   receive_slot_current_ipv4_identification;
-assign  udp_receive_handler_ipv4_flags                          =   receive_slot_current_ipv4_flags;
-assign  udp_receive_handler_fragment_slot_empty                 =   udp_fragment_slot_ready;
-assign  udp_receive_handler_fragment_slot_packet_id             =   udp_fragment_slot_push_current_packet_id;
+assign  udp_receieve_handler_clock                              = clock;
+assign  udp_receieve_handler_reset_n                            = reset_n;
+assign  udp_receieve_handler_enable                             = receive_slot_data_ready;
+assign  udp_receieve_handler_data                               = receive_slot_push_data;
+assign  udp_receieve_handler_data_enable                        = receive_slot_push_data_valid;
+assign  udp_receive_handler_ipv4_identification                 = receive_slot_current_ipv4_identification;
+assign  udp_receive_handler_ipv4_flags                          = receive_slot_current_ipv4_flags;
+assign  udp_receive_handler_fragment_slot_empty                 = udp_fragment_slot_ready;
+assign  udp_receive_handler_fragment_slot_packet_id             = udp_fragment_slot_push_current_packet_id;
 
-assign  udp_fragment_slot_clock                                 =   clock;
-assign  udp_fragment_slot_reset_n                               =   reset_n;
-assign  udp_fragment_slot_data                                  =   udp_receieve_handler_push_data;
-assign  udp_fragment_slot_data_enable                           =   udp_receieve_handler_push_data_valid;
-assign  udp_fragment_slot_data_last                             =   udp_receieve_handler_push_data_last;
-assign  udp_fragment_slot_push_data_enable                      =   receive_slot_arbiter_ready;
-assign  udp_fragment_slot_fragment_id                           =   udp_receieve_handler_packet_id;
+assign  udp_fragment_slot_clock                                 = clock;
+assign  udp_fragment_slot_reset_n                               = reset_n;
+assign  udp_fragment_slot_data                                  = udp_receieve_handler_push_data;
+assign  udp_fragment_slot_data_enable                           = udp_receieve_handler_push_data_valid;
+assign  udp_fragment_slot_data_last                             = udp_receieve_handler_push_data_last;
+assign  udp_fragment_slot_push_data_enable                      = receive_slot_arbiter_ready;
+assign  udp_fragment_slot_fragment_id                           = udp_receieve_handler_packet_id;
 
-assign  receive_slot_arbiter_clock                              =   clock;
-assign  receive_slot_arbiter_reset_n                            =   reset_n;
-assign  receive_slot_arbiter_enable                             =   udp_fragment_slot_data_ready;
-assign  receive_slot_arbiter_data                               =   udp_fragment_slot_push_data;
-assign  receive_slot_arbiter_data_enable                        =   udp_fragment_slot_push_data_valid;
+assign  receive_slot_arbiter_clock                              = clock;
+assign  receive_slot_arbiter_reset_n                            = reset_n;
+assign  receive_slot_arbiter_enable                             = udp_fragment_slot_data_ready;
+assign  receive_slot_arbiter_data                               = udp_fragment_slot_push_data;
+assign  receive_slot_arbiter_data_enable                        = udp_fragment_slot_push_data_valid;
 
 endmodule

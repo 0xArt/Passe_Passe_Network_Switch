@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:  www.circuitden.com
-// Engineer: Artin Isagholian
-//           artinisagholian@gmail.com
+// Company:     circuitden
+// Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 //
 // Create Date: 04/12/2023
 // Design Name:
@@ -17,6 +18,18 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
 //
 //////////////////////////////////////////////////////////////////////////////////
 module frame_check_sequence_generator(
@@ -55,50 +68,50 @@ logic               _ready;
 
 
 always_comb begin
-    _state                          =   state;
-    _checksum                       =   checksum;
-    _lfsr_in                        =   lfsr_in;
-    _checksum_valid                 =   0;
-    _ready                          =   ready;
+    _state                          = state;
+    _checksum                       = checksum;
+    _lfsr_in                        = lfsr_in;
+    _checksum_valid                 = 0;
+    _ready                          = ready;
 
-    for (i=0; i<8; i++) begin
+    for (i = 0; i < 8; i = i + 1) begin
         data_binary_reverse[i]      = data[7-i];
     end
 
-    lfsr_out[0]     =   lfsr_in[24] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[6];
-    lfsr_out[1]     =   lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[2]     =   lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[3]     =   lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[7];
-    lfsr_out[4]     =   lfsr_in[24] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[6];
-    lfsr_out[5]     =   lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[6]     =   lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[7]     =   lfsr_in[24] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[29] ^ lfsr_in[31] ^ data_binary_reverse[0] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[5] ^ data_binary_reverse[7];
-    lfsr_out[8]     =   lfsr_in[0] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[27] ^ lfsr_in[28] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[3] ^ data_binary_reverse[4];
-    lfsr_out[9]     =   lfsr_in[1] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[28] ^ lfsr_in[29] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[4] ^ data_binary_reverse[5];
-    lfsr_out[10]    =   lfsr_in[2] ^ lfsr_in[24] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[29] ^ data_binary_reverse[0] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[5];
-    lfsr_out[11]    =   lfsr_in[3] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[27] ^ lfsr_in[28] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[3] ^ data_binary_reverse[4];
-    lfsr_out[12]    =   lfsr_in[4] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[6];
-    lfsr_out[13]    =   lfsr_in[5] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[29] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[5] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[14]    =   lfsr_in[6] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[15]    =   lfsr_in[7] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[31] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[7];
-    lfsr_out[16]    =   lfsr_in[8] ^ lfsr_in[24] ^ lfsr_in[28] ^ lfsr_in[29] ^ data_binary_reverse[0] ^ data_binary_reverse[4] ^ data_binary_reverse[5];
-    lfsr_out[17]    =   lfsr_in[9] ^ lfsr_in[25] ^ lfsr_in[29] ^ lfsr_in[30] ^ data_binary_reverse[1] ^ data_binary_reverse[5] ^ data_binary_reverse[6];
-    lfsr_out[18]    =   lfsr_in[10] ^ lfsr_in[26] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[2] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[19]    =   lfsr_in[11] ^ lfsr_in[27] ^ lfsr_in[31] ^ data_binary_reverse[3] ^ data_binary_reverse[7];
-    lfsr_out[20]    =   lfsr_in[12] ^ lfsr_in[28] ^ data_binary_reverse[4];
-    lfsr_out[21]    =   lfsr_in[13] ^ lfsr_in[29] ^ data_binary_reverse[5];
-    lfsr_out[22]    =   lfsr_in[14] ^ lfsr_in[24] ^ data_binary_reverse[0];
-    lfsr_out[23]    =   lfsr_in[15] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[6];
-    lfsr_out[24]    =   lfsr_in[16] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[7];
-    lfsr_out[25]    =   lfsr_in[17] ^ lfsr_in[26] ^ lfsr_in[27] ^ data_binary_reverse[2] ^ data_binary_reverse[3];
-    lfsr_out[26]    =   lfsr_in[18] ^ lfsr_in[24] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[6];
-    lfsr_out[27]    =   lfsr_in[19] ^ lfsr_in[25] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[7];
-    lfsr_out[28]    =   lfsr_in[20] ^ lfsr_in[26] ^ lfsr_in[29] ^ lfsr_in[30] ^ data_binary_reverse[2] ^ data_binary_reverse[5] ^ data_binary_reverse[6];
-    lfsr_out[29]    =   lfsr_in[21] ^ lfsr_in[27] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[3] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[30]    =   lfsr_in[22] ^ lfsr_in[28] ^ lfsr_in[31] ^ data_binary_reverse[4] ^ data_binary_reverse[7];
-    lfsr_out[31]    =   lfsr_in[23] ^ lfsr_in[29] ^ data_binary_reverse[5];
+    lfsr_out[0]     = lfsr_in[24] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[6];
+    lfsr_out[1]     = lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
+    lfsr_out[2]     = lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
+    lfsr_out[3]     = lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[7];
+    lfsr_out[4]     = lfsr_in[24] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[6];
+    lfsr_out[5]     = lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
+    lfsr_out[6]     = lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
+    lfsr_out[7]     = lfsr_in[24] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[29] ^ lfsr_in[31] ^ data_binary_reverse[0] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[5] ^ data_binary_reverse[7];
+    lfsr_out[8]     = lfsr_in[0] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[27] ^ lfsr_in[28] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[3] ^ data_binary_reverse[4];
+    lfsr_out[9]     = lfsr_in[1] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[28] ^ lfsr_in[29] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[4] ^ data_binary_reverse[5];
+    lfsr_out[10]    = lfsr_in[2] ^ lfsr_in[24] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[29] ^ data_binary_reverse[0] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[5];
+    lfsr_out[11]    = lfsr_in[3] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[27] ^ lfsr_in[28] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[3] ^ data_binary_reverse[4];
+    lfsr_out[12]    = lfsr_in[4] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[6];
+    lfsr_out[13]    = lfsr_in[5] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[29] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[5] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
+    lfsr_out[14]    = lfsr_in[6] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
+    lfsr_out[15]    = lfsr_in[7] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[31] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[7];
+    lfsr_out[16]    = lfsr_in[8] ^ lfsr_in[24] ^ lfsr_in[28] ^ lfsr_in[29] ^ data_binary_reverse[0] ^ data_binary_reverse[4] ^ data_binary_reverse[5];
+    lfsr_out[17]    = lfsr_in[9] ^ lfsr_in[25] ^ lfsr_in[29] ^ lfsr_in[30] ^ data_binary_reverse[1] ^ data_binary_reverse[5] ^ data_binary_reverse[6];
+    lfsr_out[18]    = lfsr_in[10] ^ lfsr_in[26] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[2] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
+    lfsr_out[19]    = lfsr_in[11] ^ lfsr_in[27] ^ lfsr_in[31] ^ data_binary_reverse[3] ^ data_binary_reverse[7];
+    lfsr_out[20]    = lfsr_in[12] ^ lfsr_in[28] ^ data_binary_reverse[4];
+    lfsr_out[21]    = lfsr_in[13] ^ lfsr_in[29] ^ data_binary_reverse[5];
+    lfsr_out[22]    = lfsr_in[14] ^ lfsr_in[24] ^ data_binary_reverse[0];
+    lfsr_out[23]    = lfsr_in[15] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[6];
+    lfsr_out[24]    = lfsr_in[16] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[7];
+    lfsr_out[25]    = lfsr_in[17] ^ lfsr_in[26] ^ lfsr_in[27] ^ data_binary_reverse[2] ^ data_binary_reverse[3];
+    lfsr_out[26]    = lfsr_in[18] ^ lfsr_in[24] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[6];
+    lfsr_out[27]    = lfsr_in[19] ^ lfsr_in[25] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[7];
+    lfsr_out[28]    = lfsr_in[20] ^ lfsr_in[26] ^ lfsr_in[29] ^ lfsr_in[30] ^ data_binary_reverse[2] ^ data_binary_reverse[5] ^ data_binary_reverse[6];
+    lfsr_out[29]    = lfsr_in[21] ^ lfsr_in[27] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[3] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
+    lfsr_out[30]    = lfsr_in[22] ^ lfsr_in[28] ^ lfsr_in[31] ^ data_binary_reverse[4] ^ data_binary_reverse[7];
+    lfsr_out[31]    = lfsr_in[23] ^ lfsr_in[29] ^ data_binary_reverse[5];
 
-    lfsr_in_xor     =   lfsr_in ^ 32'hFFFF_FFFF;
+    lfsr_in_xor     = lfsr_in ^ 32'hFFFF_FFFF;
 
     for (j=0;j<32;j++) begin
         lfsr_in_xor_binary_reverse[j]   = lfsr_in_xor[31-j];
@@ -125,7 +138,7 @@ always_comb begin
     endcase
 end
 
-always_ff @(posedge clock or negedge reset_n) begin
+always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                       <= S_CALCULATE;
         checksum                    <= 0;

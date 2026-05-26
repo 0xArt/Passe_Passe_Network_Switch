@@ -5,19 +5,19 @@ file delete -force presynth
 vlib presynth
 vmap presynth presynth
 
-
 vlog -sv -work presynth \
     "rtl/cam_table.sv" \
     "rtl/cycle_timer.sv" \
+    "rtl/variable_stage_synchronizer.sv" \
     "rtl/block_ram/generic_dual_port_ram.sv" \
     "rtl/block_ram/generic_block_ram.sv" \
     "rtl/block_ram/block_ram.sv" \
-    "rtl/fifo/generic_synchronous_fifo.sv" \
-    "rtl/fifo/synchronous_fifo.sv" \
-    "rtl/fifo/asynchronous_fifo/asynchronous_fifo_read_controller.sv" \
-    "rtl/fifo/asynchronous_fifo/asynchronous_fifo_write_controller.sv" \
-    "rtl/fifo/asynchronous_fifo/generic_asynchronous_fifo.sv" \
-    "rtl/fifo/asynchronous_fifo/asynchronous_fifo.sv" \
+    "rtl/fifo/synchronous_fifo/rtl/generic_synchronous_fifo.sv" \
+    "rtl/fifo/synchronous_fifo/rtl/synchronous_fifo.sv" \
+    "rtl/fifo/asynchronous_fifo/rtl/asynchronous_fifo_read_pointer.sv" \
+    "rtl/fifo/asynchronous_fifo/rtl/asynchronous_fifo_write_pointer.sv" \
+    "rtl/fifo/asynchronous_fifo/rtl/generic_asynchronous_fifo.sv" \
+    "rtl/fifo/asynchronous_fifo/rtl/asynchronous_fifo.sv" \
     "rtl/que_slot.sv" \
     "rtl/que_slot_receieve_handler.sv" \
     "rtl/receive_slot_arbiter.sv" \
@@ -45,7 +45,7 @@ vlog -sv -work presynth \
     "rtl/switch_core.sv" \
     "test/testbench.sv"
 
-vsim -voptargs=+acc -L intel -L presynth -work presynth -t 1ps presynth.testbench
+vsim -voptargs=+acc -L presynth -work presynth -t 1ps presynth.testbench
 add log -r /*
 
 if {[file exists "wave.do"]} {
