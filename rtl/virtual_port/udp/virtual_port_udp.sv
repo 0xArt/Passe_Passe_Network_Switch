@@ -23,7 +23,7 @@
 // This source file is provided solely for educational, research, and non-commercial purposes.
 //
 // Commercial use, redistribution, sublicensing, modification for commercial products,
-// or incorporation into proprietary software is strictly prohibited without prior
+// or incorporation into proprietary software or hardware is strictly prohibited without prior
 // written permission and a valid commercial license from the original creator.
 //
 // Unauthorized commercial use violates intellectual property and copyright laws.
