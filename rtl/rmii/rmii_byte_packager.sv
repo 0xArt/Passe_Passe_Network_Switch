@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:     Phantom Motorsports
-//              www.phantomtuned.com
+// Company:     circuitden
 // Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 // 
 // Create Date: 04/22/2023 07:07:33 PM
 // Design Name: 
@@ -17,7 +18,19 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
+//
 //////////////////////////////////////////////////////////////////////////////////
 module rmii_byte_packager#(
     parameter logic [1:0]   SPEED_CODE_100_MEGABIT  = 1,
@@ -65,73 +78,73 @@ logic   [1:0]   _speed_code;
 
 
 always_comb  begin
-    _state                  =   state;
-    _counter                =   counter;
-    _sample_counter         =   sample_counter;
-    _packaged_data          =   packaged_data;
-    _data_enable_delayed    =   data_enable;
-    _data_error_delayed     =   data_error_delayed;
-    _data_delayed           =   data;
-    _is_first_byte          =   is_first_byte;
-    _packaged_data[8]       =   is_first_byte;
-    _speed_code             =   speed_code;
-    _packaged_data_valid    =   0;
+    _state                  = state;
+    _counter                = counter;
+    _sample_counter         = sample_counter;
+    _packaged_data          = packaged_data;
+    _data_enable_delayed    = data_enable;
+    _data_error_delayed     = data_error_delayed;
+    _data_delayed           = data;
+    _is_first_byte          = is_first_byte;
+    _packaged_data[8]       = is_first_byte;
+    _speed_code             = speed_code;
+    _packaged_data_valid    = 0;
 
     case (state)
         S_SYNC: begin
-            _is_first_byte   =   1;
+            _is_first_byte   = 1;
 
             if (data_enable_delayed && !data_error_delayed) begin
                 if (data_delayed == 2'b01) begin
                     if (counter == 30) begin //28 for preamble + 3 for 3/4 of SOF
-                        _state      =   S_SPEED_CHECK;
-                        _counter    =   0;
+                        _state      = S_SPEED_CHECK;
+                        _counter    = 0;
                     end
                     else begin
-                        _counter    =   counter + 1;
+                        _counter    = counter + 1;
                     end
                 end
                 else begin
-                    _counter    =   0;
+                    _counter    = 0;
                 end
             end
             else  begin
-                _counter    =   0;
+                _counter    = 0;
             end
         end
         S_SPEED_CHECK: begin
             if (data_enable_delayed && !data_error_delayed) begin
                 if (data_delayed == 2'b11) begin
                     //100Mb start of frame
-                    _packaged_data[7:6] =   data_delayed;
-                    _packaged_data[5:0] =   packaged_data[7:2];
-                    _state              =   S_PACK_100;
-                    _speed_code         =   SPEED_CODE_100_MEGABIT;
+                    _packaged_data[7:6] = data_delayed;
+                    _packaged_data[5:0] = packaged_data[7:2];
+                    _state              = S_PACK_100;
+                    _speed_code         = SPEED_CODE_100_MEGABIT;
                 end
                 else if (data_delayed == 2'b01) begin
                     //10Mb preamble
-                    _state              =   S_PREAMBLE_10;
-                    _counter            =   28;
+                    _state              = S_PREAMBLE_10;
+                    _counter            = 28;
                 end
                 else begin
                     //unknown speed..bad sync?
-                    _state              =   S_SYNC;
-                    _counter            =   0;
+                    _state              = S_SYNC;
+                    _counter            = 0;
                 end
             end
             else  begin
-                _state              =   S_SYNC;
-                _counter            =   0;
+                _state              = S_SYNC;
+                _counter            = 0;
             end
         end
         S_PACK_100: begin
             if (data_enable_delayed && !data_error_delayed) begin
-                _packaged_data[7:6] =   data_delayed;
-                _packaged_data[5:0] =   packaged_data[7:2];
+                _packaged_data[7:6] = data_delayed;
+                _packaged_data[5:0] = packaged_data[7:2];
 
                 if (counter == 3) begin
-                    _packaged_data_valid    =   1;
-                    _counter                =   0;
+                    _packaged_data_valid    = 1;
+                    _counter                = 0;
 
                     if (is_first_byte == 1) begin
                         _is_first_byte = 0;
@@ -142,8 +155,8 @@ always_comb  begin
                 end
             end
             else  begin
-                _state      =   S_SYNC;
-                _counter    =   0;
+                _state      = S_SYNC;
+                _counter    = 0;
             end
         end
         S_PREAMBLE_10: begin
@@ -153,53 +166,53 @@ always_comb  begin
                 end
                 else if (data_delayed == 2'b11) begin
                     //start of start of frame
-                    _state          =   S_START_OF_FRAME_10;
-                    _sample_counter =   1;
+                    _state          = S_START_OF_FRAME_10;
+                    _sample_counter = 1;
                 end
                 else begin
                     //bad sync
-                    _state              =   S_SYNC;
-                    _counter            =   0;
+                    _state              = S_SYNC;
+                    _counter            = 0;
                 end
             end
             else  begin
-                _state              =   S_SYNC;
-                _counter            =   0;
+                _state              = S_SYNC;
+                _counter            = 0;
             end
         end
         S_START_OF_FRAME_10: begin
             if (data_enable_delayed && !data_error_delayed) begin
                 if (data_delayed == 2'b11) begin
                     if (sample_counter == 9) begin
-                        _state          =   S_PACK_10;
-                        _sample_counter =   0;
-                        _counter        =   0;
-                        _speed_code     =   SPEED_CODE_10_MEGABIT;
+                        _state          = S_PACK_10;
+                        _sample_counter = 0;
+                        _counter        = 0;
+                        _speed_code     = SPEED_CODE_10_MEGABIT;
                     end
                     else begin
-                        _sample_counter     =   sample_counter + 1;
+                        _sample_counter     = sample_counter + 1;
                     end
                 end
                 else begin
-                    _state      =   S_SYNC;
-                    _counter    =   0;
+                    _state      = S_SYNC;
+                    _counter    = 0;
                 end
             end
             else  begin
-                _state      =   S_SYNC;
-                _counter    =   0;
+                _state      = S_SYNC;
+                _counter    = 0;
             end
         end
         S_PACK_10: begin
             if (data_enable_delayed && !data_error_delayed) begin
                 if (sample_counter == 9) begin
-                    _sample_counter     =   0;
-                    _packaged_data[7:6] =   data_delayed;
-                    _packaged_data[5:0] =   packaged_data[7:2];
+                    _sample_counter     = 0;
+                    _packaged_data[7:6] = data_delayed;
+                    _packaged_data[5:0] = packaged_data[7:2];
 
                     if (counter == 3) begin
-                        _packaged_data_valid    =   1;
-                        _counter                =   0;
+                        _packaged_data_valid    = 1;
+                        _counter                = 0;
 
                         if (is_first_byte == 1) begin
                             _is_first_byte = 0;
@@ -210,12 +223,12 @@ always_comb  begin
                     end
                 end
                 else begin
-                    _sample_counter     =   sample_counter + 1;
+                    _sample_counter     = sample_counter + 1;
                 end
             end
             else  begin
-                _state      =   S_SYNC;
-                _counter    =   0;
+                _state      = S_SYNC;
+                _counter    = 0;
             end
         end
     endcase

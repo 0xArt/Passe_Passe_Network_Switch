@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:     Phantom Motorsports
-//              www.phantomtuned.com
+// Company:     circuitden
 // Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 // 
 // Create Date: 10/27/2023
 // Design Name: 
@@ -17,13 +18,25 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
+//
 //////////////////////////////////////////////////////////////////////////////////
 module block_ram#(
     parameter DATA_WIDTH            = 16,
     parameter DATA_DEPTH            = 4096,
     parameter PIPELINED_OUTPUT      = 0,
-    parameter XILINX                = 0
+    parameter TECHNOLOGY            = "SIMULATION"
 )(
     input   wire                                    clock,
     input   wire                                    reset_n,
@@ -37,7 +50,7 @@ module block_ram#(
 
 
 generate
-    if (XILINX) begin
+    if (TECHNOLOGY == "ULTRASCALE" || TECHNOLOGY == "7_SERIES") begin
         localparam READ_LATENCY = PIPELINED_OUTPUT + 1;
 
         wire    [DATA_WIDTH-1:0]            xpm_memory_sdpram_dina;
@@ -102,15 +115,15 @@ generate
         );
 
 
-        assign  read_data               =   xpm_memory_sdpram_doutb;
+        assign  read_data               = xpm_memory_sdpram_doutb;
 
-        assign  xpm_memory_sdpram_dina  =   write_data; 
-        assign  xpm_memory_sdpram_addra =   write_address;
-        assign  xpm_memory_sdpram_addrb =   read_address;
-        assign  xpm_memory_sdpram_clka  =   clock;
-        assign  xpm_memory_sdpram_clkb  =   clock;
-        assign  xpm_memory_sdpram_rstb  =   !reset_n;
-        assign  xpm_memory_sdpram_wea   =   write_enable;
+        assign  xpm_memory_sdpram_dina  = write_data; 
+        assign  xpm_memory_sdpram_addra = write_address;
+        assign  xpm_memory_sdpram_addrb = read_address;
+        assign  xpm_memory_sdpram_clka  = clock;
+        assign  xpm_memory_sdpram_clkb  = clock;
+        assign  xpm_memory_sdpram_rstb  = !reset_n;
+        assign  xpm_memory_sdpram_wea   = write_enable;
     end
     else begin
         wire                                generic_block_ram_clock;
@@ -138,14 +151,14 @@ generate
         );
 
 
-        assign  read_data                       =   generic_block_ram_read_data;
+        assign  read_data                       = generic_block_ram_read_data;
 
-        assign  generic_block_ram_clock         =   clock;
-        assign  generic_block_ram_reset_n       =   reset_n;
-        assign  generic_block_ram_write_enable  =   write_enable;
-        assign  generic_block_ram_write_data    =   write_data;
-        assign  generic_block_ram_write_address =   write_address;
-        assign  generic_block_ram_read_address  =   read_address;
+        assign  generic_block_ram_clock         = clock;
+        assign  generic_block_ram_reset_n       = reset_n;
+        assign  generic_block_ram_write_enable  = write_enable;
+        assign  generic_block_ram_write_data    = write_data;
+        assign  generic_block_ram_write_address = write_address;
+        assign  generic_block_ram_read_address  = read_address;
     end
 endgenerate
 

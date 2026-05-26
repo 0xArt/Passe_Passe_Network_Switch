@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:     Phantom Motorsports
-//              www.phantomtuned.com
+// Company:     circuitden
 // Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 //
 // Create Date: 08/29/2023
 // Design Name:
@@ -17,10 +18,22 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
 //
 //////////////////////////////////////////////////////////////////////////////////
 module que_slot#(
-    parameter XILINX    = 0
+    parameter TECHNOLOGY    = "SIMULATION"
 )(
     input   wire            clock,
     input   wire            reset_n,
@@ -49,9 +62,9 @@ wire    [7:0]   receive_fifo_read_data;
 
 synchronous_fifo
 #(  .DATA_WIDTH                 (8),
-    .DATA_DEPTH                 (1024),
+    .DATA_DEPTH                 (2048),
     .FIRST_WORD_FALL_THROUGH    (1),
-    .XILINX                     (XILINX)
+    .TECHNOLOGY                 (TECHNOLOGY)
 ) receive_fifo(
     .clock              (receive_fifo_clock),
     .reset_n            (receive_fifo_reset_n),
@@ -70,6 +83,7 @@ typedef enum
 {
     S_IDLE,
     S_FILLING_SLOT,
+    S_WAIT_EMPTY,
     S_DRAIN_SLOT
 } state_type;
 
@@ -80,64 +94,72 @@ reg                 fifo_reset_n;
 logic               _fifo_reset_n;
 logic               _data_ready;
 
-assign  receive_fifo_clock          =   clock;
-assign  receive_fifo_reset_n        =   fifo_reset_n;
-assign  receive_fifo_write_data     =   data;
-assign  receive_fifo_write_enable   =   data_enable;
-assign  receive_fifo_read_enable    =   push_data_enable;
+assign  receive_fifo_clock          = clock;
+assign  receive_fifo_reset_n        = fifo_reset_n;
+assign  receive_fifo_write_data     = data;
+assign  receive_fifo_write_enable   = data_enable;
+assign  receive_fifo_read_enable    = push_data_enable;
 
 always_comb begin
-    _state                          =   state;
-    push_data                       =   receive_fifo_read_data;
-    push_data_valid                 =   receive_fifo_read_data_valid;
-    _fifo_reset_n                   =   1;
-    _ready                          =   0;
-    _data_ready                     =   0;
+    _state                          = state;
+    push_data                       = receive_fifo_read_data;
+    push_data_valid                 = receive_fifo_read_data_valid;
+    _fifo_reset_n                   = 1;
+    _ready                          = 0;
+    _data_ready                     = 0;
 
     case (state)
         S_IDLE: begin
-            _ready                          =   1;
+            _ready  = 1;
 
             if (data_enable) begin
-                _state          = S_FILLING_SLOT;
+                _state  = S_FILLING_SLOT;
             end
             if (good_packet) begin
-                _state          = S_DRAIN_SLOT;
+                _state  = S_DRAIN_SLOT;
             end
             if (bad_packet) begin
                 _fifo_reset_n   = 0;
+                _ready          = 0;
+                _state          = S_WAIT_EMPTY;
             end
         end
         S_FILLING_SLOT: begin
             if (good_packet) begin
-                _state              =   S_DRAIN_SLOT;
+                _state  = S_DRAIN_SLOT;
             end
             if (bad_packet) begin
-                _fifo_reset_n = 0;
+                _fifo_reset_n   = 0;
+                _state          = S_WAIT_EMPTY;
             end
         end
         S_DRAIN_SLOT: begin
-            _data_ready =   1;
+            _data_ready = 1;
 
             if (receive_fifo_empty) begin
-                _state  =   S_IDLE;
+                _state  = S_IDLE;
+            end
+        end
+        S_WAIT_EMPTY: begin
+            if (receive_fifo_empty) begin
+                _state  = S_IDLE;
             end
         end
     endcase
 end
 
-always_ff @(posedge clock or negedge reset_n) begin
+always_ff @(posedge clock) begin
     if (!reset_n) begin
-        state                       <=  S_IDLE;
-        ready                       <=  0;
-        fifo_reset_n                <=  0;
-        data_ready                  <=  0;
+        state           <=  S_IDLE;
+        ready           <=  0;
+        fifo_reset_n    <=  0;
+        data_ready      <=  0;
     end
     else begin
-        state                       <=  _state;
-        ready                       <=  _ready;
-        fifo_reset_n                <=  _fifo_reset_n;
-        data_ready                  <=  _data_ready;
+        state           <=  _state;
+        ready           <=  _ready;
+        fifo_reset_n    <=  _fifo_reset_n;
+        data_ready      <=  _data_ready;
     end
 end
 

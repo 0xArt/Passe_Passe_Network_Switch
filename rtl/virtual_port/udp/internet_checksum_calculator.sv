@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:     Phantom Motorsports
-//              www.phantomtuned.com
+// Company:     circuitden
 // Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 // 
 // Create Date: 05/07/2023
 // Design Name: 
@@ -17,7 +18,19 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
+//
 //////////////////////////////////////////////////////////////////////////////////
 module internet_checksum_calculator(
     input   wire                            clock,
@@ -54,17 +67,17 @@ logic   [15:0]      _packed_bytes;
 logic               _ready;
 
 always_comb begin
-    _state          =   state;
-    _packed_bytes   =   packed_bytes;
-    _result         =   result;
-    _accumulator    =   accumulator;
-    _ready          =   ready;
-    _result_valid   =   0;
-    accumator_carry =   accumulator[15:0] + accumulator[16];
+    _state          = state;
+    _packed_bytes   = packed_bytes;
+    _result         = result;
+    _accumulator    = accumulator;
+    _ready          = ready;
+    _result_valid   = 0;
+    accumator_carry = accumulator[15:0] + accumulator[16];
 
     case (state)
         S_IDLE: begin
-            _ready  =   1;
+            _ready  = 1;
 
             if (data_enable) begin
                 _packed_bytes[15:8] = data;
@@ -76,18 +89,18 @@ always_comb begin
                 _packed_bytes[7:0]  = data;
 
                 if (data_last) begin
-                    _state  =   S_LAST_ACCUMULATE;
-                    _ready  =   0;
+                    _state  = S_LAST_ACCUMULATE;
+                    _ready  = 0;
                 end
                 else begin
-                    _state  =   S_PACK_MSB;
+                    _state  = S_PACK_MSB;
                 end
             end
         end
         S_PACK_MSB: begin
             if (data_enable) begin
-                _accumulator        =   accumator_carry + packed_bytes;
-                _packed_bytes[15:8] =   data;
+                _accumulator        = accumator_carry + packed_bytes;
+                _packed_bytes[15:8] = data;
 
                 if (data_last) begin
                     _state = S_PACK_PAD;
@@ -99,24 +112,24 @@ always_comb begin
             end
         end
         S_PACK_PAD: begin
-            _packed_bytes[7:0]  =   0;
-            _state              =   S_LAST_ACCUMULATE;
+            _packed_bytes[7:0]  = 0;
+            _state              = S_LAST_ACCUMULATE;
         end
         S_LAST_ACCUMULATE: begin
-            _accumulator    =   accumator_carry + packed_bytes;
-            _state          =   S_FINISH;
+            _accumulator    = accumator_carry + packed_bytes;
+            _state          = S_FINISH;
         end
         S_FINISH: begin
-            _result         =   accumator_carry;
-            _result_valid   =   1;
-            _accumulator    =   0;
-            _state          =   S_IDLE;
+            _result         = accumator_carry;
+            _result_valid   = 1;
+            _accumulator    = 0;
+            _state          = S_IDLE;
         end
     endcase
 end
 
 
-always_ff @(posedge clock or negedge reset_n) begin
+always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                       <= S_IDLE;
         result                      <=  0;

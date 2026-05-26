@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:     Phantom Motorsports
-//              www.phantomtuned.com
+// Company:     circuitden
 // Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 //
 // Create Date: 04/28/2023
 // Design Name:
@@ -17,6 +18,18 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
 //
 //////////////////////////////////////////////////////////////////////////////////
 module receive_slot_arbiter#(
@@ -48,16 +61,16 @@ reg     [$clog2(RECEIVE_QUE_SLOTS)-1:0]      que_slot_select;
 
 
 always_comb begin
-    _state                          =   state;
-    _push_data                      =   push_data;
-    _que_slot_select                =   que_slot_select;
-    _push_data_valid                =   0;
-    ready                           =   0;
+    _state                          = state;
+    _push_data                      = push_data;
+    _que_slot_select                = que_slot_select;
+    _push_data_valid                = 0;
+    ready                           = 0;
 
     case (state)
         S_IDLE: begin
             if (enable[que_slot_select]) begin
-                _state                  =   S_PASSTHROUGH;
+                _state                  = S_PASSTHROUGH;
             end
             else begin
                 if (que_slot_select == (RECEIVE_QUE_SLOTS - 1)) begin
@@ -70,8 +83,8 @@ always_comb begin
         end
         S_PASSTHROUGH:  begin
             if (!enable[que_slot_select]) begin
-                _state                  =   S_IDLE;
-                ready                   =   0;
+                _state                  = S_IDLE;
+                ready                   = 0;
 
                 if (que_slot_select == (RECEIVE_QUE_SLOTS - 1)) begin
                     _que_slot_select = 0;
@@ -82,16 +95,16 @@ always_comb begin
             end
             else begin
                 if (data_enable[que_slot_select]) begin
-                    _push_data                      =   data[que_slot_select];
-                    _push_data_valid                =   data_enable[que_slot_select];
-                    ready                           =   1 << que_slot_select;
+                    _push_data                      = data[que_slot_select];
+                    _push_data_valid                = data_enable[que_slot_select];
+                    ready                           = 1 << que_slot_select;
                 end
             end
         end
     endcase
 end
 
-always_ff @(posedge clock or negedge reset_n) begin
+always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                       <=  S_IDLE;
         push_data                   <=  0;

@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:     Phantom Motorsports
-//              www.phantomtuned.com
+// Company:     circuitden
 // Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 //
 // Create Date: 04/27/2023
 // Design Name:
@@ -17,6 +18,18 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
 //
 //////////////////////////////////////////////////////////////////////////////////
 module udp_receieve_handler#(
@@ -89,115 +102,115 @@ reg     [$clog2(RECEIVE_QUE_SLOTS)-1:0]     receive_slot_select;
 logic   [7:0]                               _process_counter;
 reg     [7:0]                               process_counter;
 
-assign  timeout_cycle_timer_clock       =   clock;
-assign  timeout_cycle_timer_reset_n     =   reset_n;
-assign  timeout_cycle_timer_enable      =   1;
-assign  timeout_cycle_timer_count       =   TIMEOUT_LIMIT;
+assign  timeout_cycle_timer_clock       = clock;
+assign  timeout_cycle_timer_reset_n     = reset_n;
+assign  timeout_cycle_timer_enable      = 1;
+assign  timeout_cycle_timer_count       = TIMEOUT_LIMIT;
 
 always_comb begin
-    _state                          =   state;
-    _push_data                      =   push_data;
-    _fragment_offset                =   fragment_offset;
-    _more_fragments                 =   more_fragments;
-    _fragment_slot_select           =   fragment_slot_select;
-    _receive_slot_select            =   receive_slot_select;
-    _process_counter                =   process_counter;
-    _packet_id                      =   packet_id;
-    data_ready                      =   0;
-    _push_data_last                 =   0;
-    _push_data_valid                =   0;
-    timeout_cycle_timer_load_count  =   0;
+    _state                          = state;
+    _push_data                      = push_data;
+    _fragment_offset                = fragment_offset;
+    _more_fragments                 = more_fragments;
+    _fragment_slot_select           = fragment_slot_select;
+    _receive_slot_select            = receive_slot_select;
+    _process_counter                = process_counter;
+    _packet_id                      = packet_id;
+    data_ready                      = 0;
+    _push_data_last                 = 0;
+    _push_data_valid                = 0;
+    timeout_cycle_timer_load_count  = 0;
 
     case (state)
         S_IDLE: begin
-            _packet_id              =   ipv4_identification[receive_slot_select];
-            _more_fragments         =   ipv4_flags[receive_slot_select][13];
-            _fragment_offset        =   ipv4_flags[receive_slot_select][12:0];
+            _packet_id              = ipv4_identification[receive_slot_select];
+            _more_fragments         = ipv4_flags[receive_slot_select][13];
+            _fragment_offset        = ipv4_flags[receive_slot_select][12:0];
 
             if (enable[receive_slot_select]) begin
-                _state  =   S_CHECK_FRAGMENT_STATUS;
+                _state  = S_CHECK_FRAGMENT_STATUS;
             end
             else begin
                 if (receive_slot_select == RECEIVE_QUE_SLOTS-1) begin
-                    _receive_slot_select    =   0;
+                    _receive_slot_select    = 0;
                 end
                 else begin
-                    _receive_slot_select    =   receive_slot_select + 1;
+                    _receive_slot_select    = receive_slot_select + 1;
                 end
             end
         end
         S_CHECK_FRAGMENT_STATUS: begin
-            _fragment_slot_select   =   0;
+            _fragment_slot_select   = 0;
 
             if (fragment_offset == 0) begin
-                _state  =   S_FIND_EMPTY_FRAGMENT_SLOT;
+                _state  = S_FIND_EMPTY_FRAGMENT_SLOT;
             end
             else begin
-                _state  =   S_FIND_MATCHING_FRAGMENT_SLOT;
+                _state  = S_FIND_MATCHING_FRAGMENT_SLOT;
             end
         end
         S_FIND_EMPTY_FRAGMENT_SLOT: begin
-            timeout_cycle_timer_load_count  =   1;
+            timeout_cycle_timer_load_count  = 1;
 
             if (fragment_slot_empty[fragment_slot_select]) begin
-                _state  =   S_PUSH_DATA;
+                _state  = S_PUSH_DATA;
             end
             else begin
                 if (fragment_slot_select == (FRAGMENT_SLOTS - 1)) begin
-                    _fragment_slot_select   =   0;
+                    _fragment_slot_select   = 0;
                 end
                 else begin
-                    _fragment_slot_select   =   fragment_slot_select + 1;
+                    _fragment_slot_select   = fragment_slot_select + 1;
                 end
             end
         end
         S_FIND_MATCHING_FRAGMENT_SLOT: begin
-            timeout_cycle_timer_load_count  =   1;
+            timeout_cycle_timer_load_count  = 1;
 
             if (fragment_slot_packet_id[fragment_slot_select] == packet_id) begin
-                _state                          =   S_FLUSH_NON_DATAGRAM_DATA;
-                _process_counter                =   14;
+                _state                          = S_FLUSH_NON_DATAGRAM_DATA;
+                _process_counter                = 14;
             end
             else begin
                 if (fragment_slot_select == (FRAGMENT_SLOTS - 1)) begin
-                    _fragment_slot_select   =   0;
+                    _fragment_slot_select   = 0;
                 end
                 else begin
-                    _fragment_slot_select   =   fragment_slot_select + 1;
+                    _fragment_slot_select   = fragment_slot_select + 1;
                 end
             end
         end
         S_FLUSH_NON_DATAGRAM_DATA: begin
             if (data_enable[receive_slot_select]) begin
-                _process_counter                =   process_counter - 1;
-                data_ready                      =   1 << receive_slot_select;
-                timeout_cycle_timer_load_count  =   1;
+                _process_counter                = process_counter - 1;
+                data_ready                      = 1 << receive_slot_select;
+                timeout_cycle_timer_load_count  = 1;
             end
 
             if (process_counter == 0) begin
-                _state      =   S_PUSH_DATA;
-                data_ready  =   0;
+                _state      = S_PUSH_DATA;
+                data_ready  = 0;
             end
         end
         S_PUSH_DATA: begin
             if (timeout_cycle_timer_expired) begin
-                _state          =   S_IDLE;
+                _state          = S_IDLE;
 
                 if (more_fragments == 0) begin
-                    _push_data_last =   1 << fragment_slot_select;
+                    _push_data_last = 1 << fragment_slot_select;
                 end
             end
             if (data_enable[receive_slot_select]) begin
-                data_ready                      =   1 << receive_slot_select;
-                _push_data                      =   data[receive_slot_select];
-                _push_data_valid                =   1 << fragment_slot_select;
-                timeout_cycle_timer_load_count  =   1;
+                data_ready                      = 1 << receive_slot_select;
+                _push_data                      = data[receive_slot_select];
+                _push_data_valid                = 1 << fragment_slot_select;
+                timeout_cycle_timer_load_count  = 1;
             end
         end
     endcase
 end
 
-always_ff @(posedge clock or negedge reset_n) begin
+always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                       <= S_IDLE;
         push_data                   <=  0;

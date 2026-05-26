@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:     Phantom Motorsports
-//              www.phantomtuned.com
+// Company:     circuitden
 // Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 // 
 // Create Date: 05/25/2023
 // Design Name: 
@@ -17,13 +18,25 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
+//
 //////////////////////////////////////////////////////////////////////////////////
 module synchronous_fifo#(
     parameter DATA_WIDTH                = 16,
     parameter DATA_DEPTH                = 4096,
     parameter FIRST_WORD_FALL_THROUGH   = 0,
-    parameter XILINX                    = 0
+    parameter TECHNOLOGY                = "SIMULATION"
 )(
     input   wire                                clock,
     input   wire                                reset_n,
@@ -34,17 +47,19 @@ module synchronous_fifo#(
     output  wire    [DATA_WIDTH-1:0]            read_data,
     output  wire                                read_data_valid,
     output  wire                                full,
+    output  wire                                almost_full,
     output  wire                                empty,
     output  wire    [$clog2(DATA_DEPTH)-1:0]    words_available
 );
 
 
 generate
-    if (XILINX && !FIRST_WORD_FALL_THROUGH) begin
+    if ((TECHNOLOGY == "ULTRASCALE" || TECHNOLOGY == "7_SERIES") && !FIRST_WORD_FALL_THROUGH) begin
         wire                                xpm_fifo_sync_data_valid;
         wire    [DATA_WIDTH-1:0]            xpm_fifo_sync_dout;
         wire                                xpm_fifo_sync_empty;
         wire                                xpm_fifo_sync_full;
+        wire                                xpm_fifo_sync_almost_full;
         wire    [DATA_WIDTH-1:0]            xpm_fifo_sync_din;
         wire                                xpm_fifo_sync_rd_en;
         wire                                xpm_fifo_sync_rst;
@@ -72,7 +87,7 @@ generate
             .WR_DATA_COUNT_WIDTH    (1)
         )xpm_fifo_sync_inst(
             .almost_empty           (),
-            .almost_full            (),
+            .almost_full            (xpm_fifo_sync_almost_full),
             .data_valid             (xpm_fifo_sync_data_valid), 
             .dbiterr                (),
             .dout                   (xpm_fifo_sync_dout),
@@ -99,23 +114,25 @@ generate
         );
 
 
-        assign read_data_valid      =   xpm_fifo_sync_data_valid;
-        assign read_data            =   xpm_fifo_sync_dout;
-        assign full                 =   xpm_fifo_sync_full;
-        assign empty                =   xpm_fifo_sync_empty;
-        assign words_available      =   xpm_fifo_sync_rd_data_count;
+        assign read_data_valid      = xpm_fifo_sync_data_valid;
+        assign read_data            = xpm_fifo_sync_dout;
+        assign full                 = xpm_fifo_sync_full;
+        assign almost_full          = xpm_fifo_sync_almost_full;
+        assign empty                = xpm_fifo_sync_empty;
+        assign words_available      = xpm_fifo_sync_rd_data_count;
 
-        assign xpm_fifo_sync_din    =   write_data;
-        assign xpm_fifo_sync_rd_en  =   read_enable;
-        assign xpm_fifo_sync_rst    =   !reset_n;
-        assign xpm_fifo_sync_wr_clk =   clock;
-        assign xpm_fifo_sync_wr_en  =   write_enable;
+        assign xpm_fifo_sync_din    = write_data;
+        assign xpm_fifo_sync_rd_en  = read_enable;
+        assign xpm_fifo_sync_rst    = !reset_n;
+        assign xpm_fifo_sync_wr_clk = clock;
+        assign xpm_fifo_sync_wr_en  = write_enable;
     end
-    else if (XILINX && FIRST_WORD_FALL_THROUGH) begin
+    else if ((TECHNOLOGY == "ULTRASCALE" || TECHNOLOGY == "7_SERIES") && FIRST_WORD_FALL_THROUGH) begin
         wire                                xpm_fifo_sync_data_valid;
         wire    [DATA_WIDTH-1:0]            xpm_fifo_sync_dout;
         wire                                xpm_fifo_sync_empty;
         wire                                xpm_fifo_sync_full;
+        wire                                xpm_fifo_sync_almost_full;
         wire    [DATA_WIDTH-1:0]            xpm_fifo_sync_din;
         wire                                xpm_fifo_sync_rd_en;
         wire                                xpm_fifo_sync_rst;
@@ -143,7 +160,7 @@ generate
             .WR_DATA_COUNT_WIDTH    (1)
         )xpm_fifo_sync_inst(
             .almost_empty           (),
-            .almost_full            (),
+            .almost_full            (xpm_fifo_sync_almost_full),
             .data_valid             (xpm_fifo_sync_data_valid), 
             .dbiterr                (),
             .dout                   (xpm_fifo_sync_dout),
@@ -170,17 +187,18 @@ generate
         );
         
 
-        assign read_data_valid      =   xpm_fifo_sync_data_valid;
-        assign read_data            =   xpm_fifo_sync_dout;
-        assign full                 =   xpm_fifo_sync_full;
-        assign empty                =   xpm_fifo_sync_empty;
-        assign words_available      =   xpm_fifo_sync_rd_data_count;
+        assign read_data_valid      = xpm_fifo_sync_data_valid;
+        assign read_data            = xpm_fifo_sync_dout;
+        assign full                 = xpm_fifo_sync_full;
+        assign almost_full          = xpm_fifo_sync_almost_full;
+        assign empty                = xpm_fifo_sync_empty;
+        assign words_available      = xpm_fifo_sync_rd_data_count;
 
-        assign xpm_fifo_sync_din    =   write_data;
-        assign xpm_fifo_sync_rd_en  =   read_enable;
-        assign xpm_fifo_sync_rst    =   !reset_n;
-        assign xpm_fifo_sync_wr_clk =   clock;
-        assign xpm_fifo_sync_wr_en  =   write_enable;
+        assign xpm_fifo_sync_din    = write_data;
+        assign xpm_fifo_sync_rd_en  = read_enable;
+        assign xpm_fifo_sync_rst    = !reset_n;
+        assign xpm_fifo_sync_wr_clk = clock;
+        assign xpm_fifo_sync_wr_en  = write_enable;
     end
     else begin
         wire                                generic_synchronous_fifo_clock;
@@ -193,6 +211,7 @@ generate
         wire    [DATA_WIDTH-1:0]            generic_synchronous_fifo_read_data;
         wire                                generic_synchronous_fifo_read_data_valid;
         wire                                generic_synchronous_fifo_full;
+        wire                                generic_asynchronous_fifo_almost_full;
         wire                                generic_synchronous_fifo_empty;
 
         generic_synchronous_fifo#(
@@ -210,6 +229,7 @@ generate
             .read_data          (generic_synchronous_fifo_read_data),
             .read_data_valid    (generic_synchronous_fifo_read_data_valid),
             .full               (generic_synchronous_fifo_full),
+            .almost_full        (generic_asynchronous_fifo_almost_full),
             .empty              (generic_synchronous_fifo_empty)
         );
 
@@ -217,6 +237,7 @@ generate
         assign read_data                                = generic_synchronous_fifo_read_data;
         assign read_data_valid                          = generic_synchronous_fifo_read_data_valid;
         assign full                                     = generic_synchronous_fifo_full;
+        assign almost_full                              = generic_asynchronous_fifo_almost_full;
         assign empty                                    = generic_synchronous_fifo_empty;
         assign words_available                          = generic_synchronous_fifo_available_words;
 

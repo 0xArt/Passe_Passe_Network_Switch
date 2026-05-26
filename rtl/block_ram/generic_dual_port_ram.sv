@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:     Phantom Motorsports
-//              www.phantomtuned.com
+// Company:     circuitden
 // Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 // 
 // Create Date: 05/27/2023
 // Design Name: 
@@ -17,12 +18,24 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
+//
 //////////////////////////////////////////////////////////////////////////////////
 module generic_dual_port_ram#(
     parameter DATA_WIDTH            = 16,
     parameter DATA_DEPTH            = 4096,
-    parameter PIPELINED_OUTPUT      = "TRUE"
+    parameter PIPELINED_OUTPUT      = 1
 )(
     input   wire                                    write_clock,
     input   wire                                    read_clock,
@@ -33,24 +46,22 @@ module generic_dual_port_ram#(
     input   wire    [$clog2(DATA_DEPTH)-1:0]        write_address,
     input   wire    [$clog2(DATA_DEPTH)-1:0]        read_address,
 
-    output  reg     [DATA_WIDTH-1:0]                read_data
+    output  logic   [DATA_WIDTH-1:0]                read_data
 );
 
 
-reg     [DATA_WIDTH-1:0]                memory   [DATA_DEPTH-1:0];
-logic   [DATA_WIDTH-1:0]                _memory  [DATA_DEPTH-1:0];
-reg     [DATA_WIDTH-1:0]                pipelined_read_data;
-logic   [DATA_WIDTH-1:0]                _pipelined_read_data;
-reg     [DATA_WIDTH-1:0]                memory_read_data;
-logic   [DATA_WIDTH-1:0]                _memory_read_data;
-integer                                 i;
-integer                                 j;
+reg     [DATA_WIDTH-1:0]    memory   [DATA_DEPTH-1:0];
+logic   [DATA_WIDTH-1:0]    _memory  [DATA_DEPTH-1:0];
+reg     [DATA_WIDTH-1:0]    memory_read_data;
+logic   [DATA_WIDTH-1:0]    _memory_read_data;
+integer                     i;
+integer                     j;
 
 
 
 always_comb begin
     for (i=0; i<DATA_DEPTH; i=i+1) begin
-        _memory[i]      =   memory[i];
+        _memory[i]  = memory[i];
     end
 
     if  (write_enable) begin
@@ -61,36 +72,33 @@ end
 always_ff @(posedge write_clock or negedge write_reset_n) begin
     if (!write_reset_n) begin
         for (j=0; j<DATA_DEPTH; j=j+1) begin
-            memory[j]                   <=  0;
+            memory[j]   <=  '0;
         end
     end
     else begin
         for (j=0; j<DATA_DEPTH; j=j+1) begin
-            memory[j]                   <=  _memory[j];
+            memory[j]   <=  _memory[j];
         end
     end
 end
 
 always_comb begin
-    _memory_read_data       =   memory[read_address];
-    _pipelined_read_data    =   memory_read_data;
+    _memory_read_data   = memory[read_address];
 
     if (PIPELINED_OUTPUT) begin
-        read_data   =   pipelined_read_data;
+        read_data   = memory_read_data;
     end
     else begin
-        read_data   =   memory_read_data;
+        read_data   = memory[read_address];;
     end
 end
 
 always_ff @(posedge read_clock or negedge read_reset_n) begin
     if (!read_reset_n) begin
-        memory_read_data                <=  0;
-        pipelined_read_data             <=  0;
+        memory_read_data    <= 0;
     end
     else begin
-        memory_read_data                <=  _memory_read_data;
-        pipelined_read_data             <=  _pipelined_read_data;
+        memory_read_data    <= _memory_read_data;
     end
 end
 

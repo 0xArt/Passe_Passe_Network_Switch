@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:     Phantom Motorsports
-//              www.phantomtuned.com
+// Company:     circuitden
 // Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 // 
 // Create Date: 07/02/2023
 // Design Name: 
@@ -17,7 +18,19 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
+//
 //////////////////////////////////////////////////////////////////////////////////
 module ethernet_frame_generator#(
     logic [15:0]    INTER_PACKET_GAP_CYCLES     = 16'h000F,
@@ -188,443 +201,443 @@ logic   [11:0]                                  _fragment_offset;
 reg     [11:0]                                  fragment_offset;
 
 
-assign  process_cycle_timer_clock       =   clock;
-assign  process_cycle_timer_reset_n     =   reset_n;
-assign  process_cycle_timer_enable      =   1;
+assign  process_cycle_timer_clock       = clock;
+assign  process_cycle_timer_reset_n     = reset_n;
+assign  process_cycle_timer_enable      = 1;
 
 always_comb begin
-    _state                              =   state;
-    _process_counter                    =   process_counter;
-    _ready                              =   ready;
-    _saved_mac_destination              =   saved_mac_destination;
-    _saved_mac_source                   =   saved_mac_source;
-    _saved_ipv4_destination             =   saved_ipv4_destination;
-    _saved_ipv4_source                  =   saved_ipv4_source;
-    _saved_udp_destination              =   saved_udp_destination;
-    _saved_udp_source                   =   saved_udp_source;
-    _saved_udp_payload_size             =   saved_udp_payload_size;
-    _saved_udp_fragment_size            =   saved_udp_fragment_size;
-    _ipv4_total_length                  =   ipv4_total_length;
-    _udp_total_length                   =   udp_total_length;
-    _udp_buffer_read_address            =   udp_buffer_read_address;
-    _frame_total_length                 =   frame_total_length;
-    _saved_checksum_result              =   saved_checksum_result;
-    _saved_ipv4_flags                   =   saved_ipv4_flags;
-    _saved_ipv4_identification          =   saved_ipv4_identification;
-    _saved_ipv4_checksum                =   saved_ipv4_checksum;
-    _saved_udp_checksum                 =   saved_udp_checksum;
-    _ipv4_checksum_data                 =   ipv4_checksum_data;
-    _fragment_offset                    =   fragment_offset;
-    _frame_byte[2]                      =   frame_byte[1];
-    _frame_byte[1]                      =   frame_byte[0];
-    _frame_byte[0][7:0]                 =   frame_byte[0][7:0];
-    _frame_byte[0][8]                   =   frame_start;
-    _frame_byte_valid[2]                =   frame_byte_valid[1];
-    _frame_byte_valid[1]                =   frame_byte_valid[0];
-    _frame_byte_valid[0]                =   0;
-    checksum_data                       =   frame_byte[0];
-    _checksum_data_last                 =   0;
-    _ipv4_checksum_data_valid           =   0;
-    _ipv4_checksum_data_last            =   0;
-    _udp_checksum_data_last             =   0;
-    _frame_start                        =   0;
-    process_cycle_timer_load_count      =   0;
-    process_cycle_timer_count           =   0;
+    _state                              = state;
+    _process_counter                    = process_counter;
+    _ready                              = ready;
+    _saved_mac_destination              = saved_mac_destination;
+    _saved_mac_source                   = saved_mac_source;
+    _saved_ipv4_destination             = saved_ipv4_destination;
+    _saved_ipv4_source                  = saved_ipv4_source;
+    _saved_udp_destination              = saved_udp_destination;
+    _saved_udp_source                   = saved_udp_source;
+    _saved_udp_payload_size             = saved_udp_payload_size;
+    _saved_udp_fragment_size            = saved_udp_fragment_size;
+    _ipv4_total_length                  = ipv4_total_length;
+    _udp_total_length                   = udp_total_length;
+    _udp_buffer_read_address            = udp_buffer_read_address;
+    _frame_total_length                 = frame_total_length;
+    _saved_checksum_result              = saved_checksum_result;
+    _saved_ipv4_flags                   = saved_ipv4_flags;
+    _saved_ipv4_identification          = saved_ipv4_identification;
+    _saved_ipv4_checksum                = saved_ipv4_checksum;
+    _saved_udp_checksum                 = saved_udp_checksum;
+    _ipv4_checksum_data                 = ipv4_checksum_data;
+    _fragment_offset                    = fragment_offset;
+    _frame_byte[2]                      = frame_byte[1];
+    _frame_byte[1]                      = frame_byte[0];
+    _frame_byte[0][7:0]                 = frame_byte[0][7:0];
+    _frame_byte[0][8]                   = frame_start;
+    _frame_byte_valid[2]                = frame_byte_valid[1];
+    _frame_byte_valid[1]                = frame_byte_valid[0];
+    _frame_byte_valid[0]                = 0;
+    checksum_data                       = frame_byte[0];
+    _checksum_data_last                 = 0;
+    _ipv4_checksum_data_valid           = 0;
+    _ipv4_checksum_data_last            = 0;
+    _udp_checksum_data_last             = 0;
+    _frame_start                        = 0;
+    process_cycle_timer_load_count      = 0;
+    process_cycle_timer_count           = 0;
 
-    frame_data          =   frame_byte[2];
-    frame_data_valid    =   frame_byte_valid[2];
+    frame_data          = frame_byte[2];
+    frame_data_valid    = frame_byte_valid[2];
 
     if (state == S_PUSH_CRC && process_counter != 0) begin
-        frame_data[7:0]     =   frame_byte[0];
-        frame_data_valid    =   frame_byte_valid[0];
+        frame_data[7:0]     = frame_byte[0];
+        frame_data_valid    = frame_byte_valid[0];
     end
     if (state == S_DELAY) begin
-        frame_data[7:0]     =   frame_byte[0];
-        frame_data_valid    =   frame_byte_valid[0];
+        frame_data[7:0]     = frame_byte[0];
+        frame_data_valid    = frame_byte_valid[0];
     end
 
-    checksum_data_valid =   0;
+    checksum_data_valid = 0;
 
     if (state != S_PUSH_CRC && state != S_IDLE) begin
-        checksum_data_valid =   frame_byte_valid[0];
+        checksum_data_valid = frame_byte_valid[0];
     end
     if (state == S_PUSH_CRC && process_counter == 0) begin
-        checksum_data_valid =   frame_byte_valid[0];
+        checksum_data_valid = frame_byte_valid[0];
     end
 
     case (state)
         S_IDLE: begin
-            _ready                              =   1;
-            _saved_mac_destination              =   mac_destination;
-            _saved_mac_source                   =   mac_source;
-            _saved_ipv4_destination             =   ipv4_destination;
-            _saved_ipv4_source                  =   ipv4_source;
-            _saved_udp_destination              =   udp_destination;
-            _saved_udp_source                   =   udp_source;
-            _saved_udp_payload_size             =   udp_payload_size;
-            _saved_udp_fragment_size            =   udp_fragment_size;
-            _frame_total_length                 =   frame_total_length;
-            _saved_ipv4_flags                   =   ipv4_flags;
-            _saved_ipv4_identification          =   ipv4_identification;
-            _saved_udp_checksum                 =   udp_checksum;
-            _fragment_offset                    =   ipv4_flags[11:0];
+            _ready                              = 1;
+            _saved_mac_destination              = mac_destination;
+            _saved_mac_source                   = mac_source;
+            _saved_ipv4_destination             = ipv4_destination;
+            _saved_ipv4_source                  = ipv4_source;
+            _saved_udp_destination              = udp_destination;
+            _saved_udp_source                   = udp_source;
+            _saved_udp_payload_size             = udp_payload_size;
+            _saved_udp_fragment_size            = udp_fragment_size;
+            _frame_total_length                 = frame_total_length;
+            _saved_ipv4_flags                   = ipv4_flags;
+            _saved_ipv4_identification          = ipv4_identification;
+            _saved_udp_checksum                 = udp_checksum;
+            _fragment_offset                    = ipv4_flags[11:0];
 
             if (enable) begin
-                process_cycle_timer_count       =   7;
-                process_cycle_timer_load_count  =   1;
-                _ready                          =   0;
-                _state                          =   S_CHECKSUM_IPV4_VERSION_HEADER_LNEGTH;
+                process_cycle_timer_count       = 7;
+                process_cycle_timer_load_count  = 1;
+                _ready                          = 0;
+                _state                          = S_CHECKSUM_IPV4_VERSION_HEADER_LNEGTH;
             end
         end
         S_CHECKSUM_IPV4_VERSION_HEADER_LNEGTH: begin
             if (fragment_offset == 0) begin
-                _udp_buffer_read_address    =   0;
+                _udp_buffer_read_address    = 0;
             end
-            _ipv4_checksum_data         =   IPV4_VERSION_HEADER_LNEGTH;
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_DIFFERENTIATED_SERVICES_FIELD;
+            _ipv4_checksum_data         = IPV4_VERSION_HEADER_LNEGTH;
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_DIFFERENTIATED_SERVICES_FIELD;
         end
         S_CHECKSUM_IPV4_DIFFERENTIATED_SERVICES_FIELD: begin
-            _ipv4_checksum_data         =   IPV4_DIFFERENTIATED_SERVICES_FIELD;
-            _ipv4_checksum_data_valid   =   1;
-            _ipv4_total_length          =   saved_udp_fragment_size + 28;
-            _state                      =   S_CHECKSUM_IPV4_TOTAL_LENGTH_0;
+            _ipv4_checksum_data         = IPV4_DIFFERENTIATED_SERVICES_FIELD;
+            _ipv4_checksum_data_valid   = 1;
+            _ipv4_total_length          = saved_udp_fragment_size + 28;
+            _state                      = S_CHECKSUM_IPV4_TOTAL_LENGTH_0;
         end
         S_CHECKSUM_IPV4_TOTAL_LENGTH_0: begin
-            _ipv4_checksum_data         =   ipv4_total_length[15:8];
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_TOTAL_LENGTH_1;
+            _ipv4_checksum_data         = ipv4_total_length[15:8];
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_TOTAL_LENGTH_1;
         end
         S_CHECKSUM_IPV4_TOTAL_LENGTH_1: begin
-            _ipv4_checksum_data         =   ipv4_total_length[7:0];
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_IDENTIFICATION_MSB;
+            _ipv4_checksum_data         = ipv4_total_length[7:0];
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_IDENTIFICATION_MSB;
         end
         S_CHECKSUM_IPV4_IDENTIFICATION_MSB: begin
-            _ipv4_checksum_data         =   saved_ipv4_identification[15:8];
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_IDENTIFICATION_LSB;
+            _ipv4_checksum_data         = saved_ipv4_identification[15:8];
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_IDENTIFICATION_LSB;
         end
         S_CHECKSUM_IPV4_IDENTIFICATION_LSB: begin
-            _ipv4_checksum_data         =   saved_ipv4_identification[7:0];
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_FLAGS_MSB;
+            _ipv4_checksum_data         = saved_ipv4_identification[7:0];
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_FLAGS_MSB;
         end
         S_CHECKSUM_IPV4_FLAGS_MSB: begin
-            _ipv4_checksum_data         =   saved_ipv4_flags[15:8];
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_FLAGS_LSB;
+            _ipv4_checksum_data         = saved_ipv4_flags[15:8];
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_FLAGS_LSB;
         end
         S_CHECKSUM_IPV4_FLAGS_LSB: begin
-            _ipv4_checksum_data         =   saved_ipv4_flags[7:0];
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_TIME_TO_LIVE;
+            _ipv4_checksum_data         = saved_ipv4_flags[7:0];
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_TIME_TO_LIVE;
         end
         S_CHECKSUM_IPV4_TIME_TO_LIVE: begin
-            _ipv4_checksum_data         =   IPV4_TIME_TO_LIVE;
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_PROTOCOL;
+            _ipv4_checksum_data         = IPV4_TIME_TO_LIVE;
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_PROTOCOL;
         end
         S_CHECKSUM_IPV4_PROTOCOL: begin
-            _ipv4_checksum_data         =   IPV4_PROTOCOL_UDP;
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_SOURCE_ADDRESS_0;
+            _ipv4_checksum_data         = IPV4_PROTOCOL_UDP;
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_SOURCE_ADDRESS_0;
         end
         S_CHECKSUM_IPV4_SOURCE_ADDRESS_0: begin
-            _ipv4_checksum_data         =   saved_ipv4_source[31:24];
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_SOURCE_ADDRESS_1;
+            _ipv4_checksum_data         = saved_ipv4_source[31:24];
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_SOURCE_ADDRESS_1;
         end
         S_CHECKSUM_IPV4_SOURCE_ADDRESS_1: begin
-            _ipv4_checksum_data         =   saved_ipv4_source[23:16];
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_SOURCE_ADDRESS_2;
+            _ipv4_checksum_data         = saved_ipv4_source[23:16];
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_SOURCE_ADDRESS_2;
         end
         S_CHECKSUM_IPV4_SOURCE_ADDRESS_2: begin
-            _ipv4_checksum_data         =   saved_ipv4_source[15:8];
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_SOURCE_ADDRESS_3;
+            _ipv4_checksum_data         = saved_ipv4_source[15:8];
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_SOURCE_ADDRESS_3;
         end
         S_CHECKSUM_IPV4_SOURCE_ADDRESS_3: begin
-            _ipv4_checksum_data         =   saved_ipv4_source[7:0];
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_DESTINATION_ADDRESS_0;
+            _ipv4_checksum_data         = saved_ipv4_source[7:0];
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_DESTINATION_ADDRESS_0;
         end
         S_CHECKSUM_IPV4_DESTINATION_ADDRESS_0: begin
-            _ipv4_checksum_data         =   saved_ipv4_destination[31:24];
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_DESTINATION_ADDRESS_1;
+            _ipv4_checksum_data         = saved_ipv4_destination[31:24];
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_DESTINATION_ADDRESS_1;
         end
         S_CHECKSUM_IPV4_DESTINATION_ADDRESS_1: begin
-            _ipv4_checksum_data         =   saved_ipv4_destination[23:16];
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_DESTINATION_ADDRESS_2;
+            _ipv4_checksum_data         = saved_ipv4_destination[23:16];
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_DESTINATION_ADDRESS_2;
         end
         S_CHECKSUM_IPV4_DESTINATION_ADDRESS_2: begin
-            _ipv4_checksum_data         =   saved_ipv4_destination[15:8];
-            _ipv4_checksum_data_valid   =   1;
-            _state                      =   S_CHECKSUM_IPV4_DESTINATION_ADDRESS_3;
+            _ipv4_checksum_data         = saved_ipv4_destination[15:8];
+            _ipv4_checksum_data_valid   = 1;
+            _state                      = S_CHECKSUM_IPV4_DESTINATION_ADDRESS_3;
         end
         S_CHECKSUM_IPV4_DESTINATION_ADDRESS_3: begin
-            _ipv4_checksum_data             =   saved_ipv4_destination[7:0];
-            _ipv4_checksum_data_valid       =   1;
-            _ipv4_checksum_data_last        =   1;
-            process_cycle_timer_count       =   5;
-            process_cycle_timer_load_count  =   1;
-            _frame_start                    =   1;
-            _state                          =   S_MAC_DESINTATION;
+            _ipv4_checksum_data             = saved_ipv4_destination[7:0];
+            _ipv4_checksum_data_valid       = 1;
+            _ipv4_checksum_data_last        = 1;
+            process_cycle_timer_count       = 5;
+            process_cycle_timer_load_count  = 1;
+            _frame_start                    = 1;
+            _state                          = S_MAC_DESINTATION;
         end
         S_MAC_DESINTATION: begin
             if (ipv4_checksum_result_enable) begin
-                _saved_ipv4_checksum    =   ipv4_checksum_result;
+                _saved_ipv4_checksum    = ipv4_checksum_result;
             end
 
-            _frame_byte[0][7:0]     =   saved_mac_destination[47:40];
-            _frame_byte_valid[0]    =   1;
-            _saved_mac_destination  =   {saved_mac_destination[39:0],8'h00};
+            _frame_byte[0][7:0]     = saved_mac_destination[47:40];
+            _frame_byte_valid[0]    = 1;
+            _saved_mac_destination  = {saved_mac_destination[39:0],8'h00};
 
             if (process_cycle_timer_expired) begin
-                _state                          =   S_MAC_SOURCE;
-                process_cycle_timer_count       =   5;
-                process_cycle_timer_load_count  =   1;
+                _state                          = S_MAC_SOURCE;
+                process_cycle_timer_count       = 5;
+                process_cycle_timer_load_count  = 1;
             end
         end
         S_MAC_SOURCE: begin
-            _frame_byte[0][7:0]     =   saved_mac_source[47:40];
-            _frame_byte_valid[0]    =   1;
-            _saved_mac_source       =   {saved_mac_source[39:0],8'h00};
+            _frame_byte[0][7:0]     = saved_mac_source[47:40];
+            _frame_byte_valid[0]    = 1;
+            _saved_mac_source       = {saved_mac_source[39:0],8'h00};
 
             if (process_cycle_timer_expired) begin
-                _state              =   S_ETHERNET_TYPE_MSB;
+                _state              = S_ETHERNET_TYPE_MSB;
             end
         end
         S_ETHERNET_TYPE_MSB: begin
-            _frame_byte[0][7:0]     =   IPV4_ETHERNET_TYPE[15:8];
-            _frame_byte_valid[0]    =   1;
-            _state                  =   S_ETHERNET_TYPE_LSB;
+            _frame_byte[0][7:0]     = IPV4_ETHERNET_TYPE[15:8];
+            _frame_byte_valid[0]    = 1;
+            _state                  = S_ETHERNET_TYPE_LSB;
         end
         S_ETHERNET_TYPE_LSB: begin
-            _frame_byte[0][7:0]     =   IPV4_ETHERNET_TYPE[7:0];
-            _frame_byte_valid[0]    =   1;
-            _state                  =   S_IPV4_VERSION_HEADER_LNEGTH;
+            _frame_byte[0][7:0]     = IPV4_ETHERNET_TYPE[7:0];
+            _frame_byte_valid[0]    = 1;
+            _state                  = S_IPV4_VERSION_HEADER_LNEGTH;
         end
         S_IPV4_VERSION_HEADER_LNEGTH: begin
-            _frame_byte[0][7:0]     =   IPV4_VERSION_HEADER_LNEGTH;
-            _frame_byte_valid[0]    =   1;
-            _state                  =   S_IPV4_DIFFERENTIATED_SERVICES_FIELD;
+            _frame_byte[0][7:0]     = IPV4_VERSION_HEADER_LNEGTH;
+            _frame_byte_valid[0]    = 1;
+            _state                  = S_IPV4_DIFFERENTIATED_SERVICES_FIELD;
         end
         S_IPV4_DIFFERENTIATED_SERVICES_FIELD: begin
-            _frame_byte[0][7:0]             =   IPV4_DIFFERENTIATED_SERVICES_FIELD;
-            _frame_byte_valid[0]            =   1;
-            process_cycle_timer_count       =   1;
-            process_cycle_timer_load_count  =   1;
-            _state                          =   S_IPV4_TOTAL_LENGTH;
+            _frame_byte[0][7:0]             = IPV4_DIFFERENTIATED_SERVICES_FIELD;
+            _frame_byte_valid[0]            = 1;
+            process_cycle_timer_count       = 1;
+            process_cycle_timer_load_count  = 1;
+            _state                          = S_IPV4_TOTAL_LENGTH;
         end
         S_IPV4_TOTAL_LENGTH: begin
-            _frame_byte[0][7:0]         =   ipv4_total_length[15:8];
-            _frame_byte_valid[0]        =   1;
-            _ipv4_total_length          =   {ipv4_total_length[7:0],8'h00};
+            _frame_byte[0][7:0]         = ipv4_total_length[15:8];
+            _frame_byte_valid[0]        = 1;
+            _ipv4_total_length          = {ipv4_total_length[7:0],8'h00};
 
             if (process_cycle_timer_expired) begin
-                _state              =   S_IPV4_IDENTIFICATION_MSB;
+                _state              = S_IPV4_IDENTIFICATION_MSB;
             end
         end
         S_IPV4_IDENTIFICATION_MSB: begin
-            _frame_byte[0][7:0]         =   saved_ipv4_identification[15:8];
-            _frame_byte_valid[0]        =   1;
-            _state                      =   S_IPV4_IDENTIFICATION_LSB;
+            _frame_byte[0][7:0]         = saved_ipv4_identification[15:8];
+            _frame_byte_valid[0]        = 1;
+            _state                      = S_IPV4_IDENTIFICATION_LSB;
         end
         S_IPV4_IDENTIFICATION_LSB: begin
-            _frame_byte[0][7:0]         =   saved_ipv4_identification[7:0];
-            _frame_byte_valid[0]        =   1;
-            _state                      =   S_IPV4_FLAGS_MSB;
+            _frame_byte[0][7:0]         = saved_ipv4_identification[7:0];
+            _frame_byte_valid[0]        = 1;
+            _state                      = S_IPV4_FLAGS_MSB;
         end
         S_IPV4_FLAGS_MSB: begin
-            _frame_byte[0][7:0]         =   saved_ipv4_flags[15:8];
-            _frame_byte_valid[0]        =   1;
-            _state                      =   S_IPV4_FLAGS_LSB;
+            _frame_byte[0][7:0]         = saved_ipv4_flags[15:8];
+            _frame_byte_valid[0]        = 1;
+            _state                      = S_IPV4_FLAGS_LSB;
         end
         S_IPV4_FLAGS_LSB: begin
-            _frame_byte[0][7:0]         =   saved_ipv4_flags[7:0];
-            _frame_byte_valid[0]        =   1;
-            _state                      =   S_IPV4_TIME_TO_LIVE;
+            _frame_byte[0][7:0]         = saved_ipv4_flags[7:0];
+            _frame_byte_valid[0]        = 1;
+            _state                      = S_IPV4_TIME_TO_LIVE;
         end
         S_IPV4_TIME_TO_LIVE: begin
-            _frame_byte[0][7:0]         =   IPV4_TIME_TO_LIVE;
-            _frame_byte_valid[0]        =   1;
-            _state                      =   S_IPV4_PROTOCOL;
+            _frame_byte[0][7:0]         = IPV4_TIME_TO_LIVE;
+            _frame_byte_valid[0]        = 1;
+            _state                      = S_IPV4_PROTOCOL;
         end
         S_IPV4_PROTOCOL: begin
-            _frame_byte[0][7:0]         =   IPV4_PROTOCOL_UDP;
-            _frame_byte_valid[0]        =   1;
-            _state                      =   S_IPV4_CHECKSUM_MSB;
+            _frame_byte[0][7:0]         = IPV4_PROTOCOL_UDP;
+            _frame_byte_valid[0]        = 1;
+            _state                      = S_IPV4_CHECKSUM_MSB;
         end
         S_IPV4_CHECKSUM_MSB: begin
-            _frame_byte[0][7:0]     =   saved_ipv4_checksum[15:8];
-            _frame_byte_valid[0]    =   1;
-            _state                  =   S_IPV4_CHECKSUM_LSB;
+            _frame_byte[0][7:0]     = saved_ipv4_checksum[15:8];
+            _frame_byte_valid[0]    = 1;
+            _state                  = S_IPV4_CHECKSUM_LSB;
         end
         S_IPV4_CHECKSUM_LSB: begin
-            _frame_byte[0][7:0]             =   saved_ipv4_checksum[7:0];
-            _frame_byte_valid[0]            =   1;
-            process_cycle_timer_count       =   3;
-            process_cycle_timer_load_count  =   1;
-            _state                          =   S_IPV4_SOURCE_ADDRESS;
+            _frame_byte[0][7:0]             = saved_ipv4_checksum[7:0];
+            _frame_byte_valid[0]            = 1;
+            process_cycle_timer_count       = 3;
+            process_cycle_timer_load_count  = 1;
+            _state                          = S_IPV4_SOURCE_ADDRESS;
         end
         S_IPV4_SOURCE_ADDRESS: begin
-            _frame_byte[0][7:0]         =   saved_ipv4_source[31:24];
-            _frame_byte_valid[0]        =   1;
-            _saved_ipv4_source          =   {saved_ipv4_source[23:0],8'h00};
+            _frame_byte[0][7:0]         = saved_ipv4_source[31:24];
+            _frame_byte_valid[0]        = 1;
+            _saved_ipv4_source          = {saved_ipv4_source[23:0],8'h00};
 
             if (process_cycle_timer_expired) begin
-                process_cycle_timer_count       =   3;
-                process_cycle_timer_load_count  =   1;
-                _state                          =   S_IPV4_DESTINATION_ADDRESS;
+                process_cycle_timer_count       = 3;
+                process_cycle_timer_load_count  = 1;
+                _state                          = S_IPV4_DESTINATION_ADDRESS;
             end
         end
         S_IPV4_DESTINATION_ADDRESS: begin
-            _frame_byte[0][7:0]         =   saved_ipv4_destination[31:24];
-            _frame_byte_valid[0]        =   1;
-            _saved_ipv4_destination     =   {saved_ipv4_destination[23:0],8'h00};
+            _frame_byte[0][7:0]         = saved_ipv4_destination[31:24];
+            _frame_byte_valid[0]        = 1;
+            _saved_ipv4_destination     = {saved_ipv4_destination[23:0],8'h00};
 
             if (process_cycle_timer_expired) begin
-                process_cycle_timer_count       =   1;
-                process_cycle_timer_load_count  =   1;
+                process_cycle_timer_count       = 1;
+                process_cycle_timer_load_count  = 1;
 
                 if (fragment_offset == 0) begin
-                    _state  =   S_UDP_SOURCE_PORT;
+                    _state  = S_UDP_SOURCE_PORT;
                 end
                 else begin
-                    process_cycle_timer_count       =   saved_udp_fragment_size - 1;
-                    _udp_buffer_read_address        =   udp_buffer_read_address + 1;
-                    _state                          =   S_UDP_DATA;
+                    process_cycle_timer_count       = saved_udp_fragment_size - 1;
+                    _udp_buffer_read_address        = udp_buffer_read_address + 1;
+                    _state                          = S_UDP_DATA;
                 end
             end
         end
         S_UDP_SOURCE_PORT: begin
-            _frame_byte[0][7:0]         =   saved_udp_source[15:8];
-            _frame_byte_valid[0]        =   1;
-            _saved_udp_source           =   {saved_udp_source[7:0],8'h00};
+            _frame_byte[0][7:0]         = saved_udp_source[15:8];
+            _frame_byte_valid[0]        = 1;
+            _saved_udp_source           = {saved_udp_source[7:0],8'h00};
 
             if (process_cycle_timer_expired) begin
-                process_cycle_timer_count       =   1;
-                process_cycle_timer_load_count  =   1;
-                _state                          =   S_UDP_DESTINATION_PORT;
+                process_cycle_timer_count       = 1;
+                process_cycle_timer_load_count  = 1;
+                _state                          = S_UDP_DESTINATION_PORT;
             end
         end
         S_UDP_DESTINATION_PORT: begin
-            _frame_byte[0][7:0]             =   saved_udp_destination[15:8];
-            _frame_byte_valid[0]            =   1;
-            _saved_udp_destination          =   {saved_udp_destination[7:0],8'h00};
-            _udp_total_length               =   saved_udp_payload_size + 8;
+            _frame_byte[0][7:0]             = saved_udp_destination[15:8];
+            _frame_byte_valid[0]            = 1;
+            _saved_udp_destination          = {saved_udp_destination[7:0],8'h00};
+            _udp_total_length               = saved_udp_payload_size + 8;
 
             if (process_cycle_timer_expired) begin
-                process_cycle_timer_count       =   1;
-                process_cycle_timer_load_count  =   1;
-                _state                          =   S_UDP_LENGTH;
+                process_cycle_timer_count       = 1;
+                process_cycle_timer_load_count  = 1;
+                _state                          = S_UDP_LENGTH;
             end
         end
         S_UDP_LENGTH: begin
-            _frame_byte[0][7:0]         =   udp_total_length[15:8];
-            _frame_byte_valid[0]        =   1;
-            _udp_total_length           =   {udp_total_length[7:0],8'h00};
+            _frame_byte[0][7:0]         = udp_total_length[15:8];
+            _frame_byte_valid[0]        = 1;
+            _udp_total_length           = {udp_total_length[7:0],8'h00};
 
             if (process_cycle_timer_expired) begin
-                _state              =   S_UDP_CHECKSUM_MSB;
+                _state              = S_UDP_CHECKSUM_MSB;
             end
         end
         S_UDP_CHECKSUM_MSB: begin
-            _frame_byte[0][7:0]         =   saved_udp_checksum[15:8];
-            _frame_byte_valid[0]        =   1;
-            _state                      =   S_UDP_CHECKSUM_LSB;
+            _frame_byte[0][7:0]         = saved_udp_checksum[15:8];
+            _frame_byte_valid[0]        = 1;
+            _state                      = S_UDP_CHECKSUM_LSB;
         end
         S_UDP_CHECKSUM_LSB: begin
-            _frame_byte[0][7:0]             =   saved_udp_checksum[7:0];
-            _frame_byte_valid[0]            =   1;
-            process_cycle_timer_count       =   saved_udp_fragment_size - 1;
-            process_cycle_timer_load_count  =   1;
-            _udp_buffer_read_address        =   udp_buffer_read_address + 1;
-            _state                          =   S_UDP_DATA;
+            _frame_byte[0][7:0]             = saved_udp_checksum[7:0];
+            _frame_byte_valid[0]            = 1;
+            process_cycle_timer_count       = saved_udp_fragment_size - 1;
+            process_cycle_timer_load_count  = 1;
+            _udp_buffer_read_address        = udp_buffer_read_address + 1;
+            _state                          = S_UDP_DATA;
         end
         S_UDP_DATA: begin
-            _frame_byte[0][7:0]            =   udp_buffer_read_data;
-            _frame_byte_valid[0]           =   1;
-            _udp_buffer_read_address       =   udp_buffer_read_address + 1;
-            _process_counter               =   0;
+            _frame_byte[0][7:0]            = udp_buffer_read_data;
+            _frame_byte_valid[0]           = 1;
+            _udp_buffer_read_address       = udp_buffer_read_address + 1;
+            _process_counter               = 0;
 
             if (process_cycle_timer_expired) begin
                 if (saved_udp_fragment_size < 26) begin
-                    process_cycle_timer_count       =   26 - saved_udp_fragment_size;
-                    process_cycle_timer_load_count  =   1;
-                    _state                          =   S_PAD;
+                    process_cycle_timer_count       = 26 - saved_udp_fragment_size;
+                    process_cycle_timer_load_count  = 1;
+                    _state                          = S_PAD;
                 end
                 else begin
-                    _udp_buffer_read_address        =   udp_buffer_read_address;
-                    _checksum_data_last             =   1;
-                    _state                          =   S_PUSH_CRC;
+                    _udp_buffer_read_address        = udp_buffer_read_address;
+                    _checksum_data_last             = 1;
+                    _state                          = S_PUSH_CRC;
                 end
             end
         end
         S_PAD: begin
-            _frame_byte[0][7:0]            =   0;
-            _frame_byte_valid[0]           =   1;
+            _frame_byte[0][7:0]            = 0;
+            _frame_byte_valid[0]           = 1;
 
             if (process_cycle_timer_expired) begin
-                _process_counter                =   0;
-                _checksum_data_last             =   1;
-                _state                          =   S_PUSH_CRC;
+                _process_counter                = 0;
+                _checksum_data_last             = 1;
+                _state                          = S_PUSH_CRC;
             end
         end
         S_PUSH_CRC: begin
             case (process_counter)
                 0: begin
                     if (checksum_result_enable) begin
-                        _frame_byte[0][7:0]     =   checksum_result[31:24];
-                        _frame_byte_valid[0]    =   1;
-                        _saved_checksum_result  =   checksum_result;
-                        _process_counter        =   1;
+                        _frame_byte[0][7:0]     = checksum_result[31:24];
+                        _frame_byte_valid[0]    = 1;
+                        _saved_checksum_result  = checksum_result;
+                        _process_counter        = 1;
                     end
                 end
                 1: begin
-                    _frame_byte[0][7:0]     =   saved_checksum_result[23:16];
-                    _frame_byte_valid[0]    =   1;
-                    _process_counter        =   2;
+                    _frame_byte[0][7:0]     = saved_checksum_result[23:16];
+                    _frame_byte_valid[0]    = 1;
+                    _process_counter        = 2;
                 end
                 2: begin
-                    _frame_byte[0][7:0]     =   saved_checksum_result[15:8];
-                    _frame_byte_valid[0]    =   1;
-                    _process_counter        =   3;
+                    _frame_byte[0][7:0]     = saved_checksum_result[15:8];
+                    _frame_byte_valid[0]    = 1;
+                    _process_counter        = 3;
                 end
                 3: begin
-                    _frame_byte[0][7:0]             =   saved_checksum_result[7:0];
-                    _frame_byte_valid[0]            =   1;
-                    process_cycle_timer_count       =   INTER_PACKET_GAP_CYCLES;
-                    process_cycle_timer_load_count  =   1;
-                    _state                          =   S_DELAY;
+                    _frame_byte[0][7:0]             = saved_checksum_result[7:0];
+                    _frame_byte_valid[0]            = 1;
+                    process_cycle_timer_count       = INTER_PACKET_GAP_CYCLES;
+                    process_cycle_timer_load_count  = 1;
+                    _state                          = S_DELAY;
                 end
             endcase
         end
         S_DELAY: begin
-            checksum_data_valid =   0;
+            checksum_data_valid = 0;
 
             if (process_cycle_timer_expired) begin
-                _state                          =   S_IDLE;
-                process_cycle_timer_count       =   INTER_PACKET_GAP_CYCLES;
-                process_cycle_timer_load_count  =   1;
+                _state                          = S_IDLE;
+                process_cycle_timer_count       = INTER_PACKET_GAP_CYCLES;
+                process_cycle_timer_load_count  = 1;
 
             end
         end
         S_GAP: begin
-            checksum_data_valid =   0;
+            checksum_data_valid = 0;
 
             if (process_cycle_timer_expired) begin
-                _state                          =   S_IDLE;
+                _state                          = S_IDLE;
             end
         end
     endcase
 end
 
-always_ff @(posedge clock or negedge reset_n) begin
+always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                           <=  S_IDLE;
         process_counter                 <=  0;

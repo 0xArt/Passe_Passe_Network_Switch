@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:     Phantom Motorsports
-//              www.phantomtuned.com
+// Company:     circuitden
 // Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 // 
 // Create Date: 04/22/2023
 // Design Name: 
@@ -17,7 +18,19 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
+//
 //////////////////////////////////////////////////////////////////////////////////
 module rmii_byte_shipper#(
     parameter logic [1:0]   SPEED_CODE_100_MEGABIT  = 1,
@@ -64,47 +77,47 @@ reg     [1:0]   saved_speed_code;
 logic   [1:0]   _saved_speed_code;
 
 always_comb  begin
-    _state                  =   state;
-    _counter                =   counter;
-    _byte_to_ship           =   byte_to_ship;
-    _sample_counter         =   sample_counter;
-    _shipped_data           =   shipped_data;
-    _shipped_data_valid     =   shipped_data_valid;
-    _sample_counter_limit   =   sample_counter_limit;
-    _preamble_count_limit   =   preamble_count_limit;
-    _saved_speed_code       =   saved_speed_code;
-    data_ready              =   0;
+    _state                  = state;
+    _counter                = counter;
+    _byte_to_ship           = byte_to_ship;
+    _sample_counter         = sample_counter;
+    _shipped_data           = shipped_data;
+    _shipped_data_valid     = shipped_data_valid;
+    _sample_counter_limit   = sample_counter_limit;
+    _preamble_count_limit   = preamble_count_limit;
+    _saved_speed_code       = saved_speed_code;
+    data_ready              = 0;
 
     case (saved_speed_code)
         SPEED_CODE_100_MEGABIT: begin
-            _sample_counter_limit   =   0;
-            _preamble_count_limit   =   26;
+            _sample_counter_limit   = 0;
+            _preamble_count_limit   = 26;
         end
         SPEED_CODE_10_MEGABIT: begin
-            _sample_counter_limit   =   9;
-            _preamble_count_limit   =   260;
+            _sample_counter_limit   = 9;
+            _preamble_count_limit   = 260;
         end
         default : begin
-            _sample_counter_limit   =   0;
-            _preamble_count_limit   =   26;
+            _sample_counter_limit   = 0;
+            _preamble_count_limit   = 26;
         end
     endcase
 
     case (state)
         S_IDLE: begin
-            _shipped_data_valid =   0;
-            _saved_speed_code   =   speed_code;
-            _sample_counter     =   0;
+            _shipped_data_valid = 0;
+            _saved_speed_code   = speed_code;
+            _sample_counter     = 0;
 
             if (data_enable) begin
-                data_ready              =   1;
+                data_ready              = 1;
 
                 if (data[8]) begin
-                    _byte_to_ship       =   data[7:0];
-                    _counter            =   0;
-                    _shipped_data       =   2'b01;
-                    _shipped_data_valid =   1;
-                    _state              =   S_SEND_PREMABLE;
+                    _byte_to_ship       = data[7:0];
+                    _counter            = 0;
+                    _shipped_data       = 2'b01;
+                    _shipped_data_valid = 1;
+                    _state              = S_SEND_PREMABLE;
                 end
             end
         end
@@ -113,71 +126,71 @@ always_comb  begin
                 _counter = counter + 1;
             end
             else begin
-                _counter    =   0;
+                _counter    = 0;
 
                 if (sample_counter == sample_counter_limit) begin
-                    _sample_counter     =   0;
-                    _state              =   S_SEND_START_OF_FRAME;
+                    _sample_counter     = 0;
+                    _state              = S_SEND_START_OF_FRAME;
                 end
                 else begin
-                    _sample_counter =   sample_counter + 1;
+                    _sample_counter = sample_counter + 1;
                 end
             end
         end
         S_SEND_START_OF_FRAME: begin
-            _counter           =   0;
-            _shipped_data      =   2'b11;
+            _counter           = 0;
+            _shipped_data      = 2'b11;
 
             if (sample_counter == sample_counter_limit) begin
-                _sample_counter =   0;
-                _state          =   S_SEND_DATA;
+                _sample_counter = 0;
+                _state          = S_SEND_DATA;
             end
             else begin
-                _sample_counter =   sample_counter + 1;
+                _sample_counter = sample_counter + 1;
             end
         end
         S_SEND_DATA: begin
-            _shipped_data   =   byte_to_ship[1:0];
+            _shipped_data   = byte_to_ship[1:0];
 
             if (sample_counter >= sample_counter_limit) begin
 
-                _sample_counter =   0;
-                _byte_to_ship   =   {2'b00,byte_to_ship[7:2]};
+                _sample_counter = 0;
+                _byte_to_ship   = {2'b00,byte_to_ship[7:2]};
 
                 if (counter < 4) begin
                     _counter        = counter + 1;
                 end
                 else begin
-                    _counter        =   1;
+                    _counter        = 1;
                 end
 
                 if (counter == 3) begin
                     if (data_enable) begin
                         if (data[8]) begin
-                            _state              =   S_INTERPACKET_GRAP;
-                            _sample_counter     =   INTER_PACKET_GAP_CYCLES;
+                            _state              = S_INTERPACKET_GRAP;
+                            _sample_counter     = INTER_PACKET_GAP_CYCLES;
                         end
                         else begin
-                            _byte_to_ship   =   data[7:0];
-                            data_ready      =   1;
+                            _byte_to_ship   = data[7:0];
+                            data_ready      = 1;
                         end
                     end
                     else begin
-                        _state              =   S_INTERPACKET_GRAP;
-                        _sample_counter     =   INTER_PACKET_GAP_CYCLES;
+                        _state              = S_INTERPACKET_GRAP;
+                        _sample_counter     = INTER_PACKET_GAP_CYCLES;
                     end
                 end
             end
             else begin
-                _sample_counter =   sample_counter + 1;
+                _sample_counter = sample_counter + 1;
             end
         end
         S_INTERPACKET_GRAP: begin
-            _sample_counter     =   sample_counter - 1;
-            _shipped_data_valid =   0;
+            _sample_counter     = sample_counter - 1;
+            _shipped_data_valid = 0;
 
             if (sample_counter == 0) begin
-                _state  =   S_IDLE;
+                _state  = S_IDLE;
             end
         end
     endcase

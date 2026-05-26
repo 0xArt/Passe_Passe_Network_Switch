@@ -39,12 +39,12 @@ end
 
 for (i=0;i<(16+4096);i=i+1) begin
     @(posedge testbench.module_clock);
-    testbench.module_transmit_data_valid       =   1;
-    testbench.module_transmit_data             =   testbench.module_transmit_buffer[i];
+    testbench.module_transmit_data_valid       = 1;
+    testbench.module_transmit_data             = testbench.module_transmit_buffer[i];
 end
 @(posedge testbench.module_clock);
-testbench.module_transmit_data_valid       =   0;
-testbench.module_transmit_data             =   0;
+testbench.module_transmit_data_valid       = 0;
+testbench.module_transmit_data             = 0;
 
 fork : f0
     begin

@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:     Phantom Motorsports
-//              www.phantomtuned.com
+// Company:     circuitden
 // Engineer:    Artin Isagholian
+//              artinisagholian@gmail.com
+//              www.circuitden.com
 //
 // Create Date: 08/19/2023
 // Design Name:
@@ -17,10 +18,22 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
+///
+// EDUCATIONAL USE ONLY
+//
+// This source file is provided solely for educational, research, and non-commercial purposes.
+//
+// Commercial use, redistribution, sublicensing, modification for commercial products,
+// or incorporation into proprietary software is strictly prohibited without prior
+// written permission and a valid commercial license from the original creator.
+//
+// Unauthorized commercial use violates intellectual property and copyright laws.
+//
+// For licensing inquiries and commercial permissions, contact the creator directly.
 //
 //////////////////////////////////////////////////////////////////////////////////
 module udp_fragment_slot#(
-    parameter XILINX    = 0
+    parameter TECHNOLOGY    = "SIMULATION"
 )(
     input   wire            clock,
     input   wire            reset_n,
@@ -52,7 +65,7 @@ synchronous_fifo
 #(  .DATA_WIDTH                 (9),
     .DATA_DEPTH                 (4096),
     .FIRST_WORD_FALL_THROUGH    (1),
-    .XILINX                     (XILINX)
+    .TECHNOLOGY                 (TECHNOLOGY)
 ) fragment_fifo(
     .clock              (fragment_fifo_clock),
     .reset_n            (fragment_fifo_reset_n),
@@ -85,54 +98,54 @@ reg                 buffer_data_valid;
 logic               _buffer_data_valid;
 
 
-assign  fragment_fifo_clock         =   clock;
-assign  fragment_fifo_reset_n       =   reset_n;
-assign  fragment_fifo_write_data    =   buffer_data;
-assign  fragment_fifo_write_enable  =   buffer_data_valid;
-assign  fragment_fifo_read_enable   =   push_data_enable;
+assign  fragment_fifo_clock         = clock;
+assign  fragment_fifo_reset_n       = reset_n;
+assign  fragment_fifo_write_data    = buffer_data;
+assign  fragment_fifo_write_enable  = buffer_data_valid;
+assign  fragment_fifo_read_enable   = push_data_enable;
 
 always_comb begin
-    _state                          =   state;
-    _current_packet_id              =   current_packet_id;
-    _buffer_data                    =   buffer_data;
-    push_data                       =   fragment_fifo_read_data;
-    push_data_valid                 =   fragment_fifo_read_data_valid;
-    _data_ready                     =   0;
-    _buffer_data_valid              =   0;
-    _ready                          =   0;
+    _state                          = state;
+    _current_packet_id              = current_packet_id;
+    _buffer_data                    = buffer_data;
+    push_data                       = fragment_fifo_read_data;
+    push_data_valid                 = fragment_fifo_read_data_valid;
+    _data_ready                     = 0;
+    _buffer_data_valid              = 0;
+    _ready                          = 0;
 
     case (state)
         S_IDLE: begin
-            _ready              =   1;
-            _current_packet_id  =   0;
+            _ready              = 1;
+            _current_packet_id  = 0;
 
             if (data_enable) begin
-                _state              =   S_CAPTURE_FRAGMENTS;
-                _current_packet_id  =   fragment_id;
-                _buffer_data        =   {1'b1,data};
-                _buffer_data_valid  =   1;
+                _state              = S_CAPTURE_FRAGMENTS;
+                _current_packet_id  = fragment_id;
+                _buffer_data        = {1'b1,data};
+                _buffer_data_valid  = 1;
             end
         end
         S_CAPTURE_FRAGMENTS:  begin
             if (data_enable) begin
-                _buffer_data        =   {1'b0,data};
-                _buffer_data_valid  =   1;
+                _buffer_data        = {1'b0,data};
+                _buffer_data_valid  = 1;
             end
             if (data_last) begin
-                _state  =   S_DRAIN_SLOT;
+                _state  = S_DRAIN_SLOT;
             end
         end
         S_DRAIN_SLOT: begin
-            _data_ready =   1;
+            _data_ready = 1;
 
             if (fragment_fifo_empty) begin
-                _state  =   S_IDLE;
+                _state  = S_IDLE;
             end
         end
     endcase
 end
 
-always_ff @(posedge clock or negedge reset_n) begin
+always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                       <= S_IDLE;
         ready                       <=  0;
