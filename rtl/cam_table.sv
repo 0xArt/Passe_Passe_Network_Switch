@@ -92,6 +92,7 @@ integer                                 j;
 
 
 always_comb begin
+    _state                  = state;
     _cached_index_write     = index;
     _cached_key_write       = key_write;
     _write_enable_delayed   = write_enable;
