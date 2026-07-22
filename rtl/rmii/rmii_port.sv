@@ -48,7 +48,10 @@ module rmii_port#(
     input   wire    [1:0]                                   rmii_receive_data,
     input   wire                                            rmii_receive_data_enable,
     input   wire                                            rmii_receive_data_error,
-    input   wire    [8:0]                                   transmit_data,
+    input   wire    [(FABRIC_DATA_BYTES*8)-1:0]             transmit_data,
+    input   wire                                            transmit_data_first,
+    input   wire                                            transmit_data_last,
+    input   wire    [$clog2(FABRIC_DATA_BYTES+1)-1:0]       transmit_data_byte_count,
     input   wire                                            transmit_data_enable,
     input   wire                                            receive_data_enable,
 
@@ -378,18 +381,18 @@ wire            inbound_fifo_read_clock;
 wire            inbound_fifo_read_reset_n;
 wire            inbound_fifo_write_clock;
 wire            inbound_fifo_write_reset_n;
-wire            inbound_fifo_read_enable;
-wire            inbound_fifo_write_enable;
-wire    [8:0]   inbound_fifo_write_data;
+wire                                inbound_fifo_read_enable;
+wire                                inbound_fifo_write_enable;
+wire    [INGRESS_BUNDLE_WIDTH-1:0]  inbound_fifo_write_data;
 
-wire    [8:0]   inbound_fifo_read_data;
+wire    [INGRESS_BUNDLE_WIDTH-1:0]  inbound_fifo_read_data;
 wire            inbound_fifo_read_data_valid;
 wire            inbound_fifo_full;
 wire            inbound_fifo_empty;
 
 asynchronous_fifo#(
-    .DATA_WIDTH                 (9),
-    .DATA_DEPTH                 (4096),
+    .DATA_WIDTH                 (INGRESS_BUNDLE_WIDTH),
+    .DATA_DEPTH                 (4096/FABRIC_DATA_BYTES),
     .FIRST_WORD_FALL_THROUGH    (1),
     .TECHNOLOGY                 (TECHNOLOGY)
 )
@@ -406,6 +409,32 @@ inbound_fifo(
     .read_data_valid    (inbound_fifo_read_data_valid),
     .full               (inbound_fifo_full),
     .empty              (inbound_fifo_empty)
+);
+
+
+//unpack beats back to bytes in the phy clock domain, which only ever
+//needs to keep up with the wire
+wire    [8:0]   egress_byte_data;
+wire            egress_byte_valid;
+wire            egress_byte_last;
+wire            egress_adapter_beat_ready;
+
+width_adapter_down #(
+    .FABRIC_DATA_BYTES  (FABRIC_DATA_BYTES)
+) egress_width_adapter (
+    .clock              (clock),
+    .reset_n            (reset_n),
+    .beat_data          (inbound_fifo_read_data[(FABRIC_DATA_BYTES*8)-1:0]),
+    .beat_first         (inbound_fifo_read_data[INGRESS_BUNDLE_WIDTH-2]),
+    .beat_last          (inbound_fifo_read_data[INGRESS_BUNDLE_WIDTH-1]),
+    .beat_byte_count    (inbound_fifo_read_data[(FABRIC_DATA_BYTES*8) +: FABRIC_BYTE_COUNT_WIDTH]),
+    .beat_valid         (inbound_fifo_read_data_valid),
+    .byte_data_ready    (rmii_byte_shipper_data_ready),
+
+    .beat_ready         (egress_adapter_beat_ready),
+    .byte_data          (egress_byte_data),
+    .byte_data_valid    (egress_byte_valid),
+    .byte_data_last     (egress_byte_last)
 );
 
 
@@ -498,14 +527,14 @@ assign inbound_fifo_read_clock                                  = clock;
 assign inbound_fifo_read_reset_n                                = reset_n;
 assign inbound_fifo_write_clock                                 = core_clock;
 assign inbound_fifo_write_reset_n                               = core_reset_n;
-assign inbound_fifo_read_enable                                 = rmii_byte_shipper_data_ready;
+assign inbound_fifo_read_enable                                 = egress_adapter_beat_ready;
 assign inbound_fifo_write_enable                                = transmit_data_enable;
-assign inbound_fifo_write_data                                  = transmit_data;
+assign inbound_fifo_write_data                                  = {transmit_data_last, transmit_data_first, transmit_data_byte_count, transmit_data};
 
 assign rmii_byte_shipper_clock                                  = clock;
 assign rmii_byte_shipper_reset_n                                = reset_n;
-assign rmii_byte_shipper_data                                   = inbound_fifo_read_data;
-assign rmii_byte_shipper_data_enable                            = inbound_fifo_read_data_valid;
+assign rmii_byte_shipper_data                                   = egress_byte_data;
+assign rmii_byte_shipper_data_enable                            = egress_byte_valid;
 assign rmii_byte_shipper_speed_code                             = rmii_byte_packager_speed_code;
 
 
