@@ -5,13 +5,17 @@
 //              artinisagholian@gmail.com
 //              www.circuitden.com
 //
-// Create Date: 04/27/2023
+// Create Date: 04/29/2023
 // Design Name:
 // Module Name: queue_slot_receive_handler
 // Project Name:
 // Target Devices:
 // Tool Versions:
-// Description:
+// Description: replays completed frames from the queue slots toward the
+//              switching fabric in arrival order, one DATA_BYTES wide beat
+//              at a time. first/last delimiting travels with each stored
+//              beat, so the final beat of a frame is presented with
+//              push_data_last already asserted
 //
 // Dependencies:
 //
@@ -33,22 +37,28 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module queue_slot_receive_handler#(
-    parameter RECEIVE_QUEUE_SLOTS = 4,
-    parameter TECHNOLOGY        = "SIMULATION"
+    parameter RECEIVE_QUEUE_SLOTS   = 4,
+    parameter TECHNOLOGY            = "SIMULATION",
+    parameter DATA_BYTES            = 1
 )(
-    input   wire                                    clock,
-    input   wire                                    reset_n,
-    input   wire                                    enable,
-    input   wire    [RECEIVE_QUEUE_SLOTS-1:0][7:0]    data,
-    input   wire    [RECEIVE_QUEUE_SLOTS-1:0]         data_enable,
-    input   wire    [RECEIVE_QUEUE_SLOTS-1:0]         push_enable,
-    input   wire    [7:0]                           next_queue_slot,
-    input   wire                                    next_queue_slot_enable,
+    input   wire                                                            clock,
+    input   wire                                                            reset_n,
+    input   wire                                                            enable,
+    input   wire    [RECEIVE_QUEUE_SLOTS-1:0][(DATA_BYTES*8)-1:0]           data,
+    input   wire    [RECEIVE_QUEUE_SLOTS-1:0]                               data_first,
+    input   wire    [RECEIVE_QUEUE_SLOTS-1:0]                               data_last,
+    input   wire    [RECEIVE_QUEUE_SLOTS-1:0][$clog2(DATA_BYTES+1)-1:0]     data_byte_count,
+    input   wire    [RECEIVE_QUEUE_SLOTS-1:0]                               data_enable,
+    input   wire    [RECEIVE_QUEUE_SLOTS-1:0]                               push_enable,
+    input   wire    [7:0]                                                   next_queue_slot,
+    input   wire                                                            next_queue_slot_enable,
 
-    output  logic   [RECEIVE_QUEUE_SLOTS-1:0]         data_ready,
-    output  logic   [8:0]                           push_data,
-    output  logic                                   push_data_valid,
-    output  logic                                   push_data_last
+    output  logic   [RECEIVE_QUEUE_SLOTS-1:0]                               data_ready,
+    output  logic   [(DATA_BYTES*8)-1:0]                                    push_data,
+    output  logic                                                           push_data_first,
+    output  logic                                                           push_data_valid,
+    output  logic                                                           push_data_last,
+    output  logic   [$clog2(DATA_BYTES+1)-1:0]                              push_data_byte_count
 );
 
 
@@ -64,13 +74,11 @@ wire                                    next_queue_slot_fifo_read_data_valid;
 wire                                    next_queue_slot_fifo_full;
 wire                                    next_queue_slot_fifo_empty;
 
-localparam QUEUE_SLOT_FIFO_DEPTH = (RECEIVE_QUEUE_SLOTS < 16) ? 16 : RECEIVE_QUEUE_SLOTS;
-
 synchronous_fifo
 #(.DATA_WIDTH               (8),
   .DATA_DEPTH               (64),
   .FIRST_WORD_FALL_THROUGH  (1),
-  .TECHNOLOGY               (TECHNOLOGY)                
+  .TECHNOLOGY               (TECHNOLOGY)
 ) next_queue_slot_fifo(
     .clock              (next_queue_slot_fifo_clock),
     .reset_n            (next_queue_slot_fifo_reset_n),
@@ -92,14 +100,8 @@ typedef enum
 
 state_type                                  _state;
 state_type                                  state;
-logic   [$clog2(RECEIVE_QUEUE_SLOTS):0]       _receive_slot_select;
-reg     [$clog2(RECEIVE_QUEUE_SLOTS):0]       receive_slot_select;
-reg                                         first_byte;
-logic                                       _first_byte;
-reg     [8:0]                               held_data;
-logic   [8:0]                               _held_data;
-reg                                         held_valid;
-logic                                       _held_valid;
+logic   [$clog2(RECEIVE_QUEUE_SLOTS):0]     _receive_slot_select;
+reg     [$clog2(RECEIVE_QUEUE_SLOTS):0]     receive_slot_select;
 
 assign  next_queue_slot_fifo_clock        = clock;
 assign  next_queue_slot_fifo_reset_n      = reset_n;
@@ -109,45 +111,32 @@ assign  next_queue_slot_fifo_write_data   = next_queue_slot;
 always_comb begin
     _state                              = state;
     _receive_slot_select                = receive_slot_select;
-    _first_byte                         = first_byte;
-    _held_data                          = held_data;
-    _held_valid                         = held_valid;
-    push_data                           = held_data;
-    push_data_valid                     = held_valid;
-    push_data_last                      = 0;
+    push_data                           = data[receive_slot_select];
+    push_data_first                     = data_first[receive_slot_select];
+    push_data_last                      = data_last[receive_slot_select];
+    push_data_byte_count                = data_byte_count[receive_slot_select];
+    push_data_valid                     = 0;
     next_queue_slot_fifo_read_enable    = 0;
     data_ready                          = 0;
 
     case (state)
         S_IDLE: begin
-            _first_byte = 1;
-
             if (next_queue_slot_fifo_read_data_valid) begin
-                _receive_slot_select            = next_queue_slot_fifo_read_data;
-                next_queue_slot_fifo_read_enable  = 1;
-                _state                          = S_PUSH_DATA;
+                _receive_slot_select                = next_queue_slot_fifo_read_data;
+                next_queue_slot_fifo_read_enable    = 1;
+                _state                              = S_PUSH_DATA;
             end
         end
         S_PUSH_DATA: begin
-            //the held register gives one byte of lookahead so the final byte
-            //of a frame is presented with push_data_last already asserted.
-            //the queue slot drains without gaps, so an empty slot while a
-            //byte is held means the held byte is the final one
-            push_data_last  = held_valid && !data_enable[receive_slot_select];
+            push_data_valid = data_enable[receive_slot_select];
 
-            if (data_enable[receive_slot_select] && (!held_valid || enable)) begin
-                data_ready          = 1 << receive_slot_select;
-                _held_data[7:0]     = data[receive_slot_select];
-                _held_data[8]       = first_byte;
-                _held_valid         = 1;
-                _first_byte         = 0;
-            end
-            else if (held_valid && enable) begin
-                _held_valid = 0;
-            end
+            if (enable && data_enable[receive_slot_select]) begin
+                data_ready  = 1 << receive_slot_select;
 
-            if (!held_valid && !data_enable[receive_slot_select]) begin
-                _state  = S_IDLE;
+                //last travels with the stored beat, frame hand off is done
+                if (data_last[receive_slot_select]) begin
+                    _state  = S_IDLE;
+                end
             end
         end
     endcase
@@ -157,16 +146,10 @@ always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                       <= S_IDLE;
         receive_slot_select         <= '0;
-        first_byte                  <= '0;
-        held_data                   <= '0;
-        held_valid                  <= '0;
     end
     else begin
         state                       <= _state;
         receive_slot_select         <= _receive_slot_select;
-        first_byte                  <= _first_byte;
-        held_data                   <= _held_data;
-        held_valid                  <= _held_valid;
     end
 end
 

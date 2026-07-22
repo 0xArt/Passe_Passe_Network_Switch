@@ -43,12 +43,12 @@
 `include "./case_008/case_008.svh"
 
 module testbench#(
-    parameter FABRIC_DATA_BYTES = 1     //override with vsim -G to test wider fabric beats
+    parameter FABRIC_DATA_BYTES     = 1,            //override with vsim -G to test wider fabric beats
+    parameter CORE_CLOCK_FREQUENCY  = 250_000_000   //override with vsim -G to test reduced core clocks
 );
 
 localparam  RMII_CLOCK_FREQUENCY        = 50_000_000;
 localparam  RMII_CLOCK_PERIOD           = 1e9/RMII_CLOCK_FREQUENCY;
-localparam  CORE_CLOCK_FREQUENCY        = 250_000_000;
 localparam  CORE_CLOCK_PERIOD           = 1e9/CORE_CLOCK_FREQUENCY;
 localparam  MODULE_CLOCK_FREQUENCY      = 50_000_000;
 localparam  MODULE_CLOCK_PERIOD         = 1e9/MODULE_CLOCK_FREQUENCY;

@@ -88,18 +88,21 @@ wire    [NUMBER_OF_RMII_PORTS-1:0][8:0]     rmii_port_transmit_data;
 wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_port_transmit_data_enable;
 wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_port_receive_data_enable;
 
-wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_port_transmit_data_ready;
-wire    [NUMBER_OF_RMII_PORTS-1:0][8:0]     rmii_port_receive_data;
-wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_port_receive_data_valid;
-wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_port_receive_data_last;
-wire    [NUMBER_OF_RMII_PORTS-1:0][1:0]     rmii_port_rmii_transmit_data;
-wire    [NUMBER_OF_RMII_PORTS-1:0]          rmii_port_rmii_transmit_data_valid;
+wire    [NUMBER_OF_RMII_PORTS-1:0]                                      rmii_port_transmit_data_ready;
+wire    [NUMBER_OF_RMII_PORTS-1:0][(FABRIC_DATA_BYTES*8)-1:0]           rmii_port_receive_data;
+wire    [NUMBER_OF_RMII_PORTS-1:0]                                      rmii_port_receive_data_first;
+wire    [NUMBER_OF_RMII_PORTS-1:0]                                      rmii_port_receive_data_valid;
+wire    [NUMBER_OF_RMII_PORTS-1:0]                                      rmii_port_receive_data_last;
+wire    [NUMBER_OF_RMII_PORTS-1:0][$clog2(FABRIC_DATA_BYTES+1)-1:0]     rmii_port_receive_data_byte_count;
+wire    [NUMBER_OF_RMII_PORTS-1:0][1:0]                                 rmii_port_rmii_transmit_data;
+wire    [NUMBER_OF_RMII_PORTS-1:0]                                      rmii_port_rmii_transmit_data_valid;
 
 generate
     for (i=0; i<NUMBER_OF_RMII_PORTS; i =i+1) begin
         rmii_port #(
             .RECEIVE_QUEUE_SLOTS  (RECEIVE_QUEUE_SLOTS),
-            .TECHNOLOGY         (TECHNOLOGY)
+            .TECHNOLOGY         (TECHNOLOGY),
+            .FABRIC_DATA_BYTES  (FABRIC_DATA_BYTES)
         )rmii_port(
             .clock                          (rmii_port_clock[i]),
             .core_clock                     (rmii_port_core_clock[i]),
@@ -114,8 +117,10 @@ generate
 
             .transmit_data_ready            (rmii_port_transmit_data_ready[i]),
             .receive_data                   (rmii_port_receive_data[i]),
+            .receive_data_first             (rmii_port_receive_data_first[i]),
             .receive_data_valid             (rmii_port_receive_data_valid[i]),
             .receive_data_last              (rmii_port_receive_data_last[i]),
+            .receive_data_byte_count        (rmii_port_receive_data_byte_count[i]),
             .rmii_transmit_data             (rmii_port_rmii_transmit_data[i]),
             .rmii_transmit_data_valid       (rmii_port_rmii_transmit_data_valid[i])
         );
@@ -183,10 +188,12 @@ wire    [NUMBER_OF_RGMII_PORTS-1:0][8:0]    rgmii_port_transmit_data;
 wire    [NUMBER_OF_RGMII_PORTS-1:0]         rgmii_port_transmit_data_enable;
 wire    [NUMBER_OF_RGMII_PORTS-1:0]         rgmii_port_transmit_clock;
 
-wire    [NUMBER_OF_RGMII_PORTS-1:0]         rgmii_port_transmit_data_ready;
-wire    [NUMBER_OF_RGMII_PORTS-1:0][8:0]    rgmii_port_receive_data;
-wire    [NUMBER_OF_RGMII_PORTS-1:0]         rgmii_port_receive_data_valid;
-wire    [NUMBER_OF_RGMII_PORTS-1:0]         rgmii_port_receive_data_last;
+wire    [NUMBER_OF_RGMII_PORTS-1:0]                                     rgmii_port_transmit_data_ready;
+wire    [NUMBER_OF_RGMII_PORTS-1:0][(FABRIC_DATA_BYTES*8)-1:0]          rgmii_port_receive_data;
+wire    [NUMBER_OF_RGMII_PORTS-1:0]                                     rgmii_port_receive_data_first;
+wire    [NUMBER_OF_RGMII_PORTS-1:0]                                     rgmii_port_receive_data_valid;
+wire    [NUMBER_OF_RGMII_PORTS-1:0]                                     rgmii_port_receive_data_last;
+wire    [NUMBER_OF_RGMII_PORTS-1:0][$clog2(FABRIC_DATA_BYTES+1)-1:0]    rgmii_port_receive_data_byte_count;
 wire    [NUMBER_OF_RGMII_PORTS-1:0]         rgmii_port_phy_transmit_clock;
 wire    [NUMBER_OF_RGMII_PORTS-1:0][3:0]    rgmii_port_phy_transmit_data;
 wire    [NUMBER_OF_RGMII_PORTS-1:0]         rgmii_port_phy_transmit_data_valid;
@@ -198,7 +205,8 @@ generate
         rgmii_port #(
             .RECEIVE_QUEUE_SLOTS              (RECEIVE_QUEUE_SLOTS),
             .TECHNOLOGY                     (TECHNOLOGY),
-            .PHASE_SHIFT_TX_CLOCK_ENABLE    (PHASE_SHIFT_TX_CLOCK_ENABLE)
+            .PHASE_SHIFT_TX_CLOCK_ENABLE    (PHASE_SHIFT_TX_CLOCK_ENABLE),
+            .FABRIC_DATA_BYTES              (FABRIC_DATA_BYTES)
         )rgmii_port(
             .core_clock                         (rgmii_port_core_clock[i]),
             .core_reset_n                       (rgmii_port_core_reset_n[i]),
@@ -214,8 +222,10 @@ generate
 
             .transmit_data_ready                (rgmii_port_transmit_data_ready[i]),
             .receive_data                       (rgmii_port_receive_data[i]),
+            .receive_data_first                 (rgmii_port_receive_data_first[i]),
             .receive_data_valid                 (rgmii_port_receive_data_valid[i]),
             .receive_data_last                  (rgmii_port_receive_data_last[i]),
+            .receive_data_byte_count            (rgmii_port_receive_data_byte_count[i]),
             .phy_transmit_clock                 (rgmii_port_phy_transmit_clock[i]),
             .phy_transmit_data                  (rgmii_port_phy_transmit_data[i]),
             .phy_transmit_data_valid            (rgmii_port_phy_transmit_data_valid[i]),
@@ -231,11 +241,9 @@ endgenerate
 //FABRIC_DATA_BYTES wide fabric beats and elaborate to wires at one byte
 localparam FABRIC_BYTE_COUNT_WIDTH = $clog2(FABRIC_DATA_BYTES+1);
 
-//port byte streams into and out of the fabric (bit 8 of data = first)
-wire    [NUMBER_OF_PORTS-1:0][8:0]                  fabric_in_data;
-wire    [NUMBER_OF_PORTS-1:0]                       fabric_in_last;
-wire    [NUMBER_OF_PORTS-1:0]                       fabric_in_valid;
-wire    [NUMBER_OF_PORTS-1:0]                       fabric_in_ready;
+//port byte streams out of the fabric (bit 8 of data = first). phy ports
+//produce beats natively on ingress; only virtual ports enter through a
+//width adapter
 wire    [NUMBER_OF_PORTS-1:0]                       port_transmit_ready;
 wire    [NUMBER_OF_PORTS-1:0][8:0]                  egress_byte_data;
 wire    [NUMBER_OF_PORTS-1:0]                       egress_byte_valid;
@@ -275,24 +283,6 @@ wire    [NUMBER_OF_PORTS-1:0]                                   scheduler_transm
 
 generate
     for (i=0; i<NUMBER_OF_PORTS; i=i+1) begin : fabric_width_adapters
-        width_adapter_up #(
-            .FABRIC_DATA_BYTES  (FABRIC_DATA_BYTES)
-        ) width_adapter_up (
-            .clock              (clock),
-            .reset_n            (reset_n),
-            .byte_data          (fabric_in_data[i]),
-            .byte_data_valid    (fabric_in_valid[i]),
-            .byte_data_last     (fabric_in_last[i]),
-            .beat_ready         (fabric_beat_in_ready[i]),
-
-            .byte_data_ready    (fabric_in_ready[i]),
-            .beat_data          (fabric_beat_in_data[i]),
-            .beat_first         (fabric_beat_in_first[i]),
-            .beat_last          (fabric_beat_in_last[i]),
-            .beat_byte_count    (fabric_beat_in_byte_count[i]),
-            .beat_valid         (fabric_beat_in_valid[i])
-        );
-
         width_adapter_down #(
             .FABRIC_DATA_BYTES  (FABRIC_DATA_BYTES)
         ) width_adapter_down (
@@ -456,23 +446,46 @@ generate
         assign rmii_port_rmii_receive_data_error[i]                 = rmii_phy_receive_data_error[i];
         assign rmii_phy_transmit_data[i]                            = rmii_port_rmii_transmit_data[i];
         assign rmii_phy_transmit_data_valid[i]                       = rmii_port_rmii_transmit_data_valid[i];
-        assign rmii_port_receive_data_enable[i]                     = fabric_in_ready[i];
+        assign rmii_port_receive_data_enable[i]                     = fabric_beat_in_ready[i];
         assign rmii_port_transmit_data_enable[i]                    = egress_byte_valid[i] && port_transmit_ready[i];
         assign rmii_port_transmit_data[i]                           = egress_byte_data[i];
-        assign fabric_in_valid[i]                                   = rmii_port_receive_data_valid[i];
-        assign fabric_in_data[i]                                    = rmii_port_receive_data[i];
-        assign fabric_in_last[i]                                    = rmii_port_receive_data_last[i];
+        assign fabric_beat_in_valid[i]                              = rmii_port_receive_data_valid[i];
+        assign fabric_beat_in_data[i]                               = rmii_port_receive_data[i];
+        assign fabric_beat_in_first[i]                              = rmii_port_receive_data_first[i];
+        assign fabric_beat_in_last[i]                               = rmii_port_receive_data_last[i];
+        assign fabric_beat_in_byte_count[i]                         = rmii_port_receive_data_byte_count[i];
         assign port_transmit_ready[i]                               = rmii_port_transmit_data_ready[i];
     end
 endgenerate
 
 generate
+    for (i=0; i<NUMBER_OF_VIRTUAL_PORTS; i=i+1) begin : virtual_port_ingress_adapters
+        //the virtual port stays byte serial, so it enters the fabric
+        //through a width adapter (wires at one byte per beat)
+        width_adapter_up #(
+            .FABRIC_DATA_BYTES  (FABRIC_DATA_BYTES)
+        ) width_adapter_up (
+            .clock              (clock),
+            .reset_n            (reset_n),
+            .byte_data          (virtual_port_udp_transmit_data[i]),
+            .byte_data_valid    (virtual_port_udp_transmit_data_valid[i]),
+            .byte_data_last     (virtual_port_udp_transmit_data_last[i]),
+            .beat_ready         (fabric_beat_in_ready[i+NUMBER_OF_RMII_PORTS]),
+
+            .byte_data_ready    (virtual_port_udp_transmit_data_enable[i]),
+            .beat_data          (fabric_beat_in_data[i+NUMBER_OF_RMII_PORTS]),
+            .beat_first         (fabric_beat_in_first[i+NUMBER_OF_RMII_PORTS]),
+            .beat_last          (fabric_beat_in_last[i+NUMBER_OF_RMII_PORTS]),
+            .beat_byte_count    (fabric_beat_in_byte_count[i+NUMBER_OF_RMII_PORTS]),
+            .beat_valid         (fabric_beat_in_valid[i+NUMBER_OF_RMII_PORTS])
+        );
+    end
+
     for (i=0; i<NUMBER_OF_VIRTUAL_PORTS; i=i+1) begin
         assign  virtual_port_udp_clock[i]                                                   = clock;
         assign  virtual_port_udp_reset_n[i]                                                 = reset_n;
         assign  virtual_port_udp_receive_data[i]                                            = egress_byte_data[i+NUMBER_OF_RMII_PORTS];
         assign  virtual_port_udp_receive_data_enable[i]                                     = egress_byte_valid[i+NUMBER_OF_RMII_PORTS] && port_transmit_ready[i+NUMBER_OF_RMII_PORTS];
-        assign  virtual_port_udp_transmit_data_enable[i]                                    = fabric_in_ready[i+NUMBER_OF_RMII_PORTS];
         assign  virtual_port_udp_module_clock[i]                                            = module_clock[i];
         assign  virtual_port_udp_module_transmit_data[i]                                    = module_transmit_data[i];
         assign  virtual_port_udp_module_transmit_data_enable[i]                             = module_transmit_data_enable[i];
@@ -481,9 +494,6 @@ generate
 
         assign  module_receive_data[i]                                                      = virtual_port_udp_module_receive_data[i];
         assign  module_receive_data_valid[i]                                                = virtual_port_udp_module_receive_data_valid[i];
-        assign  fabric_in_valid[i+NUMBER_OF_RMII_PORTS]                                     = virtual_port_udp_transmit_data_valid[i];
-        assign  fabric_in_data[i+NUMBER_OF_RMII_PORTS]                                      = virtual_port_udp_transmit_data[i];
-        assign  fabric_in_last[i+NUMBER_OF_RMII_PORTS]                                      = virtual_port_udp_transmit_data_last[i];
         assign  port_transmit_ready[i+NUMBER_OF_RMII_PORTS]                                 = virtual_port_udp_receive_data_ready[i];
         assign  module_transmit_data_ready[i]                                               = virtual_port_udp_module_transmit_data_ready[i];
     end
@@ -498,7 +508,7 @@ generate
         assign  rgmii_port_phy_receive_data[i]                                                                      = rgmii_phy_receive_data[i];
         assign  rgmii_port_phy_receive_data_control[i]                                                              = rgmii_phy_receive_data_control[i];
         assign  rgmii_port_phy_receive_clock[i]                                                                     = rgmii_phy_receive_clock[i];
-        assign  rgmii_port_receive_data_enable[i]                                                                   = fabric_in_ready[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS];
+        assign  rgmii_port_receive_data_enable[i]                                                                   = fabric_beat_in_ready[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS];
         assign  rgmii_port_transmit_clock[i]                                                                        = rgmii_transmit_clock[i];
 
         assign  rgmii_phy_transmit_data[i]                                                                          = rgmii_port_phy_transmit_data[i];
@@ -508,9 +518,11 @@ generate
 
         assign  rgmii_port_transmit_data_enable[i]                                                                  = egress_byte_valid[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS] && port_transmit_ready[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS];
         assign  rgmii_port_transmit_data[i]                                                                         = egress_byte_data[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS];
-        assign  fabric_in_valid[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                     = rgmii_port_receive_data_valid[i];
-        assign  fabric_in_data[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                      = rgmii_port_receive_data[i];
-        assign  fabric_in_last[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                      = rgmii_port_receive_data_last[i];
+        assign  fabric_beat_in_valid[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                = rgmii_port_receive_data_valid[i];
+        assign  fabric_beat_in_data[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                 = rgmii_port_receive_data[i];
+        assign  fabric_beat_in_first[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                = rgmii_port_receive_data_first[i];
+        assign  fabric_beat_in_last[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                 = rgmii_port_receive_data_last[i];
+        assign  fabric_beat_in_byte_count[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                           = rgmii_port_receive_data_byte_count[i];
         assign  port_transmit_ready[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                 = rgmii_port_transmit_data_ready[i];
 
     end
