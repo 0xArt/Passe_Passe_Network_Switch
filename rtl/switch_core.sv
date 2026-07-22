@@ -158,8 +158,8 @@ generate
             .module_transmit_data               (virtual_port_udp_module_transmit_data[i]),
             .module_transmit_data_enable        (virtual_port_udp_module_transmit_data_enable[i]),
 
-            .module_receive_data                (virtual_port_udp_module_receive_data),
-            .module_receive_data_valid          (virtual_port_udp_module_receive_data_valid),
+            .module_receive_data                (virtual_port_udp_module_receive_data[i]),
+            .module_receive_data_valid          (virtual_port_udp_module_receive_data_valid[i]),
             .receive_data_ready                 (virtual_port_udp_receive_data_ready[i]),
             .transmit_data                      (virtual_port_udp_transmit_data[i]),
             .transmit_data_valid                (virtual_port_udp_transmit_data_valid[i]),
@@ -224,54 +224,111 @@ generate
 endgenerate
 
 
-wire                                    core_data_orchestrator_clock;
-wire                                    core_data_orchestrator_reset_n;
-wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_receive_data_enable;
-wire    [NUMBER_OF_PORTS-1:0][8:0]      core_data_orchestrator_port_receive_data;
-wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_receive_data_last;
-wire    [$clog2(NUMBER_OF_PORTS)-1:0]   core_data_orchestrator_cam_table_match_index;
-wire                                    core_data_orchestrator_cam_table_no_match;
-wire                                    core_data_orchestrator_cam_table_match_enable;
-wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_transmit_data_enable;
+//output queued fabric. one header engine per
+//ingress port, one scheduler per egress port, one shared cam behind the
+//arbiter. fixed at one byte per beat until the width adapters are added
+localparam FABRIC_DATA_BYTES = 1;
 
-wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_receive_data_ready;
-wire    [8:0]                           core_data_orchestrator_port_transmit_data;
-wire    [NUMBER_OF_PORTS-1:0]           core_data_orchestrator_port_transmit_data_valid;
-wire    [47:0]                          core_data_orchestrator_cam_table_key_write;
-wire                                    core_data_orchestrator_cam_table_key_write_valid;
-wire    [47:0]                          core_data_orchestrator_cam_table_key_delete;
-wire                                    core_data_orchestrator_cam_table_key_delete_valid;
-wire    [47:0]                          core_data_orchestrator_cam_table_key_match;
-wire                                    core_data_orchestrator_cam_table_key_match_valid;
-wire    [$clog2(NUMBER_OF_PORTS)-1:0]   core_data_orchestrator_cam_table_index;
+//ingress beat streams into the header engines (bit 8 of data = first)
+wire    [NUMBER_OF_PORTS-1:0][8:0]                  fabric_in_data;
+wire    [NUMBER_OF_PORTS-1:0]                       fabric_in_last;
+wire    [NUMBER_OF_PORTS-1:0]                       fabric_in_valid;
+wire    [NUMBER_OF_PORTS-1:0]                       fabric_in_ready;
+wire    [NUMBER_OF_PORTS-1:0]                       port_transmit_ready;
 
-core_data_orchestrator
-#(  .NUMBER_OF_PORTS    (NUMBER_OF_PORTS),
-    .TABLE_DEPTH        (CAM_TABLE_DEPTH)
-)
-core_data_orchestrator(
-    .clock                      (core_data_orchestrator_clock),
-    .reset_n                    (core_data_orchestrator_reset_n),
-    .port_receive_data_enable   (core_data_orchestrator_port_receive_data_enable),
-    .port_receive_data          (core_data_orchestrator_port_receive_data),
-    .port_receive_data_last     (core_data_orchestrator_port_receive_data_last),
-    .cam_table_match_index      (core_data_orchestrator_cam_table_match_index),
-    .cam_table_no_match         (core_data_orchestrator_cam_table_no_match),
-    .cam_table_match_enable     (core_data_orchestrator_cam_table_match_enable),
-    .port_transmit_data_enable  (core_data_orchestrator_port_transmit_data_enable),
+wire    [NUMBER_OF_PORTS-1:0][NUMBER_OF_PORTS-1:0]  engine_port_request;    //[ingress][egress]
+wire    [NUMBER_OF_PORTS-1:0][7:0]                  engine_out_data;
+wire    [NUMBER_OF_PORTS-1:0]                       engine_out_first;
+wire    [NUMBER_OF_PORTS-1:0]                       engine_out_last;
+wire    [NUMBER_OF_PORTS-1:0][0:0]                  engine_out_byte_count;
+wire    [NUMBER_OF_PORTS-1:0]                       engine_out_valid;
+wire    [NUMBER_OF_PORTS-1:0]                       engine_match_request;
+wire    [NUMBER_OF_PORTS-1:0][47:0]                 engine_match_key;
+wire    [NUMBER_OF_PORTS-1:0]                       engine_learn_request;
+wire    [NUMBER_OF_PORTS-1:0][47:0]                 engine_learn_key;
+wire    [NUMBER_OF_PORTS-1:0]                       engine_match_ack;
+wire    [NUMBER_OF_PORTS-1:0]                       engine_match_response_valid;
+wire    [$clog2(NUMBER_OF_PORTS)-1:0]               engine_match_response_index;
+wire                                                engine_match_response_no_match;
+wire    [NUMBER_OF_PORTS-1:0]                       engine_learn_ack;
 
-    .port_receive_data_ready    (core_data_orchestrator_port_receive_data_ready),
-    .port_transmit_data         (core_data_orchestrator_port_transmit_data),
-    .port_transmit_data_valid   (core_data_orchestrator_port_transmit_data_valid),
-    .cam_table_index            (core_data_orchestrator_cam_table_index),
-    .cam_table_key_write        (core_data_orchestrator_cam_table_key_write),
-    .cam_table_key_write_valid  (core_data_orchestrator_cam_table_key_write_valid),
-    .cam_table_key_delete       (core_data_orchestrator_cam_table_key_delete),
-    .cam_table_key_delete_valid (core_data_orchestrator_cam_table_key_delete_valid),
-    .cam_table_key_match        (core_data_orchestrator_cam_table_key_match),
-    .cam_table_key_match_valid  (core_data_orchestrator_cam_table_key_match_valid)
-);
+wire    [NUMBER_OF_PORTS-1:0][NUMBER_OF_PORTS-1:0]  scheduler_grant;        //[egress][ingress]
+wire    [NUMBER_OF_PORTS-1:0][7:0]                  scheduler_transmit_data;
+wire    [NUMBER_OF_PORTS-1:0]                       scheduler_transmit_first;
+wire    [NUMBER_OF_PORTS-1:0]                       scheduler_transmit_last;
+wire    [NUMBER_OF_PORTS-1:0][0:0]                  scheduler_transmit_byte_count;
+wire    [NUMBER_OF_PORTS-1:0]                       scheduler_transmit_valid;
 
+generate
+    for (i=0; i<NUMBER_OF_PORTS; i=i+1) begin : header_engines
+        wire [NUMBER_OF_PORTS-1:0] engine_grant;
+        for (genvar e=0; e<NUMBER_OF_PORTS; e=e+1) begin
+            assign engine_grant[e] = scheduler_grant[e][i];
+        end
+
+        port_header_engine #(
+            .NUMBER_OF_PORTS    (NUMBER_OF_PORTS),
+            .PORT_INDEX         (i),
+            .FABRIC_DATA_BYTES  (FABRIC_DATA_BYTES)
+        ) port_header_engine (
+            .clock                      (clock),
+            .reset_n                    (reset_n),
+            .in_data                    (fabric_in_data[i][7:0]),
+            .in_first                   (fabric_in_data[i][8]),
+            .in_last                    (fabric_in_last[i]),
+            .in_byte_count              (1'b1),
+            .in_valid                   (fabric_in_valid[i]),
+            .match_ack                  (engine_match_ack[i]),
+            .match_response_valid       (engine_match_response_valid[i]),
+            .match_response_index       (engine_match_response_index),
+            .match_response_no_match    (engine_match_response_no_match),
+            .learn_ack                  (engine_learn_ack[i]),
+            .port_grant                 (engine_grant),
+            .egress_ready               (port_transmit_ready),
+
+            .in_ready                   (fabric_in_ready[i]),
+            .match_request              (engine_match_request[i]),
+            .match_key                  (engine_match_key[i]),
+            .learn_request              (engine_learn_request[i]),
+            .learn_key                  (engine_learn_key[i]),
+            .port_request               (engine_port_request[i]),
+            .out_data                   (engine_out_data[i]),
+            .out_first                  (engine_out_first[i]),
+            .out_last                   (engine_out_last[i]),
+            .out_byte_count             (engine_out_byte_count[i]),
+            .out_valid                  (engine_out_valid[i])
+        );
+    end
+
+    for (i=0; i<NUMBER_OF_PORTS; i=i+1) begin : egress_schedulers
+        wire [NUMBER_OF_PORTS-1:0] egress_request;
+        for (genvar e=0; e<NUMBER_OF_PORTS; e=e+1) begin
+            assign egress_request[e] = engine_port_request[e][i];
+        end
+
+        egress_scheduler #(
+            .NUMBER_OF_PORTS    (NUMBER_OF_PORTS),
+            .FABRIC_DATA_BYTES  (FABRIC_DATA_BYTES)
+        ) egress_scheduler (
+            .clock                  (clock),
+            .reset_n                (reset_n),
+            .request                (egress_request),
+            .ingress_data           (engine_out_data),
+            .ingress_first          (engine_out_first),
+            .ingress_last           (engine_out_last),
+            .ingress_byte_count     (engine_out_byte_count),
+            .ingress_valid          (engine_out_valid),
+            .transmit_ready         (port_transmit_ready[i]),
+
+            .grant                  (scheduler_grant[i]),
+            .transmit_data          (scheduler_transmit_data[i]),
+            .transmit_first         (scheduler_transmit_first[i]),
+            .transmit_last          (scheduler_transmit_last[i]),
+            .transmit_byte_count    (scheduler_transmit_byte_count[i]),
+            .transmit_valid         (scheduler_transmit_valid[i])
+        );
+    end
+endgenerate
 
 wire                                    cam_table_clock;
 wire                                    cam_table_reset_n;
@@ -286,6 +343,34 @@ wire                                    cam_table_write_enable;
 wire    [$clog2(NUMBER_OF_PORTS)-1:0]   cam_table_match_index;
 wire                                    cam_table_match_valid;
 wire                                    cam_table_no_match;
+
+cam_access_arbiter #(
+    .NUMBER_OF_PORTS    (NUMBER_OF_PORTS)
+) cam_access_arbiter (
+    .clock                      (clock),
+    .reset_n                    (reset_n),
+    .match_request              (engine_match_request),
+    .match_key                  (engine_match_key),
+    .learn_request              (engine_learn_request),
+    .learn_key                  (engine_learn_key),
+    .cam_match_valid            (cam_table_match_valid),
+    .cam_match_index            (cam_table_match_index),
+    .cam_no_match               (cam_table_no_match),
+
+    .match_ack                  (engine_match_ack),
+    .match_response_valid       (engine_match_response_valid),
+    .match_response_index       (engine_match_response_index),
+    .match_response_no_match    (engine_match_response_no_match),
+    .learn_ack                  (engine_learn_ack),
+    .cam_key_match              (cam_table_key_match),
+    .cam_key_match_valid        (cam_table_match_enable),
+    .cam_key_delete             (cam_table_key_delete),
+    .cam_key_delete_valid       (cam_table_delete_enable),
+    .cam_key_write              (cam_table_key_write),
+    .cam_index                  (cam_table_index),
+    .cam_key_write_valid        (cam_table_write_enable)
+);
+
 
 cam_table
 #(.KEY_WIDTH    (48),
@@ -319,13 +404,13 @@ generate
         assign rmii_port_rmii_receive_data_error[i]                 = rmii_phy_receive_data_error[i];
         assign rmii_phy_transmit_data[i]                            = rmii_port_rmii_transmit_data[i];
         assign rmii_phy_transmit_data_valid[i]                       = rmii_port_rmii_transmit_data_valid[i];
-        assign rmii_port_receive_data_enable[i]                     = core_data_orchestrator_port_receive_data_ready[i];
-        assign rmii_port_transmit_data_enable[i]                    = core_data_orchestrator_port_transmit_data_valid[i];
-        assign rmii_port_transmit_data[i]                           = core_data_orchestrator_port_transmit_data;
-        assign core_data_orchestrator_port_receive_data_enable[i]   = rmii_port_receive_data_valid[i];
-        assign core_data_orchestrator_port_receive_data[i]          = rmii_port_receive_data[i];
-        assign core_data_orchestrator_port_receive_data_last[i]     = rmii_port_receive_data_last[i];
-        assign core_data_orchestrator_port_transmit_data_enable[i]  = rmii_port_transmit_data_ready[i];
+        assign rmii_port_receive_data_enable[i]                     = fabric_in_ready[i];
+        assign rmii_port_transmit_data_enable[i]                    = scheduler_transmit_valid[i];
+        assign rmii_port_transmit_data[i]                           = {scheduler_transmit_first[i], scheduler_transmit_data[i]};
+        assign fabric_in_valid[i]                                   = rmii_port_receive_data_valid[i];
+        assign fabric_in_data[i]                                    = rmii_port_receive_data[i];
+        assign fabric_in_last[i]                                    = rmii_port_receive_data_last[i];
+        assign port_transmit_ready[i]                               = rmii_port_transmit_data_ready[i];
     end
 endgenerate
 
@@ -333,9 +418,9 @@ generate
     for (i=0; i<NUMBER_OF_VIRTUAL_PORTS; i=i+1) begin
         assign  virtual_port_udp_clock[i]                                                   = clock;
         assign  virtual_port_udp_reset_n[i]                                                 = reset_n;
-        assign  virtual_port_udp_receive_data[i]                                            = core_data_orchestrator_port_transmit_data;
-        assign  virtual_port_udp_receive_data_enable[i]                                     = core_data_orchestrator_port_transmit_data_valid[i+NUMBER_OF_RMII_PORTS];
-        assign  virtual_port_udp_transmit_data_enable[i]                                    = core_data_orchestrator_port_receive_data_ready[i+NUMBER_OF_RMII_PORTS];
+        assign  virtual_port_udp_receive_data[i]                                            = {scheduler_transmit_first[i+NUMBER_OF_RMII_PORTS], scheduler_transmit_data[i+NUMBER_OF_RMII_PORTS]};
+        assign  virtual_port_udp_receive_data_enable[i]                                     = scheduler_transmit_valid[i+NUMBER_OF_RMII_PORTS];
+        assign  virtual_port_udp_transmit_data_enable[i]                                    = fabric_in_ready[i+NUMBER_OF_RMII_PORTS];
         assign  virtual_port_udp_module_clock[i]                                            = module_clock[i];
         assign  virtual_port_udp_module_transmit_data[i]                                    = module_transmit_data[i];
         assign  virtual_port_udp_module_transmit_data_enable[i]                             = module_transmit_data_enable[i];
@@ -344,10 +429,10 @@ generate
 
         assign  module_receive_data[i]                                                      = virtual_port_udp_module_receive_data[i];
         assign  module_receive_data_valid[i]                                                = virtual_port_udp_module_receive_data_valid[i];
-        assign  core_data_orchestrator_port_receive_data_enable[i+NUMBER_OF_RMII_PORTS]     = virtual_port_udp_transmit_data_valid[i];
-        assign  core_data_orchestrator_port_receive_data[i+NUMBER_OF_RMII_PORTS]            = virtual_port_udp_transmit_data[i];
-        assign  core_data_orchestrator_port_receive_data_last[i+NUMBER_OF_RMII_PORTS]       = virtual_port_udp_transmit_data_last[i];
-        assign  core_data_orchestrator_port_transmit_data_enable[i+NUMBER_OF_RMII_PORTS]    = virtual_port_udp_receive_data_ready[i];
+        assign  fabric_in_valid[i+NUMBER_OF_RMII_PORTS]                                     = virtual_port_udp_transmit_data_valid[i];
+        assign  fabric_in_data[i+NUMBER_OF_RMII_PORTS]                                      = virtual_port_udp_transmit_data[i];
+        assign  fabric_in_last[i+NUMBER_OF_RMII_PORTS]                                      = virtual_port_udp_transmit_data_last[i];
+        assign  port_transmit_ready[i+NUMBER_OF_RMII_PORTS]                                 = virtual_port_udp_receive_data_ready[i];
         assign  module_transmit_data_ready[i]                                               = virtual_port_udp_module_transmit_data_ready[i];
     end
 endgenerate
@@ -361,7 +446,7 @@ generate
         assign  rgmii_port_phy_receive_data[i]                                                                      = rgmii_phy_receive_data[i];
         assign  rgmii_port_phy_receive_data_control[i]                                                              = rgmii_phy_receive_data_control[i];
         assign  rgmii_port_phy_receive_clock[i]                                                                     = rgmii_phy_receive_clock[i];
-        assign  rgmii_port_receive_data_enable[i]                                                                   = core_data_orchestrator_port_receive_data_ready[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS];
+        assign  rgmii_port_receive_data_enable[i]                                                                   = fabric_in_ready[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS];
         assign  rgmii_port_transmit_clock[i]                                                                        = rgmii_transmit_clock[i];
 
         assign  rgmii_phy_transmit_data[i]                                                                          = rgmii_port_phy_transmit_data[i];
@@ -369,30 +454,17 @@ generate
         assign  rgmii_phy_transmit_clock[i]                                                                         = rgmii_port_phy_transmit_clock[i];
         assign  rgmii_phy_transmit_clock_raw[i]                                                                     = rgmii_port_phy_transmit_clock_raw[i];
 
-        assign  rgmii_port_transmit_data_enable[i]                                                                  = core_data_orchestrator_port_transmit_data_valid[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS];
-        assign  rgmii_port_transmit_data[i]                                                                         = core_data_orchestrator_port_transmit_data;
-        assign  core_data_orchestrator_port_receive_data_enable[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]     = rgmii_port_receive_data_valid[i];
-        assign  core_data_orchestrator_port_receive_data[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]            = rgmii_port_receive_data[i];
-        assign  core_data_orchestrator_port_receive_data_last[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]       = rgmii_port_receive_data_last[i];
-        assign  core_data_orchestrator_port_transmit_data_enable[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]    = rgmii_port_transmit_data_ready[i];
+        assign  rgmii_port_transmit_data_enable[i]                                                                  = scheduler_transmit_valid[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS];
+        assign  rgmii_port_transmit_data[i]                                                                         = {scheduler_transmit_first[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS], scheduler_transmit_data[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]};
+        assign  fabric_in_valid[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                     = rgmii_port_receive_data_valid[i];
+        assign  fabric_in_data[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                      = rgmii_port_receive_data[i];
+        assign  fabric_in_last[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                      = rgmii_port_receive_data_last[i];
+        assign  port_transmit_ready[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                 = rgmii_port_transmit_data_ready[i];
 
     end
 endgenerate
 
-assign  core_data_orchestrator_clock                        = clock;
-assign  core_data_orchestrator_reset_n                      = reset_n;
-assign  core_data_orchestrator_cam_table_match_index        = cam_table_match_index;
-assign  core_data_orchestrator_cam_table_match_enable       = cam_table_match_valid;
-assign  core_data_orchestrator_cam_table_no_match           = cam_table_no_match;
-
 assign  cam_table_clock                                     = clock;
 assign  cam_table_reset_n                                   = reset_n;
-assign  cam_table_index                                     = core_data_orchestrator_cam_table_index;
-assign  cam_table_key_match                                 = core_data_orchestrator_cam_table_key_match;
-assign  cam_table_match_enable                              = core_data_orchestrator_cam_table_key_match_valid;
-assign  cam_table_key_delete                                = core_data_orchestrator_cam_table_key_delete;
-assign  cam_table_delete_enable                             = core_data_orchestrator_cam_table_key_delete_valid;
-assign  cam_table_key_write                                 = core_data_orchestrator_cam_table_key_write;
-assign  cam_table_write_enable                              = core_data_orchestrator_cam_table_key_write_valid;
 
 endmodule

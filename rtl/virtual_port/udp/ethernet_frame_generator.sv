@@ -61,6 +61,7 @@ module ethernet_frame_generator#(
     output  reg                                             checksum_data_last,
     output  logic   [8:0]                                   frame_data,
     output  logic                                           frame_data_valid,
+    output  logic                                           frame_data_last,
     output  reg     [7:0]                                   ipv4_checksum_data,
     output  reg                                             ipv4_checksum_data_valid,
     output  reg                                             ipv4_checksum_data_last,
@@ -246,14 +247,18 @@ always_comb begin
 
     frame_data          = frame_byte[2];
     frame_data_valid    = frame_byte_valid[2];
+    frame_data_last     = 0;
 
     if (state == S_PUSH_CRC && process_counter != 0) begin
         frame_data[7:0]     = frame_byte[0];
         frame_data_valid    = frame_byte_valid[0];
     end
     if (state == S_DELAY) begin
+        //the final crc byte drains through frame_byte[0] on the first delay
+        //cycle, so this is the last byte of the frame
         frame_data[7:0]     = frame_byte[0];
         frame_data_valid    = frame_byte_valid[0];
+        frame_data_last     = frame_byte_valid[0];
     end
 
     checksum_data_valid = 0;

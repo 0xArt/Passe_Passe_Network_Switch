@@ -40,6 +40,7 @@
 `include "./case_005/case_005.svh"
 `include "./case_006/case_006.svh"
 `include "./case_007/case_007.svh"
+`include "./case_008/case_008.svh"
 
 module testbench;
 
@@ -232,6 +233,7 @@ initial begin
     case_005();
     case_006();
     case_007();
+    case_008();
     $stop();
 end
 
