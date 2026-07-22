@@ -46,7 +46,6 @@ vlog -sv -work presynth \
     "rtl/fabric/cam_access_arbiter.sv" \
     "rtl/fabric/egress_scheduler.sv" \
     "rtl/fabric/port_header_engine.sv" \
-    "rtl/core_data_orchestrator.sv" \
     "rtl/switch_core.sv" \
     "test/testbench.sv"
 
