@@ -41,6 +41,11 @@ vlog -sv -work presynth \
     "rtl/virtual_port/udp/udp_transmit_handler.sv" \
     "rtl/virtual_port/udp/virtual_port_udp.sv" \
     "rtl/virtual_port/udp/udp_test_module.sv" \
+    "rtl/fabric/width_adapter_up.sv" \
+    "rtl/fabric/width_adapter_down.sv" \
+    "rtl/fabric/cam_access_arbiter.sv" \
+    "rtl/fabric/egress_scheduler.sv" \
+    "rtl/fabric/port_header_engine.sv" \
     "rtl/core_data_orchestrator.sv" \
     "rtl/switch_core.sv" \
     "test/testbench.sv"
