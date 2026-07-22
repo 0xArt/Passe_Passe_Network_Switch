@@ -40,7 +40,8 @@ module switch_core#(
     parameter CAM_TABLE_DEPTH               = 32,
     parameter UDP_TRANSMIT_BUFFER_SIZE      = 4096,
     parameter TECHNOLOGY                    = "SIMULATION",
-    parameter PHASE_SHIFT_TX_CLOCK_ENABLE   = 0
+    parameter PHASE_SHIFT_TX_CLOCK_ENABLE   = 0,
+    parameter FABRIC_DATA_BYTES             = 1
 )(
     input   wire                                        clock,
     input   wire                                        reset_n,
@@ -226,22 +227,35 @@ endgenerate
 
 //output queued fabric. one header engine per
 //ingress port, one scheduler per egress port, one shared cam behind the
-//arbiter. fixed at one byte per beat until the width adapters are added
-localparam FABRIC_DATA_BYTES = 1;
+//arbiter. width adapters bridge the byte serial ports onto
+//FABRIC_DATA_BYTES wide fabric beats and elaborate to wires at one byte
+localparam FABRIC_BYTE_COUNT_WIDTH = $clog2(FABRIC_DATA_BYTES+1);
 
-//ingress beat streams into the header engines (bit 8 of data = first)
+//port byte streams into and out of the fabric (bit 8 of data = first)
 wire    [NUMBER_OF_PORTS-1:0][8:0]                  fabric_in_data;
 wire    [NUMBER_OF_PORTS-1:0]                       fabric_in_last;
 wire    [NUMBER_OF_PORTS-1:0]                       fabric_in_valid;
 wire    [NUMBER_OF_PORTS-1:0]                       fabric_in_ready;
 wire    [NUMBER_OF_PORTS-1:0]                       port_transmit_ready;
+wire    [NUMBER_OF_PORTS-1:0][8:0]                  egress_byte_data;
+wire    [NUMBER_OF_PORTS-1:0]                       egress_byte_valid;
+wire    [NUMBER_OF_PORTS-1:0]                       egress_byte_last;
 
-wire    [NUMBER_OF_PORTS-1:0][NUMBER_OF_PORTS-1:0]  engine_port_request;    //[ingress][egress]
-wire    [NUMBER_OF_PORTS-1:0][7:0]                  engine_out_data;
-wire    [NUMBER_OF_PORTS-1:0]                       engine_out_first;
-wire    [NUMBER_OF_PORTS-1:0]                       engine_out_last;
-wire    [NUMBER_OF_PORTS-1:0][0:0]                  engine_out_byte_count;
-wire    [NUMBER_OF_PORTS-1:0]                       engine_out_valid;
+//beat side of the width adapters
+wire    [NUMBER_OF_PORTS-1:0][(FABRIC_DATA_BYTES*8)-1:0]        fabric_beat_in_data;
+wire    [NUMBER_OF_PORTS-1:0]                                   fabric_beat_in_first;
+wire    [NUMBER_OF_PORTS-1:0]                                   fabric_beat_in_last;
+wire    [NUMBER_OF_PORTS-1:0][FABRIC_BYTE_COUNT_WIDTH-1:0]      fabric_beat_in_byte_count;
+wire    [NUMBER_OF_PORTS-1:0]                                   fabric_beat_in_valid;
+wire    [NUMBER_OF_PORTS-1:0]                                   fabric_beat_in_ready;
+wire    [NUMBER_OF_PORTS-1:0]                                   egress_beat_ready;
+
+wire    [NUMBER_OF_PORTS-1:0][NUMBER_OF_PORTS-1:0]              engine_port_request;    //[ingress][egress]
+wire    [NUMBER_OF_PORTS-1:0][(FABRIC_DATA_BYTES*8)-1:0]        engine_out_data;
+wire    [NUMBER_OF_PORTS-1:0]                                   engine_out_first;
+wire    [NUMBER_OF_PORTS-1:0]                                   engine_out_last;
+wire    [NUMBER_OF_PORTS-1:0][FABRIC_BYTE_COUNT_WIDTH-1:0]      engine_out_byte_count;
+wire    [NUMBER_OF_PORTS-1:0]                                   engine_out_valid;
 wire    [NUMBER_OF_PORTS-1:0]                       engine_match_request;
 wire    [NUMBER_OF_PORTS-1:0][47:0]                 engine_match_key;
 wire    [NUMBER_OF_PORTS-1:0]                       engine_learn_request;
@@ -252,14 +266,52 @@ wire    [$clog2(NUMBER_OF_PORTS)-1:0]               engine_match_response_index;
 wire                                                engine_match_response_no_match;
 wire    [NUMBER_OF_PORTS-1:0]                       engine_learn_ack;
 
-wire    [NUMBER_OF_PORTS-1:0][NUMBER_OF_PORTS-1:0]  scheduler_grant;        //[egress][ingress]
-wire    [NUMBER_OF_PORTS-1:0][7:0]                  scheduler_transmit_data;
-wire    [NUMBER_OF_PORTS-1:0]                       scheduler_transmit_first;
-wire    [NUMBER_OF_PORTS-1:0]                       scheduler_transmit_last;
-wire    [NUMBER_OF_PORTS-1:0][0:0]                  scheduler_transmit_byte_count;
-wire    [NUMBER_OF_PORTS-1:0]                       scheduler_transmit_valid;
+wire    [NUMBER_OF_PORTS-1:0][NUMBER_OF_PORTS-1:0]              scheduler_grant;        //[egress][ingress]
+wire    [NUMBER_OF_PORTS-1:0][(FABRIC_DATA_BYTES*8)-1:0]        scheduler_transmit_data;
+wire    [NUMBER_OF_PORTS-1:0]                                   scheduler_transmit_first;
+wire    [NUMBER_OF_PORTS-1:0]                                   scheduler_transmit_last;
+wire    [NUMBER_OF_PORTS-1:0][FABRIC_BYTE_COUNT_WIDTH-1:0]      scheduler_transmit_byte_count;
+wire    [NUMBER_OF_PORTS-1:0]                                   scheduler_transmit_valid;
 
 generate
+    for (i=0; i<NUMBER_OF_PORTS; i=i+1) begin : fabric_width_adapters
+        width_adapter_up #(
+            .FABRIC_DATA_BYTES  (FABRIC_DATA_BYTES)
+        ) width_adapter_up (
+            .clock              (clock),
+            .reset_n            (reset_n),
+            .byte_data          (fabric_in_data[i]),
+            .byte_data_valid    (fabric_in_valid[i]),
+            .byte_data_last     (fabric_in_last[i]),
+            .beat_ready         (fabric_beat_in_ready[i]),
+
+            .byte_data_ready    (fabric_in_ready[i]),
+            .beat_data          (fabric_beat_in_data[i]),
+            .beat_first         (fabric_beat_in_first[i]),
+            .beat_last          (fabric_beat_in_last[i]),
+            .beat_byte_count    (fabric_beat_in_byte_count[i]),
+            .beat_valid         (fabric_beat_in_valid[i])
+        );
+
+        width_adapter_down #(
+            .FABRIC_DATA_BYTES  (FABRIC_DATA_BYTES)
+        ) width_adapter_down (
+            .clock              (clock),
+            .reset_n            (reset_n),
+            .beat_data          (scheduler_transmit_data[i]),
+            .beat_first         (scheduler_transmit_first[i]),
+            .beat_last          (scheduler_transmit_last[i]),
+            .beat_byte_count    (scheduler_transmit_byte_count[i]),
+            .beat_valid         (scheduler_transmit_valid[i]),
+            .byte_data_ready    (port_transmit_ready[i]),
+
+            .beat_ready         (egress_beat_ready[i]),
+            .byte_data          (egress_byte_data[i]),
+            .byte_data_valid    (egress_byte_valid[i]),
+            .byte_data_last     (egress_byte_last[i])
+        );
+    end
+
     for (i=0; i<NUMBER_OF_PORTS; i=i+1) begin : header_engines
         wire [NUMBER_OF_PORTS-1:0] engine_grant;
         for (genvar e=0; e<NUMBER_OF_PORTS; e=e+1) begin
@@ -273,20 +325,20 @@ generate
         ) port_header_engine (
             .clock                      (clock),
             .reset_n                    (reset_n),
-            .in_data                    (fabric_in_data[i][7:0]),
-            .in_first                   (fabric_in_data[i][8]),
-            .in_last                    (fabric_in_last[i]),
-            .in_byte_count              (1'b1),
-            .in_valid                   (fabric_in_valid[i]),
+            .in_data                    (fabric_beat_in_data[i]),
+            .in_first                   (fabric_beat_in_first[i]),
+            .in_last                    (fabric_beat_in_last[i]),
+            .in_byte_count              (fabric_beat_in_byte_count[i]),
+            .in_valid                   (fabric_beat_in_valid[i]),
             .match_ack                  (engine_match_ack[i]),
             .match_response_valid       (engine_match_response_valid[i]),
             .match_response_index       (engine_match_response_index),
             .match_response_no_match    (engine_match_response_no_match),
             .learn_ack                  (engine_learn_ack[i]),
             .port_grant                 (engine_grant),
-            .egress_ready               (port_transmit_ready),
+            .egress_ready               (egress_beat_ready),
 
-            .in_ready                   (fabric_in_ready[i]),
+            .in_ready                   (fabric_beat_in_ready[i]),
             .match_request              (engine_match_request[i]),
             .match_key                  (engine_match_key[i]),
             .learn_request              (engine_learn_request[i]),
@@ -318,7 +370,7 @@ generate
             .ingress_last           (engine_out_last),
             .ingress_byte_count     (engine_out_byte_count),
             .ingress_valid          (engine_out_valid),
-            .transmit_ready         (port_transmit_ready[i]),
+            .transmit_ready         (egress_beat_ready[i]),
 
             .grant                  (scheduler_grant[i]),
             .transmit_data          (scheduler_transmit_data[i]),
@@ -405,8 +457,8 @@ generate
         assign rmii_phy_transmit_data[i]                            = rmii_port_rmii_transmit_data[i];
         assign rmii_phy_transmit_data_valid[i]                       = rmii_port_rmii_transmit_data_valid[i];
         assign rmii_port_receive_data_enable[i]                     = fabric_in_ready[i];
-        assign rmii_port_transmit_data_enable[i]                    = scheduler_transmit_valid[i];
-        assign rmii_port_transmit_data[i]                           = {scheduler_transmit_first[i], scheduler_transmit_data[i]};
+        assign rmii_port_transmit_data_enable[i]                    = egress_byte_valid[i] && port_transmit_ready[i];
+        assign rmii_port_transmit_data[i]                           = egress_byte_data[i];
         assign fabric_in_valid[i]                                   = rmii_port_receive_data_valid[i];
         assign fabric_in_data[i]                                    = rmii_port_receive_data[i];
         assign fabric_in_last[i]                                    = rmii_port_receive_data_last[i];
@@ -418,8 +470,8 @@ generate
     for (i=0; i<NUMBER_OF_VIRTUAL_PORTS; i=i+1) begin
         assign  virtual_port_udp_clock[i]                                                   = clock;
         assign  virtual_port_udp_reset_n[i]                                                 = reset_n;
-        assign  virtual_port_udp_receive_data[i]                                            = {scheduler_transmit_first[i+NUMBER_OF_RMII_PORTS], scheduler_transmit_data[i+NUMBER_OF_RMII_PORTS]};
-        assign  virtual_port_udp_receive_data_enable[i]                                     = scheduler_transmit_valid[i+NUMBER_OF_RMII_PORTS];
+        assign  virtual_port_udp_receive_data[i]                                            = egress_byte_data[i+NUMBER_OF_RMII_PORTS];
+        assign  virtual_port_udp_receive_data_enable[i]                                     = egress_byte_valid[i+NUMBER_OF_RMII_PORTS] && port_transmit_ready[i+NUMBER_OF_RMII_PORTS];
         assign  virtual_port_udp_transmit_data_enable[i]                                    = fabric_in_ready[i+NUMBER_OF_RMII_PORTS];
         assign  virtual_port_udp_module_clock[i]                                            = module_clock[i];
         assign  virtual_port_udp_module_transmit_data[i]                                    = module_transmit_data[i];
@@ -454,8 +506,8 @@ generate
         assign  rgmii_phy_transmit_clock[i]                                                                         = rgmii_port_phy_transmit_clock[i];
         assign  rgmii_phy_transmit_clock_raw[i]                                                                     = rgmii_port_phy_transmit_clock_raw[i];
 
-        assign  rgmii_port_transmit_data_enable[i]                                                                  = scheduler_transmit_valid[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS];
-        assign  rgmii_port_transmit_data[i]                                                                         = {scheduler_transmit_first[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS], scheduler_transmit_data[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]};
+        assign  rgmii_port_transmit_data_enable[i]                                                                  = egress_byte_valid[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS] && port_transmit_ready[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS];
+        assign  rgmii_port_transmit_data[i]                                                                         = egress_byte_data[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS];
         assign  fabric_in_valid[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                     = rgmii_port_receive_data_valid[i];
         assign  fabric_in_data[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                      = rgmii_port_receive_data[i];
         assign  fabric_in_last[i+NUMBER_OF_RMII_PORTS+NUMBER_OF_VIRTUAL_PORTS]                                      = rgmii_port_receive_data_last[i];

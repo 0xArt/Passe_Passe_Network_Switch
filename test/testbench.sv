@@ -42,7 +42,9 @@
 `include "./case_007/case_007.svh"
 `include "./case_008/case_008.svh"
 
-module testbench;
+module testbench#(
+    parameter FABRIC_DATA_BYTES = 1     //override with vsim -G to test wider fabric beats
+);
 
 localparam  RMII_CLOCK_FREQUENCY        = 50_000_000;
 localparam  RMII_CLOCK_PERIOD           = 1e9/RMII_CLOCK_FREQUENCY;
@@ -100,7 +102,8 @@ switch_core #(
     .NUMBER_OF_VIRTUAL_PORTS    (NUMBER_OF_VIRTUAL_PORTS),
     .NUMBER_OF_RGMII_PORTS      (NUMBER_OF_RGMII_PORTS),
     .RECEIVE_QUEUE_SLOTS          (RECEIVE_QUEUE_SLOTS),
-    .TECHNOLOGY                 (TECHNOLOGY)
+    .TECHNOLOGY                 (TECHNOLOGY),
+    .FABRIC_DATA_BYTES          (FABRIC_DATA_BYTES)
 )
 switch_core(
     .clock                              (switch_core_clock),
