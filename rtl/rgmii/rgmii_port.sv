@@ -89,6 +89,7 @@ wire        rgmii_byte_packager_data_control;
 
 wire [8:0]  rgmii_byte_packager_packaged_data;
 wire        rgmii_byte_packager_packaged_data_valid;
+wire        rgmii_byte_packager_packaged_data_last;
 wire [1:0]  rgmii_byte_packager_packaged_data_speed_code;
 
 rgmii_byte_packager#(
@@ -101,6 +102,7 @@ rgmii_byte_packager#(
 
     .packaged_data          (rgmii_byte_packager_packaged_data),
     .packaged_data_valid    (rgmii_byte_packager_packaged_data_valid),
+    .packaged_data_last     (rgmii_byte_packager_packaged_data_last),
     .speed_code             (rgmii_byte_packager_packaged_data_speed_code)
 );
 
@@ -197,6 +199,7 @@ frame_check_sequence_generator  frame_check_sequence_generator(
     .data                   (frame_check_sequence_generator_data),
     .data_enable            (frame_check_sequence_generator_data_enable),
     .data_last              (frame_check_sequence_generator_data_last),
+    .data_byte_count        (1'b1),
 
     .ready                  (frame_check_sequence_generator_ready),
     .checksum               (frame_check_sequence_generator_checksum),

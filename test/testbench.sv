@@ -147,7 +147,8 @@ rmii_byte_packager rmii_byte_packager(
 
     .speed_code             (rmii_byte_packager_speed_code),
     .packaged_data          (rmii_byte_packager_packaged_data),
-    .packaged_data_valid    (rmii_byte_packager_packaged_data_valid)
+    .packaged_data_valid    (rmii_byte_packager_packaged_data_valid),
+    .packaged_data_last     ()
 );
 
 

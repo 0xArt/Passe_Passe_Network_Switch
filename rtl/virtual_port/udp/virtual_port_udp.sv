@@ -307,6 +307,7 @@ frame_check_sequence_generator  frame_check_sequence_generator(
     .data                   (frame_check_sequence_generator_data),
     .data_enable            (frame_check_sequence_generator_data_enable),
     .data_last              (frame_check_sequence_generator_data_last),
+    .data_byte_count        (1'b1),
 
     .ready                  (frame_check_sequence_generator_ready),
     .checksum               (frame_check_sequence_generator_checksum),
@@ -367,6 +368,7 @@ frame_check_sequence_generator  receive_frame_check_sequence_generator(
     .data                   (receive_frame_check_sequence_generator_data),
     .data_enable            (receive_frame_check_sequence_generator_data_enable),
     .data_last              (receive_frame_check_sequence_generator_data_last),
+    .data_byte_count        (1'b1),
 
     .ready                  (receive_frame_check_sequence_generator_ready),
     .checksum               (receive_frame_check_sequence_generator_checksum),
