@@ -18,8 +18,8 @@ vlog -sv -work presynth \
     "rtl/fifo/asynchronous_fifo/rtl/asynchronous_fifo_write_pointer.sv" \
     "rtl/fifo/asynchronous_fifo/rtl/generic_asynchronous_fifo.sv" \
     "rtl/fifo/asynchronous_fifo/rtl/asynchronous_fifo.sv" \
-    "rtl/que_slot.sv" \
-    "rtl/que_slot_receieve_handler.sv" \
+    "rtl/queue_slot.sv" \
+    "rtl/queue_slot_receive_handler.sv" \
     "rtl/receive_slot_arbiter.sv" \
     "rtl/ethernet_packet_parser.sv" \
     "rtl/frame_check_sequence_generator.sv" \
@@ -37,7 +37,7 @@ vlog -sv -work presynth \
     "rtl/virtual_port/udp/ethernet_frame_parser.sv" \
     "rtl/virtual_port/udp/receive_slot.sv" \
     "rtl/virtual_port/udp/udp_fragment_slot.sv" \
-    "rtl/virtual_port/udp/udp_receieve_handler.sv" \
+    "rtl/virtual_port/udp/udp_receive_handler.sv" \
     "rtl/virtual_port/udp/udp_transmit_handler.sv" \
     "rtl/virtual_port/udp/virtual_port_udp.sv" \
     "rtl/virtual_port/udp/udp_test_module.sv" \

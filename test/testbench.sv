@@ -54,7 +54,7 @@ localparam  RGMII_CLOCK_PERIOD          = 1e9/RGMII_CLOCK_FREQUENCY;
 localparam  NUMBER_OF_RMII_PORTS        = 2;
 localparam  NUMBER_OF_VIRTUAL_PORTS     = 1;
 localparam  NUMBER_OF_RGMII_PORTS       = 1;
-localparam  RECEIVE_QUE_SLOTS           = 4;
+localparam  RECEIVE_QUEUE_SLOTS           = 4;
 localparam  TECHNOLOGY                  = "SIMULATION";
 
 logic                                           rmii_clock                      = 0;
@@ -98,7 +98,7 @@ switch_core #(
     .NUMBER_OF_RMII_PORTS       (NUMBER_OF_RMII_PORTS),
     .NUMBER_OF_VIRTUAL_PORTS    (NUMBER_OF_VIRTUAL_PORTS),
     .NUMBER_OF_RGMII_PORTS      (NUMBER_OF_RGMII_PORTS),
-    .RECEIVE_QUE_SLOTS          (RECEIVE_QUE_SLOTS),
+    .RECEIVE_QUEUE_SLOTS          (RECEIVE_QUEUE_SLOTS),
     .TECHNOLOGY                 (TECHNOLOGY)
 )
 switch_core(
@@ -121,7 +121,7 @@ switch_core(
     .module_transmit_data               (switch_core_module_transmit_data),
 
     .rmii_phy_transmit_data             (switch_core_rmii_phy_transmit_data),
-    .rmii_phy_transmit_data_vaid        (switch_core_rmii_phy_transmit_data_valid)
+    .rmii_phy_transmit_data_valid        (switch_core_rmii_phy_transmit_data_valid)
 );
 
 

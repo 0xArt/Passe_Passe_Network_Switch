@@ -41,6 +41,7 @@ module core_data_orchestrator#(
     input   wire                                        reset_n,
     input   wire    [NUMBER_OF_PORTS-1:0]               port_receive_data_enable,
     input   wire    [NUMBER_OF_PORTS-1:0][8:0]          port_receive_data,
+    input   wire    [NUMBER_OF_PORTS-1:0]               port_receive_data_last,
     input   wire    [$clog2(NUMBER_OF_PORTS)-1:0]       cam_table_match_index,
     input   wire                                        cam_table_no_match,
     input   wire                                        cam_table_match_enable,
@@ -112,6 +113,12 @@ logic       [47:0]                              _cam_table_key_delete;
 logic                                           _cam_table_key_delete_valid;
 logic       [47:0]                              _cam_table_key_match;
 logic                                           _cam_table_key_match_valid;
+logic                                           port_request_found_high;
+logic                                           port_request_found_low;
+logic       [$clog2(NUMBER_OF_PORTS)-1:0]       port_request_select_high;
+logic       [$clog2(NUMBER_OF_PORTS)-1:0]       port_request_select_low;
+logic                                           port_request_found;
+logic       [$clog2(NUMBER_OF_PORTS)-1:0]       port_request_select;
 
 assign  timeout_cycle_timer_clock       = clock;
 assign  timeout_cycle_timer_reset_n     = reset_n;
@@ -149,6 +156,28 @@ always_comb begin
         end
     end
 
+    //round robin arbiter. finds the next port after port_select with receive
+    //data pending so S_FIND_START_BIT can jump straight to it instead of
+    //stepping one port per cycle
+    port_request_found_high     = 0;
+    port_request_found_low      = 0;
+    port_request_select_high    = '0;
+    port_request_select_low     = '0;
+
+    for (i = 0; i < NUMBER_OF_PORTS; i = i + 1) begin
+        if (!port_request_found_high && (i > port_select) && port_receive_data_enable[i]) begin
+            port_request_select_high    = i;
+            port_request_found_high     = 1;
+        end
+        if (!port_request_found_low && (i <= port_select) && port_receive_data_enable[i]) begin
+            port_request_select_low     = i;
+            port_request_found_low      = 1;
+        end
+    end
+
+    port_request_found  = port_request_found_high || port_request_found_low;
+    port_request_select = port_request_found_high ? port_request_select_high : port_request_select_low;
+
     case (state)
         S_FIND_START_BIT: begin
             _process_counter                        = 4;
@@ -159,17 +188,16 @@ always_comb begin
                 port_receive_data_ready[port_select]   = 1;
 
                 if (port_receive_data[port_select][8]) begin
-                    _mac_destination[47:8]  = mac_destination[39:0];
-                    _mac_destination[7:0]   = port_receive_data[port_select];
-                    _state                  = S_GET_MAC_DESTINATION;
+                    _mac_destination[47:8]      = mac_destination[39:0];
+                    _mac_destination[7:0]       = port_receive_data[port_select];
+                    _cam_table_key_match[47:8]  = cam_table_key_match[39:0];
+                    _cam_table_key_match[7:0]   = port_receive_data[port_select];
+                    _state                      = S_GET_MAC_DESTINATION;
                 end
             end
             else begin
-                if (port_select == (NUMBER_OF_PORTS - 1)) begin
-                    _port_select    = '0;
-                end
-                else begin
-                    _port_select    = port_select + 1;
+                if (port_request_found) begin
+                    _port_select    = port_request_select;
                 end
             end
         end
@@ -185,6 +213,18 @@ always_comb begin
                  if(process_counter == 0) begin
                     _process_counter            = 5;
                     _state                      = S_GET_MAC_SOURCE;
+                end
+
+                //runt frame ended inside the destination mac. abandon it
+                if (port_receive_data_last[port_select]) begin
+                    _state  = S_FIND_START_BIT;
+
+                    if (port_select == (NUMBER_OF_PORTS - 1)) begin
+                        _port_select    = '0;
+                    end
+                    else begin
+                        _port_select    = port_select + 1;
+                    end
                 end
             end
         end
@@ -217,9 +257,29 @@ always_comb begin
                     _process_counter    = 5;
                     _state              = S_TRANSMIT_MAC_DESTINATION;
                 end
+
+                //runt frame ended inside the source mac. abandon it
+                if (port_receive_data_last[port_select]) begin
+                    _state  = S_FIND_START_BIT;
+
+                    if (port_select == (NUMBER_OF_PORTS - 1)) begin
+                        _port_select    = '0;
+                    end
+                    else begin
+                        _port_select    = port_select + 1;
+                    end
+                end
             end
         end
         S_TRANSMIT_MAC_DESTINATION: begin
+            //drop at frame start. until the first byte is accepted, prune any
+            //destination whose transmit buffer is not ready so one congested
+            //port cannot stall the frame for every other target. the pruned
+            //port drops this frame only
+            if (first_byte) begin
+                _target_transmit_port   = target_transmit_port & port_transmit_data_enable;
+            end
+
             if (timeout_cycle_timer_expired) begin
                 _port_transmit_data_valid   = 0;
                 _state                      = S_FIND_START_BIT;
@@ -314,6 +374,21 @@ always_comb begin
                         port_receive_data_ready[port_select]    = 1;
                         _port_transmit_data[7:0]                = port_receive_data[port_select][7:0];
                         _port_transmit_data_valid               = target_transmit_port;
+
+                        //explicit end of frame. the final byte is transmitted
+                        //this cycle, so the frame is complete. gap and
+                        //start-bit exits above remain as fallbacks for
+                        //streams that do not drive last (virtual ports)
+                        if (port_receive_data_last[port_select]) begin
+                            _state  = S_FIND_START_BIT;
+
+                            if (port_select == (NUMBER_OF_PORTS - 1)) begin
+                                _port_select    = '0;
+                            end
+                            else begin
+                                _port_select    = port_select + 1;
+                            end
+                        end
                     end
                 end
             end

@@ -7,7 +7,7 @@
 //
 // Create Date: 04/27/2023
 // Design Name:
-// Module Name: udp_receieve_handler
+// Module Name: udp_receive_handler
 // Project Name:
 // Target Devices:
 // Tool Versions:
@@ -32,21 +32,21 @@
 // For licensing inquiries and commercial permissions, contact the creator directly.
 //
 //////////////////////////////////////////////////////////////////////////////////
-module udp_receieve_handler#(
+module udp_receive_handler#(
     parameter FRAGMENT_SLOTS    = 4,
-    parameter RECEIVE_QUE_SLOTS = 4
+    parameter RECEIVE_QUEUE_SLOTS = 4
 )(
     input   wire                                    clock,
     input   wire                                    reset_n,
-    input   wire    [RECEIVE_QUE_SLOTS-1:0]         enable,
-    input   wire    [RECEIVE_QUE_SLOTS-1:0][7:0]    data,
-    input   wire    [RECEIVE_QUE_SLOTS-1:0]         data_enable,
-    input   wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   ipv4_identification,
-    input   wire    [RECEIVE_QUE_SLOTS-1:0][15:0]   ipv4_flags,
+    input   wire    [RECEIVE_QUEUE_SLOTS-1:0]         enable,
+    input   wire    [RECEIVE_QUEUE_SLOTS-1:0][7:0]    data,
+    input   wire    [RECEIVE_QUEUE_SLOTS-1:0]         data_enable,
+    input   wire    [RECEIVE_QUEUE_SLOTS-1:0][15:0]   ipv4_identification,
+    input   wire    [RECEIVE_QUEUE_SLOTS-1:0][15:0]   ipv4_flags,
     input   wire    [FRAGMENT_SLOTS-1:0]            fragment_slot_empty,
     input   wire    [FRAGMENT_SLOTS-1:0][15:0]      fragment_slot_packet_id,
 
-    output  logic   [RECEIVE_QUE_SLOTS-1:0]         data_ready,
+    output  logic   [RECEIVE_QUEUE_SLOTS-1:0]         data_ready,
     output  reg     [7:0]                           push_data,
     output  reg     [FRAGMENT_SLOTS-1:0]            push_data_valid,
     output  reg     [FRAGMENT_SLOTS-1:0]            push_data_last,
@@ -97,8 +97,8 @@ reg     [$clog2(FRAGMENT_SLOTS)-1:0]        fragment_slot_select;
 logic   [12:0]                              _fragment_offset;
 reg     [12:0]                              fragment_offset;
 logic   [FRAGMENT_SLOTS-1:0]                _push_data_last;
-logic   [$clog2(RECEIVE_QUE_SLOTS)-1:0]     _receive_slot_select;
-reg     [$clog2(RECEIVE_QUE_SLOTS)-1:0]     receive_slot_select;
+logic   [$clog2(RECEIVE_QUEUE_SLOTS)-1:0]     _receive_slot_select;
+reg     [$clog2(RECEIVE_QUEUE_SLOTS)-1:0]     receive_slot_select;
 logic   [7:0]                               _process_counter;
 reg     [7:0]                               process_counter;
 
@@ -131,7 +131,7 @@ always_comb begin
                 _state  = S_CHECK_FRAGMENT_STATUS;
             end
             else begin
-                if (receive_slot_select == RECEIVE_QUE_SLOTS-1) begin
+                if (receive_slot_select == RECEIVE_QUEUE_SLOTS-1) begin
                     _receive_slot_select    = 0;
                 end
                 else begin

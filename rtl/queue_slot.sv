@@ -7,7 +7,7 @@
 //
 // Create Date: 08/29/2023
 // Design Name:
-// Module Name: que_slot
+// Module Name: queue_slot
 // Project Name:
 // Target Devices:
 // Tool Versions:
@@ -32,7 +32,7 @@
 // For licensing inquiries and commercial permissions, contact the creator directly.
 //
 //////////////////////////////////////////////////////////////////////////////////
-module que_slot#(
+module queue_slot#(
     parameter TECHNOLOGY    = "SIMULATION"
 )(
     input   wire            clock,

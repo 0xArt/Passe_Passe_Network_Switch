@@ -33,7 +33,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module ethernet_packet_parser#(
-    parameter               RECEIVE_QUE_SLOTS       = 1,
+    parameter               RECEIVE_QUEUE_SLOTS       = 1,
     parameter logic [1:0]   SPEED_CODE_GIGABIT      = 2,
     parameter logic [1:0]   SPEED_CODE_100_MEGABIT  = 1,
     parameter logic [1:0]   SPEED_CODE_10_MEGABIT   = 0
@@ -44,7 +44,7 @@ module ethernet_packet_parser#(
     input   wire                                    data_enable,
     input   wire    [31:0]                          checksum_result,
     input   wire                                    checksum_result_enable,
-    input   wire    [RECEIVE_QUE_SLOTS-1:0]         receive_slot_enable,
+    input   wire    [RECEIVE_QUEUE_SLOTS-1:0]         receive_slot_enable,
     input   wire    [1:0]                           speed_code,
 
     output  logic                                   data_ready,
@@ -52,10 +52,10 @@ module ethernet_packet_parser#(
     output  reg                                     checksum_data_valid,
     output  reg                                     checksum_data_last,
     output  reg     [7:0]                           packet_data,
-    output  reg     [RECEIVE_QUE_SLOTS-1:0]         packet_data_valid,
-    output  reg     [RECEIVE_QUE_SLOTS-1:0]         good_packet,
-    output  reg     [RECEIVE_QUE_SLOTS-1:0]         bad_packet,
-    output  reg     [7:0]                           next_que_slot
+    output  reg     [RECEIVE_QUEUE_SLOTS-1:0]         packet_data_valid,
+    output  reg     [RECEIVE_QUEUE_SLOTS-1:0]         good_packet,
+    output  reg     [RECEIVE_QUEUE_SLOTS-1:0]         bad_packet,
+    output  reg     [7:0]                           next_queue_slot
 );
 
 
@@ -81,18 +81,18 @@ logic   [7:0]                           _timeout_counter_limit;
 reg     [3:0][8:0]                      delayed_data;
 logic   [3:0][8:0]                      _delayed_data;
 logic   [7:0]                           _checksum_data;
-logic   [RECEIVE_QUE_SLOTS-1:0]         _packet_data_valid;
+logic   [RECEIVE_QUEUE_SLOTS-1:0]         _packet_data_valid;
 logic   [7:0]                           _packet_data;
 logic                                   _checksum_data_valid;
 logic                                   _checksum_data_last;
-reg     [$clog2(RECEIVE_QUE_SLOTS):0]   que_slot_select;
-logic   [$clog2(RECEIVE_QUE_SLOTS):0]   _que_slot_select;
+reg     [$clog2(RECEIVE_QUEUE_SLOTS):0]   queue_slot_select;
+logic   [$clog2(RECEIVE_QUEUE_SLOTS):0]   _queue_slot_select;
 logic   [31:0]                          _frame_check_sequence;
 reg     [31:0]                          frame_check_sequence;
-logic   [RECEIVE_QUE_SLOTS-1:0]         _good_packet;
-logic   [RECEIVE_QUE_SLOTS-1:0]         _bad_packet;
+logic   [RECEIVE_QUEUE_SLOTS-1:0]         _good_packet;
+logic   [RECEIVE_QUEUE_SLOTS-1:0]         _bad_packet;
 logic                                   timeout_flag;
-logic   [7:0]                           _next_que_slot;
+logic   [7:0]                           _next_queue_slot;
 logic                                   _first_byte;
 reg                                     first_byte;
 
@@ -102,10 +102,10 @@ always_comb begin
     _timeout_counter                    = timeout_counter;
     _timeout_counter_limit              = timeout_counter_limit;
     _delayed_data                       = delayed_data;
-    _que_slot_select                    = que_slot_select;
+    _queue_slot_select                    = queue_slot_select;
     _frame_check_sequence               = frame_check_sequence;
     _checksum_data                      = checksum_data;
-    _next_que_slot                      = next_que_slot;
+    _next_queue_slot                      = next_queue_slot;
     _packet_data                        = packet_data;
     _first_byte                         = first_byte;
     timeout_flag                        = (timeout_counter >= timeout_counter_limit) ? 1 : 0;
@@ -137,9 +137,9 @@ always_comb begin
             _timeout_counter    = '0;
             _first_byte         = 1;
 
-            for (index=0; index<RECEIVE_QUE_SLOTS; index=index+1) begin
+            for (index=0; index<RECEIVE_QUEUE_SLOTS; index=index+1) begin
                 if (receive_slot_enable[index]) begin
-                    _que_slot_select =  index;
+                    _queue_slot_select =  index;
                 end
             end
             if (data_enable) begin
@@ -160,7 +160,7 @@ always_comb begin
         end
         S_PARSE_DATA: begin
             _timeout_counter    = timeout_counter + 1;
-            _next_que_slot      = que_slot_select;
+            _next_queue_slot      = queue_slot_select;
             _first_byte         = 0;
 
             if (timeout_flag)  begin
@@ -176,7 +176,7 @@ always_comb begin
                 _frame_check_sequence[7:0]              = data[7:0];
                 _checksum_data                          = delayed_data[3];
                 _packet_data                            = data[7:0];
-                _packet_data_valid[que_slot_select]     = 1;
+                _packet_data_valid[queue_slot_select]     = 1;
                 data_ready                              = 1;
                 _delayed_data[3:1]                      = delayed_data[2:0];
                 _delayed_data[0]                        = data;
@@ -201,10 +201,10 @@ always_comb begin
                 _state  = S_IDLE;
 
                 if (checksum_result == frame_check_sequence) begin
-                    _good_packet[que_slot_select]   = 1;
+                    _good_packet[queue_slot_select]   = 1;
                 end
                 else begin
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                 end
             end
         end
@@ -213,9 +213,9 @@ always_comb begin
             _timeout_counter        = '0;
             _first_byte             = 1;
 
-            for (index=0; index<RECEIVE_QUE_SLOTS; index=index+1) begin
+            for (index=0; index<RECEIVE_QUEUE_SLOTS; index=index+1) begin
                 if (receive_slot_enable[index]) begin
-                    _que_slot_select =  index;
+                    _queue_slot_select =  index;
                 end
             end
 
@@ -250,7 +250,7 @@ always_ff @(posedge clock) begin
         checksum_data_last              <= '0;
         packet_data                     <= '0;
         packet_data_valid               <= '0;
-        que_slot_select                 <= '0;
+        queue_slot_select                 <= '0;
         frame_check_sequence            <= '0;
         good_packet                     <= '0;
         bad_packet                      <= '0;
@@ -258,7 +258,7 @@ always_ff @(posedge clock) begin
         timeout_counter                 <= '0;
         timeout_counter_limit           <= '0;
         checksum_data                   <= '0;
-        next_que_slot                   <= '0;
+        next_queue_slot                   <= '0;
         first_byte                      <= '0;
     end
     else begin
@@ -269,7 +269,7 @@ always_ff @(posedge clock) begin
         checksum_data_last              <= _checksum_data_last;
         packet_data                     <= _packet_data;
         packet_data_valid               <= _packet_data_valid;
-        que_slot_select                 <= _que_slot_select;
+        queue_slot_select                 <= _queue_slot_select;
         frame_check_sequence            <= _frame_check_sequence;
         good_packet                     <= _good_packet;
         bad_packet                      <= _bad_packet;
@@ -277,7 +277,7 @@ always_ff @(posedge clock) begin
         timeout_counter                 <= _timeout_counter;
         timeout_counter_limit           <= _timeout_counter_limit;
         checksum_data                   <= _checksum_data;
-        next_que_slot                   <= _next_que_slot;
+        next_queue_slot                   <= _next_queue_slot;
         first_byte                      <= _first_byte;
     end
 end
