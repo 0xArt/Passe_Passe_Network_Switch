@@ -12,7 +12,7 @@ logic reset_n = 0;
 always #2 clock = ~clock;
 
 logic   [8:0]               in_byte  = 0;
-logic                       in_valid = 0;
+logic                       byte_data_enable = 0;
 logic                       in_last  = 0;
 wire                        in_ready;
 wire    [(W*8)-1:0]         beat_data;
@@ -30,7 +30,7 @@ width_adapter_up #(.FABRIC_DATA_BYTES(W)) up(
     .clock              (clock),
     .reset_n            (reset_n),
     .byte_data          (in_byte),
-    .byte_data_valid    (in_valid),
+    .byte_data_enable   (byte_data_enable),
     .byte_data_last     (in_last),
     .beat_ready         (beat_ready),
 
@@ -49,7 +49,7 @@ width_adapter_down #(.FABRIC_DATA_BYTES(W)) down(
     .beat_first         (beat_first),
     .beat_last          (beat_last),
     .beat_byte_count    (beat_count),
-    .beat_valid         (beat_valid),
+    .beat_enable        (beat_valid),
     .byte_data_ready    (out_ready),
 
     .beat_ready         (beat_ready),
@@ -94,12 +94,12 @@ task automatic send_frame(input int len);
         payload  = $urandom;
         in_byte  <= {(k == 0), payload};
         in_last  <= (k == len-1);
-        in_valid <= 1;
+        byte_data_enable <= 1;
         expected_data.push_back(payload);
         expected_first.push_back(k == 0);
         expected_last.push_back(k == len-1);
         do @(posedge clock); while (!in_ready);
-        in_valid <= 0;
+        byte_data_enable <= 0;
     end
 endtask
 

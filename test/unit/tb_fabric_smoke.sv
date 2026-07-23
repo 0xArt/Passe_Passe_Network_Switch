@@ -18,7 +18,7 @@ always #2 clock = ~clock;
 logic   [N-1:0][(W*8)-1:0]          in_data  = '0;
 logic   [N-1:0]                     in_first = '0;
 logic   [N-1:0]                     in_last  = '0;
-logic   [N-1:0]                     in_valid = '0;
+logic   [N-1:0]                     in_enable = '0;
 wire    [N-1:0]                     in_ready;
 
 //engine <-> cam arbiter
@@ -80,14 +80,14 @@ generate
             .in_first                   (in_first[g]),
             .in_last                    (in_last[g]),
             .in_byte_count              (1'b1),
-            .in_valid                   (in_valid[g]),
+            .in_enable                  (in_enable[g]),
             .match_ack                  (match_ack[g]),
-            .match_response_valid       (match_response_valid[g]),
+            .match_response_enable       (match_response_valid[g]),
             .match_response_index       (match_response_index),
             .match_response_no_match    (match_response_no_match),
             .learn_ack                  (learn_ack[g]),
             .port_grant                 (engine_grant),
-            .egress_ready               (egress_fifo_ready),
+            .egress_enable              (egress_fifo_ready),
 
             .in_ready                   (in_ready[g]),
             .match_request              (match_request[g]),
@@ -120,7 +120,7 @@ generate
             .ingress_first          (out_first),
             .ingress_last           (out_last),
             .ingress_byte_count     (out_byte_count),
-            .ingress_valid          (out_valid),
+            .ingress_enable         (out_valid),
             .transmit_ready         (egress_fifo_ready[g]),
 
             .grant                  (sched_grant[g]),
@@ -140,7 +140,7 @@ cam_access_arbiter #(.NUMBER_OF_PORTS(N)) arbiter(
     .match_key                  (match_key),
     .learn_request              (learn_request),
     .learn_key                  (learn_key),
-    .cam_match_valid            (cam_match_valid),
+    .cam_match_enable           (cam_match_valid),
     .cam_match_index            (cam_match_index),
     .cam_no_match               (cam_no_match),
 
@@ -210,9 +210,9 @@ task automatic send_frame(input int port);
         in_data[port]  <= frame[k];
         in_first[port] <= (k == 0);
         in_last[port]  <= (k == FRAME_LEN-1);
-        in_valid[port] <= 1;
+        in_enable[port] <= 1;
         do @(posedge clock); while (!in_ready[port]);
-        in_valid[port] <= 0;
+        in_enable[port] <= 0;
     end
 endtask
 

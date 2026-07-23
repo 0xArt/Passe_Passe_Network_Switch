@@ -40,7 +40,7 @@ cam_access_arbiter #(.NUMBER_OF_PORTS(N)) arbiter(
     .match_key                  (match_key),
     .learn_request              (learn_request),
     .learn_key                  (learn_key),
-    .cam_match_valid            (cam_match_valid),
+    .cam_match_enable           (cam_match_valid),
     .cam_match_index            (cam_match_index),
     .cam_no_match               (cam_no_match),
 

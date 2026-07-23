@@ -41,6 +41,9 @@
 `include "./case_006/case_006.svh"
 `include "./case_007/case_007.svh"
 `include "./case_008/case_008.svh"
+`include "./case_009/case_009.svh"
+`include "./case_010/case_010.svh"
+`include "./case_011/case_011.svh"
 
 module testbench#(
     parameter FABRIC_DATA_BYTES     = 1,            //override with vsim -G to test wider fabric beats
@@ -56,7 +59,7 @@ localparam  RGMII_CLOCK_FREQUENCY       = 125_000_000;
 localparam  RGMII_CLOCK_PERIOD          = 1e9/RGMII_CLOCK_FREQUENCY;
 localparam  NUMBER_OF_RMII_PORTS        = 2;
 localparam  NUMBER_OF_VIRTUAL_PORTS     = 1;
-localparam  NUMBER_OF_RGMII_PORTS       = 1;
+localparam  NUMBER_OF_RGMII_PORTS       = 2;
 localparam  RECEIVE_QUEUE_SLOTS           = 4;
 localparam  TECHNOLOGY                  = "SIMULATION";
 
@@ -74,8 +77,8 @@ logic                                           module_clock                    
 logic [8:0]                                     module_transmit_buffer [0:8888];
 
 logic                                           rgmii_clock                     = 0;
-logic [3:0]                                     rgmii_data                      = 0;
-logic                                           rgmii_data_control              = 0;
+logic [NUMBER_OF_RGMII_PORTS-1:0][3:0]          rgmii_data                      = 0;
+logic [NUMBER_OF_RGMII_PORTS-1:0]               rgmii_data_control              = 0;
 
 
 wire                                        switch_core_clock;
@@ -103,7 +106,8 @@ switch_core #(
     .NUMBER_OF_RGMII_PORTS      (NUMBER_OF_RGMII_PORTS),
     .RECEIVE_QUEUE_SLOTS          (RECEIVE_QUEUE_SLOTS),
     .TECHNOLOGY                 (TECHNOLOGY),
-    .FABRIC_DATA_BYTES          (FABRIC_DATA_BYTES)
+    .FABRIC_DATA_BYTES          (FABRIC_DATA_BYTES),
+    .CORE_CLOCK_FREQUENCY       (CORE_CLOCK_FREQUENCY)
 )
 switch_core(
     .clock                              (switch_core_clock),
@@ -166,12 +170,12 @@ assign switch_core_rmii_phy_receive_data[1]             = ethernet_transmit_data
 assign switch_core_rmii_phy_receive_data_enable[1]      = ethernet_transmit_data_valid[1];
 assign switch_core_rmii_phy_receive_data_error[1]       = 0;
 
-assign switch_core_rgmii_phy_receive_data_clock         = rgmii_clock;
+assign switch_core_rgmii_phy_receive_data_clock         = {NUMBER_OF_RGMII_PORTS{rgmii_clock}};
 assign switch_core_rgmii_phy_receive_data               = rgmii_data;
 assign switch_core_rgmii_phy_receive_data_control       = rgmii_data_control;
-assign switch_core_rgmii_transmit_clock                 = rgmii_clock;
-assign switch_core_rgmii_phy_receive_clock_reset_n      = reset_n;
-assign switch_core_rgmii_phy_transmit_clock_reset_n     = reset_n;
+assign switch_core_rgmii_transmit_clock                 = {NUMBER_OF_RGMII_PORTS{rgmii_clock}};
+assign switch_core_rgmii_phy_receive_clock_reset_n      = {NUMBER_OF_RGMII_PORTS{reset_n}};
+assign switch_core_rgmii_phy_transmit_clock_reset_n     = {NUMBER_OF_RGMII_PORTS{reset_n}};
 
 assign switch_core_module_transmit_data                 = module_transmit_data;
 assign switch_core_module_transmit_data_enable          = module_transmit_data_valid;
@@ -238,6 +242,9 @@ initial begin
     case_006();
     case_007();
     case_008();
+    case_009();
+    case_010();
+    case_011();
     $stop();
 end
 

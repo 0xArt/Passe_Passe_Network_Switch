@@ -88,14 +88,14 @@ fork
     begin
         for (i=0; i<72; i=i+1) begin
             @(posedge testbench.rgmii_clock);
-            testbench.rgmii_data_control    = 1;
-            testbench.rgmii_data            = frame_rgmii[i][3:0];
+            testbench.rgmii_data_control[0] = 1;
+            testbench.rgmii_data[0]         = frame_rgmii[i][3:0];
             @(negedge testbench.rgmii_clock);
-            testbench.rgmii_data            = frame_rgmii[i][7:4];
+            testbench.rgmii_data[0]         = frame_rgmii[i][7:4];
         end
         @(posedge testbench.rgmii_clock);
-        testbench.rgmii_data_control        = 0;
-        testbench.rgmii_data                = 0;
+        testbench.rgmii_data_control[0]     = 0;
+        testbench.rgmii_data[0]             = 0;
     end
     begin
         automatic integer k;

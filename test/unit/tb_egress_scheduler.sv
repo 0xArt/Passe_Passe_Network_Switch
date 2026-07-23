@@ -18,7 +18,7 @@ logic   [N-1:0][(W*8)-1:0]          ingress_data  = '0;
 logic   [N-1:0]                     ingress_first = '0;
 logic   [N-1:0]                     ingress_last  = '0;
 logic   [N-1:0][$clog2(W+1)-1:0]    ingress_count = '0;
-logic   [N-1:0]                     ingress_valid = '0;
+logic   [N-1:0]                     ingress_enable = '0;
 logic                               transmit_ready = 1;
 
 wire    [N-1:0]                     grant;
@@ -36,7 +36,7 @@ egress_scheduler #(.NUMBER_OF_PORTS(N), .FABRIC_DATA_BYTES(W)) scheduler(
     .ingress_first          (ingress_first),
     .ingress_last           (ingress_last),
     .ingress_byte_count     (ingress_count),
-    .ingress_valid          (ingress_valid),
+    .ingress_enable         (ingress_enable),
     .transmit_ready         (transmit_ready),
 
     .grant                  (grant),
@@ -61,9 +61,9 @@ task automatic stream_frame(input int port, input logic [7:0] base, input int le
         ingress_first[port] <= (k == 0);
         ingress_last[port]  <= (k == len-1);
         ingress_count[port] <= 1;
-        ingress_valid[port] <= 1;
+        ingress_enable[port] <= 1;
         @(posedge clock);
-        ingress_valid[port] <= 0;
+        ingress_enable[port] <= 0;
         //one gap cycle between beats to mimic all_granted_ready gating
         @(posedge clock);
     end
