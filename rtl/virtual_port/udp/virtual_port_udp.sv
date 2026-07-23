@@ -51,6 +51,7 @@ module virtual_port_udp#(
     output  wire    [8:0]   module_receive_data,
     output  wire            module_receive_data_valid,
     output  wire            receive_data_ready,
+    output  wire            receive_frame_ready,
     output  wire    [8:0]   transmit_data,                      //to switch data orch
     output  wire            transmit_data_valid,                //to switch data orch
     output  wire            transmit_data_last,                 //to switch data orch
@@ -326,15 +327,17 @@ wire    [8:0]   switch_inbound_fifo_write_data;
 wire    [8:0]   switch_inbound_fifo_read_data;
 wire            switch_inbound_fifo_read_data_valid;
 wire            switch_inbound_fifo_full;
+wire            switch_inbound_fifo_programmable_full;
 wire            switch_inbound_fifo_empty;
 
 asynchronous_fifo#(
-    .DATA_WIDTH                 (9),
-    .DATA_DEPTH                 (2048),
-    .FIRST_WORD_FALL_THROUGH    (1),
-    .TECHNOLOGY                 (TECHNOLOGY),
-    .NUMBER_OF_CDC_STAGES       (2)
-
+    .DATA_WIDTH                     (9),
+    .DATA_DEPTH                     (32768),
+    .FIRST_WORD_FALL_THROUGH        (1),
+    .TECHNOLOGY                     (TECHNOLOGY),
+    .NUMBER_OF_CDC_STAGES           (2),
+    //reserve one maximum frame so an admitted frame never backpressures
+    .PROGRAMMABLE_FULL_THRESHOLD    (32768 - 1536)
 )
 switch_inbound_fifo(
     .read_clock         (switch_inbound_fifo_read_clock),
@@ -348,6 +351,7 @@ switch_inbound_fifo(
     .read_data          (switch_inbound_fifo_read_data),
     .read_data_valid    (switch_inbound_fifo_read_data_valid),
     .full               (switch_inbound_fifo_full),
+    .programmable_full  (switch_inbound_fifo_programmable_full),
     .empty              (switch_inbound_fifo_empty)
 );
 
@@ -595,6 +599,7 @@ outbound_fifo(
 );
 
 assign  receive_data_ready                                      = !switch_inbound_fifo_full;
+assign  receive_frame_ready                                     = !switch_inbound_fifo_programmable_full;
 assign  transmit_data                                           = outbound_fifo_read_data[8:0];
 assign  transmit_data_valid                                     = outbound_fifo_read_data_valid;
 assign  transmit_data_last                                      = outbound_fifo_read_data[9];

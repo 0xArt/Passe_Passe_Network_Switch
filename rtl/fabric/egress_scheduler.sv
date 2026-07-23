@@ -39,7 +39,7 @@ module egress_scheduler#(
     input   wire    [NUMBER_OF_PORTS-1:0]                                       ingress_first,
     input   wire    [NUMBER_OF_PORTS-1:0]                                       ingress_last,
     input   wire    [NUMBER_OF_PORTS-1:0][$clog2(FABRIC_DATA_BYTES+1)-1:0]      ingress_byte_count,
-    input   wire    [NUMBER_OF_PORTS-1:0]                                       ingress_valid,
+    input   wire    [NUMBER_OF_PORTS-1:0]                                       ingress_enable,
     input   wire                                                                transmit_ready,
 
     output  reg     [NUMBER_OF_PORTS-1:0]                                       grant,
@@ -79,19 +79,19 @@ always_comb begin
     _source_select  = source_select;
     _rr_pointer     = rr_pointer;
 
-    request_found_high  = 0;
-    request_found_low   = 0;
+    request_found_high  = '0;
+    request_found_low   = '0;
     request_select_high = '0;
     request_select_low  = '0;
 
     for (i=0; i<NUMBER_OF_PORTS; i=i+1) begin
         if (!request_found_high && (i > rr_pointer) && request[i]) begin
             request_select_high = i;
-            request_found_high  = 1;
+            request_found_high  = 1'b1;
         end
         if (!request_found_low && (i <= rr_pointer) && request[i]) begin
             request_select_low  = i;
-            request_found_low   = 1;
+            request_found_low   = 1'b1;
         end
     end
 
@@ -102,13 +102,13 @@ always_comb begin
     transmit_first      = ingress_first[source_select];
     transmit_last       = ingress_last[source_select];
     transmit_byte_count = ingress_byte_count[source_select];
-    transmit_valid      = (state == S_LOCKED) && request[source_select] && ingress_valid[source_select];
+    transmit_valid      = (state == S_LOCKED) && request[source_select] && ingress_enable[source_select];
 
     case (state)
         S_IDLE: begin
             if (request_found && transmit_ready) begin
                 _grant                  = '0;
-                _grant[request_select]  = 1;
+                _grant[request_select]  = 1'b1;
                 _source_select          = request_select;
                 _rr_pointer             = request_select;
                 _state                  = S_LOCKED;

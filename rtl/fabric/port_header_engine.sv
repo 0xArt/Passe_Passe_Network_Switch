@@ -39,7 +39,12 @@ module port_header_engine#(
     parameter       NUMBER_OF_PORTS     = 4,
     parameter       PORT_INDEX          = 0,
     parameter       FABRIC_DATA_BYTES   = 1,
-    logic [15:0]    TIMEOUT_LIMIT       = 16'h0FFF
+    logic [15:0]    TIMEOUT_LIMIT       = 16'h0FFF,
+    //how long to keep asking for admission when every target egress is
+    //busy. must cover draining one reserved frame through the slowest
+    //wire (about 1.2 ms at 10 megabit), so it is much longer than the
+    //streaming timeout
+    logic [23:0]    RETRY_LIMIT         = 24'h0FFFFF
 )(
     input   wire                                                clock,
     input   wire                                                reset_n,
@@ -47,14 +52,14 @@ module port_header_engine#(
     input   wire                                                in_first,
     input   wire                                                in_last,
     input   wire    [$clog2(FABRIC_DATA_BYTES+1)-1:0]           in_byte_count,
-    input   wire                                                in_valid,
+    input   wire                                                in_enable,
     input   wire                                                match_ack,
-    input   wire                                                match_response_valid,
+    input   wire                                                match_response_enable,
     input   wire    [$clog2(NUMBER_OF_PORTS)-1:0]               match_response_index,
     input   wire                                                match_response_no_match,
     input   wire                                                learn_ack,
     input   wire    [NUMBER_OF_PORTS-1:0]                       port_grant,
-    input   wire    [NUMBER_OF_PORTS-1:0]                       egress_ready,
+    input   wire    [NUMBER_OF_PORTS-1:0]                       egress_enable,
 
     output  logic                                               in_ready,
     output  logic                                               match_request,
@@ -92,7 +97,7 @@ cycle_timer timeout_cycle_timer(
 
 assign  timeout_cycle_timer_clock   = clock;
 assign  timeout_cycle_timer_reset_n = reset_n;
-assign  timeout_cycle_timer_enable  = 1;
+assign  timeout_cycle_timer_enable  = 1'b1;
 assign  timeout_cycle_timer_count   = TIMEOUT_LIMIT;
 
 typedef enum
@@ -125,6 +130,8 @@ reg                                                     match_issued;
 logic                                                   _match_issued;
 reg                                                     learn_pending;
 logic                                                   _learn_pending;
+reg     [23:0]                                          retry_count;
+logic   [23:0]                                          _retry_count;
 logic   [47:0]                                          _learn_key;
 logic   [47:0]                                          mac_destination;
 logic   [47:0]                                          mac_source;
@@ -149,48 +156,49 @@ always_comb begin
     _match_issued                   = match_issued;
     _learn_pending                  = learn_pending;
     _learn_key                      = learn_key;
-    in_ready                        = 0;
+    _retry_count                    = retry_count;
+    in_ready                        = '0;
     out_data                        = in_data;
     out_first                       = in_first;
     out_last                        = in_last;
     out_byte_count                  = in_byte_count;
-    out_valid                       = 0;
-    match_request                   = 0;
+    out_valid                       = '0;
+    match_request                   = '0;
     match_key                       = mac_destination;
     learn_request                   = learn_pending;
-    timeout_cycle_timer_load_count  = 1;
+    timeout_cycle_timer_load_count  = 1'b1;
     granted                         = port_grant & port_request;
-    all_granted_ready               = (port_request != 0) && ((egress_ready & port_request) == port_request);
+    all_granted_ready               = (port_request != 0) && ((egress_enable & port_request) == port_request);
 
     for (m=0; m<HEADER_BEATS; m=m+1) begin
         _header_beats[m]    = header_beats[m];
     end
 
     if (learn_ack) begin
-        _learn_pending  = 0;
+        _learn_pending  = '0;
     end
 
     case (state)
         S_IDLE: begin
-            _capture_count  = 0;
-            _replay_index   = 0;
-            _match_issued   = 0;
+            _capture_count  = '0;
+            _replay_index   = '0;
+            _match_issued   = '0;
             _port_request   = '0;
 
-            if (in_valid) begin
+            if (in_enable) begin
                 if (in_first) begin
                     _state  = S_CAPTURE;
                 end
                 else begin
                     //residue from an abandoned frame, discard it
-                    in_ready    = 1;
+                    in_ready    = 1'b1;
                 end
             end
         end
         S_CAPTURE: begin
-            in_ready    = 1;
+            in_ready    = 1'b1;
 
-            if (in_valid) begin
+            if (in_enable) begin
                 _header_beats[capture_count]    = in_data;
                 _capture_count                  = capture_count + 1;
 
@@ -199,7 +207,6 @@ always_comb begin
                     _state  = S_IDLE;
                 end
                 else if (capture_count == (HEADER_BEATS - 1)) begin
-                    _learn_pending  = 1;
                     _state          = S_LOOKUP;
                 end
             end
@@ -208,17 +215,23 @@ always_comb begin
             match_request   = !match_issued;
 
             if (match_ack) begin
-                _match_issued   = 1;
+                _match_issued   = 1'b1;
             end
 
-            if (match_response_valid) begin
+            _retry_count    = '0;
+
+            if (match_response_enable) begin
+                //arm the learn only now that the key register is loaded,
+                //otherwise the arbiter can grant a learn that still carries
+                //the previous frame's source mac
                 _learn_key      = mac_source;
-                _window_count   = 2;
+                _learn_pending  = 1'b1;
+                _window_count   = 2'h2;
                 _state          = S_REQUEST;
 
                 if (match_response_no_match) begin
                     _port_request               = {NUMBER_OF_PORTS{1'b1}};
-                    _port_request[PORT_INDEX]   = 0;
+                    _port_request[PORT_INDEX]   = '0;
                 end
                 else if (match_response_index == PORT_INDEX) begin
                     //hairpin, drop the frame
@@ -227,17 +240,25 @@ always_comb begin
                 end
                 else begin
                     _port_request                           = '0;
-                    _port_request[match_response_index]     = 1;
+                    _port_request[match_response_index]     = 1'b1;
                 end
             end
         end
         S_REQUEST: begin
-            _window_count   = window_count - 1;
+            _window_count   = window_count - 1'b1;
 
             if (window_count == 0) begin
                 if (granted == 0) begin
-                    _port_request   = '0;
-                    _state          = S_DRAIN;
+                    //no egress can admit the frame right now. keep asking
+                    //(nothing is held, so waiting cannot deadlock) and only
+                    //drop when the retry limit expires
+                    _window_count   = 2'h2;
+                    _retry_count    = retry_count + 1'b1;
+
+                    if (retry_count >= RETRY_LIMIT) begin
+                        _port_request   = '0;
+                        _state          = S_DRAIN;
+                    end
                 end
                 else begin
                     //prune to the granted set. schedulers that granted late
@@ -250,20 +271,20 @@ always_comb begin
         S_REPLAY: begin
             out_data    = header_beats[replay_index];
             out_first   = (replay_index == 0);
-            out_last    = 0;
+            out_last    = '0;
             //header beats are always full, runts never reach replay
             out_byte_count  = FABRIC_DATA_BYTES;
 
             if (all_granted_ready) begin
-                out_valid       = 1;
-                _replay_index   = replay_index + 1;
+                out_valid       = 1'b1;
+                _replay_index   = replay_index + 1'b1;
 
                 if (replay_index == (HEADER_BEATS - 1)) begin
                     _state  = S_STREAM;
                 end
             end
             else begin
-                timeout_cycle_timer_load_count  = 0;
+                timeout_cycle_timer_load_count  = '0;
 
                 if (timeout_cycle_timer_expired) begin
                     _port_request   = '0;
@@ -272,9 +293,9 @@ always_comb begin
             end
         end
         S_STREAM: begin
-            if (in_valid && all_granted_ready) begin
-                out_valid   = 1;
-                in_ready    = 1;
+            if (in_enable && all_granted_ready) begin
+                out_valid   = 1'b1;
+                in_ready    = 1'b1;
 
                 if (in_last) begin
                     _port_request   = '0;
@@ -282,7 +303,7 @@ always_comb begin
                 end
             end
             else if (!all_granted_ready) begin
-                timeout_cycle_timer_load_count  = 0;
+                timeout_cycle_timer_load_count  = '0;
 
                 if (timeout_cycle_timer_expired) begin
                     _port_request   = '0;
@@ -291,9 +312,9 @@ always_comb begin
             end
         end
         S_DRAIN: begin
-            in_ready    = 1;
+            in_ready    = 1'b1;
 
-            if (in_valid && in_last) begin
+            if (in_enable && in_last) begin
                 _state  = S_IDLE;
             end
         end
@@ -310,6 +331,7 @@ always_ff @(posedge clock) begin
         match_issued    <= '0;
         learn_pending   <= '0;
         learn_key       <= '0;
+        retry_count     <= '0;
 
         for (c=0; c<HEADER_BEATS; c=c+1) begin
             header_beats[c] <= '0;
@@ -324,6 +346,7 @@ always_ff @(posedge clock) begin
         match_issued    <= _match_issued;
         learn_pending   <= _learn_pending;
         learn_key       <= _learn_key;
+        retry_count     <= _retry_count;
 
         for (c=0; c<HEADER_BEATS; c=c+1) begin
             header_beats[c] <= _header_beats[c];

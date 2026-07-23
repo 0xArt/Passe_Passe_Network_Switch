@@ -131,31 +131,35 @@ always_comb begin
     if (delete_enable_delayed) begin
         for (i=0; i<TABLE_DEPTH; i=i+1) begin
             if (filled[i] && (key_list[i] == cached_key_delete[i/COMPARE_BANK_SIZE])) begin
-                _filled[i]  = 0;
+                _filled[i]  = '0;
             end
         end
     end
 
     _free_index         = free_index;
-    _free_index_valid   = 0;
+    _free_index_valid   = '0;
+
     for (i=TABLE_DEPTH-1; i>=0; i=i-1) begin
         if (!_filled[i]) begin
             _free_index         = i;
-            _free_index_valid   = 1;
+            _free_index_valid   = 1'b1;
         end
     end
 
     _hit_valid  = match_enable_delayed;
+
     for (i=0; i<TABLE_DEPTH; i=i+1) begin
         _hit[i] = filled[i] && (key_list[i] == cached_key_match[i/COMPARE_BANK_SIZE]);
     end
 
     _match_index    = '0;
+
     for (i=0; i<TABLE_DEPTH; i=i+1) begin
         if (hit[i]) begin
             _match_index    = _match_index | index_list[i];
         end
     end
+
     _match_valid    = hit_valid && (|hit);
     _no_match       = hit_valid && !(|hit);
 end
@@ -178,9 +182,9 @@ always_ff @(posedge clock) begin
         hit_valid               <= '0;
 
         for (j=0; j<TABLE_DEPTH; j=j+1) begin
-            index_list[j]               <=  '0;
-            key_list[j]                 <=  '0;
-            filled[j]                   <=  '0;
+            index_list[j]       <=  '0;
+            key_list[j]         <=  '0;
+            filled[j]           <=  '0;
         end
     end
     else begin
@@ -200,9 +204,9 @@ always_ff @(posedge clock) begin
         hit_valid               <= _hit_valid;
 
         for (j=0; j<TABLE_DEPTH; j=j+1) begin
-            index_list[j]               <=  _index_list[j];
-            key_list[j]                 <=  _key_list[j];
-            filled[j]                   <=  _filled[j];
+            index_list[j]       <=  _index_list[j];
+            key_list[j]         <=  _key_list[j];
+            filled[j]           <=  _filled[j];
         end
     end
 end

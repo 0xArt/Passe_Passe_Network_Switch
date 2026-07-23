@@ -34,7 +34,7 @@ module width_adapter_down#(
     input   wire                                            beat_first,
     input   wire                                            beat_last,
     input   wire    [$clog2(FABRIC_DATA_BYTES+1)-1:0]       beat_byte_count,
-    input   wire                                            beat_valid,
+    input   wire                                            beat_enable,
     input   wire                                            byte_data_ready,
 
     output  logic                                           beat_ready,
@@ -48,7 +48,7 @@ generate
         assign byte_data[7:0]   = beat_data;
         assign byte_data[8]     = beat_first;
         assign byte_data_last   = beat_last;
-        assign byte_data_valid  = beat_valid;
+        assign byte_data_valid  = beat_enable;
         assign beat_ready       = byte_data_ready;
     end
     else begin
@@ -82,23 +82,23 @@ generate
 
             if (held_valid && byte_data_ready) begin
                 if (last_byte_of_beat) begin
-                    _held_valid = 0;
-                    _byte_index = 0;
+                    _held_valid = '0;
+                    _byte_index = '0;
                 end
                 else begin
-                    _byte_index = byte_index + 1;
+                    _byte_index = byte_index + 1'b1;
                 end
             end
 
             beat_ready = !_held_valid;
 
-            if (beat_valid && beat_ready) begin
+            if (beat_enable && beat_ready) begin
                 _held_data          = beat_data;
                 _held_first         = beat_first;
                 _held_last          = beat_last;
                 _held_byte_count    = beat_byte_count;
-                _held_valid         = 1;
-                _byte_index         = 0;
+                _held_valid         = 1'b1;
+                _byte_index         = '0;
             end
         end
 

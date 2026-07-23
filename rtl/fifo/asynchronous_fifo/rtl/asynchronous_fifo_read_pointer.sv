@@ -34,7 +34,8 @@
 //////////////////////////////////////////////////////////////////////////////////
 module asynchronous_fifo_read_pointer
 #(
-parameter ADDRESS_SIZE = 4
+parameter ADDRESS_SIZE                  = 4,
+parameter PROGRAMMABLE_EMPTY_THRESHOLD  = 8
 )(
     input  wire                     clock,
     input  wire                     reset_n,
@@ -43,6 +44,7 @@ parameter ADDRESS_SIZE = 4
 
     output logic                    empty,
     output logic                    almost_empty,
+    output logic                    programmable_empty,
     output logic [ADDRESS_SIZE-1:0] address,
     output logic [ADDRESS_SIZE:0]   read_pointer_gray
 );
@@ -53,8 +55,12 @@ logic [ADDRESS_SIZE:0]  read_pointer_binary_next;
 logic [ADDRESS_SIZE:0]  read_pointer_gray_nextm1;
 logic                   _almost_empty;
 logic                   _empty;
+logic                   _programmable_empty;
 logic [ADDRESS_SIZE:0]  _read_pointer_gray;
 logic [ADDRESS_SIZE:0]  _read_pointer_binary;
+logic [ADDRESS_SIZE:0]  write_pointer_binary;
+logic [ADDRESS_SIZE:0]  fill_count;
+integer k;
 
 
 always_comb begin
@@ -66,6 +72,19 @@ always_comb begin
     _almost_empty               = (read_pointer_gray_nextm1 == write_pointer) || _empty;
     _read_pointer_gray          = read_pointer_gray_next;
     _read_pointer_binary        = read_pointer_binary_next;
+
+    //fill level in the read domain from the synchronized (gray) write
+    //pointer, for the backlog watermark programmable empty flag. the
+    //synchronized pointer lags the true write pointer so the fill count
+    //never overstates the backlog
+    write_pointer_binary[ADDRESS_SIZE]  = write_pointer[ADDRESS_SIZE];
+
+    for (k = ADDRESS_SIZE-1; k >= 0; k = k - 1) begin
+        write_pointer_binary[k] = write_pointer_binary[k+1] ^ write_pointer[k];
+    end
+    
+    fill_count          = write_pointer_binary - read_pointer_binary_next;
+    _programmable_empty = (fill_count <= PROGRAMMABLE_EMPTY_THRESHOLD);
 end
 
 
@@ -73,12 +92,14 @@ always @ (posedge clock or negedge reset_n) begin
     if (!reset_n) begin
         almost_empty        <= '1;
         empty               <= '1;
+        programmable_empty  <= '1;
         read_pointer_binary <= '0;
         read_pointer_gray   <= '0;
     end
     else begin
         almost_empty        <= _almost_empty;
         empty               <= _empty;
+        programmable_empty  <= _programmable_empty;
         read_pointer_binary <= _read_pointer_binary;
         read_pointer_gray   <= _read_pointer_gray;
     end

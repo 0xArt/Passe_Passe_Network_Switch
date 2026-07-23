@@ -31,7 +31,7 @@ module width_adapter_up#(
     input   wire                                            clock,
     input   wire                                            reset_n,
     input   wire    [8:0]                                   byte_data,
-    input   wire                                            byte_data_valid,
+    input   wire                                            byte_data_enable,
     input   wire                                            byte_data_last,
     input   wire                                            beat_ready,
 
@@ -49,7 +49,7 @@ generate
         assign beat_first       = byte_data[8];
         assign beat_last        = byte_data_last;
         assign beat_byte_count  = 1;
-        assign beat_valid       = byte_data_valid;
+        assign beat_valid       = byte_data_enable;
         assign byte_data_ready  = beat_ready;
     end
     else begin
@@ -89,7 +89,7 @@ generate
             _output_byte_count  = output_byte_count;
             _output_valid       = output_valid;
             output_consumed     = output_valid && beat_ready;
-            transferred         = 0;
+            transferred         = '0;
             lane                = fill_count;
 
             if (output_consumed) begin
@@ -101,27 +101,27 @@ generate
                 _output_first       = accumulator_first;
                 _output_last        = accumulator_last;
                 _output_byte_count  = fill_count;
-                _output_valid       = 1;
-                _accumulator_done   = 0;
-                _accumulator_last   = 0;
-                _fill_count         = 0;
-                transferred         = 1;
-                lane                = 0;
+                _output_valid       = 1'b1;
+                _accumulator_done   = '0;
+                _accumulator_last   = '0;
+                _fill_count         = '0;
+                transferred         = 1'b1;
+                lane                = '0;
             end
 
             byte_data_ready = !accumulator_done || transferred;
 
-            if (byte_data_valid && byte_data_ready) begin
+            if (byte_data_enable && byte_data_ready) begin
                 _accumulator_data[lane*8 +: 8]  = byte_data[7:0];
 
                 if (lane == 0) begin
                     _accumulator_first  = byte_data[8];
                 end
 
-                _fill_count = lane + 1;
+                _fill_count = lane + 1'b1;
 
                 if (byte_data_last || (lane == FABRIC_DATA_BYTES-1)) begin
-                    _accumulator_done   = 1;
+                    _accumulator_done   = 1'b1;
                     _accumulator_last   = byte_data_last;
                 end
             end

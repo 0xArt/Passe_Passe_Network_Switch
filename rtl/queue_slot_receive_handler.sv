@@ -115,15 +115,15 @@ always_comb begin
     push_data_first                     = data_first[receive_slot_select];
     push_data_last                      = data_last[receive_slot_select];
     push_data_byte_count                = data_byte_count[receive_slot_select];
-    push_data_valid                     = 0;
-    next_queue_slot_fifo_read_enable    = 0;
-    data_ready                          = 0;
+    push_data_valid                     = '0;
+    next_queue_slot_fifo_read_enable    = '0;
+    data_ready                          = '0;
 
     case (state)
         S_IDLE: begin
             if (next_queue_slot_fifo_read_data_valid) begin
                 _receive_slot_select                = next_queue_slot_fifo_read_data;
-                next_queue_slot_fifo_read_enable    = 1;
+                next_queue_slot_fifo_read_enable    = 1'b1;
                 _state                              = S_PUSH_DATA;
             end
         end

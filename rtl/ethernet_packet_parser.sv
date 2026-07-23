@@ -136,13 +136,13 @@ always_comb begin
     _packet_data_last               = packet_data_last;
     _packet_data_byte_count         = packet_data_byte_count;
     _next_queue_slot                = next_queue_slot;
-    _checksum_data_valid            = 0;
-    _checksum_data_last             = 0;
-    _packet_data_valid              = 0;
-    _good_packet                    = 0;
-    _bad_packet                     = 0;
-    data_ready                      = 0;
-    timeout_cycle_timer_load_count  = 1;
+    _checksum_data_valid            = '0;
+    _checksum_data_last             = '0;
+    _packet_data_valid              = '0;
+    _good_packet                    = '0;
+    _bad_packet                     = '0;
+    data_ready                      = '0;
+    timeout_cycle_timer_load_count  = 1'b1;
 
     case (state)
         S_IDLE: begin
@@ -156,15 +156,15 @@ always_comb begin
 
             if (data_enable) begin
                 if (data_first && (|receive_slot_enable)) begin
-                    data_ready                              = 1;
+                    data_ready                              = 1'b1;
                     _packet_data                            = data;
                     _packet_data_first                      = data_first;
                     _packet_data_last                       = data_last;
                     _packet_data_byte_count                 = data_byte_count;
-                    _packet_data_valid[_queue_slot_select]  = 1;
+                    _packet_data_valid[_queue_slot_select]  = 1'b1;
                     _checksum_data                          = data;
                     _checksum_data_byte_count               = data_byte_count;
-                    _checksum_data_valid                    = 1;
+                    _checksum_data_valid                    = 1'b1;
                     _checksum_data_last                     = data_last;
 
                     if (data_last) begin
@@ -176,7 +176,7 @@ always_comb begin
                 end
                 else if (data_first) begin
                     //no free queue slot, consume and drop the frame
-                    data_ready  = 1;
+                    data_ready  = 1'b1;
 
                     if (!data_last) begin
                         _state  = S_DROP;
@@ -184,21 +184,21 @@ always_comb begin
                 end
                 else begin
                     //residue from an abandoned frame, discard it
-                    data_ready  = 1;
+                    data_ready  = 1'b1;
                 end
             end
         end
         S_STREAM: begin
             if (data_enable) begin
-                data_ready                              = 1;
+                data_ready                              = 1'b1;
                 _packet_data                            = data;
                 _packet_data_first                      = data_first;
                 _packet_data_last                       = data_last;
                 _packet_data_byte_count                 = data_byte_count;
-                _packet_data_valid[queue_slot_select]   = 1;
+                _packet_data_valid[queue_slot_select]   = 1'b1;
                 _checksum_data                          = data;
                 _checksum_data_byte_count               = data_byte_count;
-                _checksum_data_valid                    = 1;
+                _checksum_data_valid                    = 1'b1;
                 _checksum_data_last                     = data_last;
 
                 if (data_last) begin
@@ -206,46 +206,46 @@ always_comb begin
                 end
             end
             else begin
-                timeout_cycle_timer_load_count  = 0;
+                timeout_cycle_timer_load_count  = '0;
 
                 if (timeout_cycle_timer_expired) begin
                     //stalled stream. flush the crc generator and mark the
                     //frame bad when the result comes back
-                    _checksum_data_last = 1;
-                    _frame_aborted      = 1;
+                    _checksum_data_last = 1'b1;
+                    _frame_aborted      = 1'b1;
                     _state              = S_CHECK;
                 end
             end
         end
         S_CHECK: begin
-            timeout_cycle_timer_load_count  = 0;
+            timeout_cycle_timer_load_count  = '0;
 
             if (checksum_result_enable) begin
                 if (!frame_aborted && (checksum_result == RESIDUE)) begin
-                    _good_packet[queue_slot_select] = 1;
+                    _good_packet[queue_slot_select] = 1'b1;
                     _next_queue_slot                = queue_slot_select;
                 end
                 else begin
-                    _bad_packet[queue_slot_select]  = 1;
+                    _bad_packet[queue_slot_select]  = 1'b1;
                 end
 
                 _state  = S_IDLE;
             end
             else if (timeout_cycle_timer_expired) begin
-                _bad_packet[queue_slot_select]  = 1;
+                _bad_packet[queue_slot_select]  = 1'b1;
                 _state                          = S_IDLE;
             end
         end
         S_DROP: begin
             if (data_enable) begin
-                data_ready  = 1;
+                data_ready  = 1'b1;
 
                 if (data_last) begin
                     _state  = S_IDLE;
                 end
             end
             else begin
-                timeout_cycle_timer_load_count  = 0;
+                timeout_cycle_timer_load_count  = '0;
 
                 if (timeout_cycle_timer_expired) begin
                     _state  = S_IDLE;

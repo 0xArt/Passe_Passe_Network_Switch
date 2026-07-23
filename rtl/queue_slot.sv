@@ -121,13 +121,13 @@ always_comb begin
     push_data_first                 = receive_fifo_read_data[BUNDLE_WIDTH-2];
     push_data_last                  = receive_fifo_read_data[BUNDLE_WIDTH-1];
     push_data_valid                 = receive_fifo_read_data_valid;
-    _fifo_reset_n                   = 1;
-    _ready                          = 0;
-    _data_ready                     = 0;
+    _fifo_reset_n                   = 1'b1;
+    _ready                          = '0;
+    _data_ready                     = '0;
 
     case (state)
         S_IDLE: begin
-            _ready  = 1;
+            _ready  = 1'b1;
 
             if (data_enable) begin
                 _state  = S_FILLING_SLOT;
@@ -136,8 +136,8 @@ always_comb begin
                 _state  = S_DRAIN_SLOT;
             end
             if (bad_packet) begin
-                _fifo_reset_n   = 0;
-                _ready          = 0;
+                _fifo_reset_n   = '0;
+                _ready          = '0;
                 _state          = S_WAIT_EMPTY;
             end
         end
@@ -146,12 +146,12 @@ always_comb begin
                 _state  = S_DRAIN_SLOT;
             end
             if (bad_packet) begin
-                _fifo_reset_n   = 0;
+                _fifo_reset_n   = '0;
                 _state          = S_WAIT_EMPTY;
             end
         end
         S_DRAIN_SLOT: begin
-            _data_ready = 1;
+            _data_ready = 1'b1;
 
             if (receive_fifo_empty) begin
                 _state  = S_IDLE;
@@ -168,9 +168,9 @@ end
 always_ff @(posedge clock) begin
     if (!reset_n) begin
         state           <=  S_IDLE;
-        ready           <=  0;
-        fifo_reset_n    <=  0;
-        data_ready      <=  0;
+        ready           <=  '0;
+        fifo_reset_n    <=  '0;
+        data_ready      <=  '0;
     end
     else begin
         state           <=  _state;

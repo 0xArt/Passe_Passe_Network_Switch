@@ -52,10 +52,10 @@ always_comb begin
     _counter    = counter;
 
     if (counter == 0) begin
-        expired = 1;
+        expired = 1'b1;
     end
     else begin
-        expired = 0;
+        expired = '0;
     end
 
     if (enable) begin
@@ -66,7 +66,7 @@ always_comb begin
             if (counter == 0) begin
             end
             else begin
-                _counter    = counter - 1;
+                _counter    = counter - 1'b1;
             end
         end
     end
@@ -75,7 +75,7 @@ end
 
 always_ff @(posedge clock) begin
     if (!reset_n) begin
-        counter <= 0;
+        counter <= '0;
     end
     else begin
         counter <= _counter;

@@ -42,7 +42,7 @@ module cam_access_arbiter#(
     input   wire    [NUMBER_OF_PORTS-1:0][KEY_WIDTH-1:0]        match_key,
     input   wire    [NUMBER_OF_PORTS-1:0]                       learn_request,
     input   wire    [NUMBER_OF_PORTS-1:0][KEY_WIDTH-1:0]        learn_key,
-    input   wire                                                cam_match_valid,
+    input   wire                                                cam_match_enable,
     input   wire    [$clog2(NUMBER_OF_PORTS)-1:0]               cam_match_index,
     input   wire                                                cam_no_match,
 
@@ -148,19 +148,19 @@ always_comb begin
     learn_pending   = learn_request & ~learn_ack;
 
     //match channel round robin
-    match_found_high    = 0;
-    match_found_low     = 0;
+    match_found_high    = '0;
+    match_found_low     = '0;
     match_select_high   = '0;
     match_select_low    = '0;
 
     for (i=0; i<NUMBER_OF_PORTS; i=i+1) begin
         if (!match_found_high && (i > match_rr_pointer) && match_pending[i]) begin
             match_select_high   = i;
-            match_found_high    = 1;
+            match_found_high    = 1'b1;
         end
         if (!match_found_low && (i <= match_rr_pointer) && match_pending[i]) begin
             match_select_low    = i;
-            match_found_low     = 1;
+            match_found_low     = 1'b1;
         end
     end
 
@@ -168,20 +168,20 @@ always_comb begin
     match_select    = match_found_high ? match_select_high : match_select_low;
 
     if (match_found) begin
-        _match_ack[match_select]        = 1;
+        _match_ack[match_select]        = 1'b1;
         _cam_key_match                  = match_key[match_select];
-        _cam_key_match_valid            = 1;
+        _cam_key_match_valid            = 1'b1;
         _match_rr_pointer               = match_select;
         _tag_list[tag_write_pointer]    = match_select;
-        _tag_write_pointer              = tag_write_pointer + 1;
+        _tag_write_pointer              = tag_write_pointer + 1'b1;
     end
 
     //route the cam response back to the requester in issue order
-    if (cam_match_valid || cam_no_match) begin
-        _match_response_valid[tag_list[tag_read_pointer]]   = 1;
+    if (cam_match_enable || cam_no_match) begin
+        _match_response_valid[tag_list[tag_read_pointer]]   = 1'b1;
         _match_response_index                               = cam_match_index;
         _match_response_no_match                            = cam_no_match;
-        _tag_read_pointer                                   = tag_read_pointer + 1;
+        _tag_read_pointer                                   = tag_read_pointer + 1'b1;
     end
 
     //learn channel round robin. delete then write on consecutive cycles
@@ -193,11 +193,11 @@ always_comb begin
     for (i=0; i<NUMBER_OF_PORTS; i=i+1) begin
         if (!learn_found_high && (i > learn_rr_pointer) && learn_pending[i]) begin
             learn_select_high   = i;
-            learn_found_high    = 1;
+            learn_found_high    = 1'b1;
         end
         if (!learn_found_low && (i <= learn_rr_pointer) && learn_pending[i]) begin
             learn_select_low    = i;
-            learn_found_low     = 1;
+            learn_found_low     = 1'b1;
         end
     end
 
@@ -207,9 +207,9 @@ always_comb begin
     case (learn_state)
         S_LEARN_IDLE: begin
             if (learn_found) begin
-                _learn_ack[learn_select_next]   = 1;
+                _learn_ack[learn_select_next]   = 1'b1;
                 _cam_key_delete                 = learn_key[learn_select_next];
-                _cam_key_delete_valid           = 1;
+                _cam_key_delete_valid           = 1'b1;
                 _learn_key_cached               = learn_key[learn_select_next];
                 _learn_select                   = learn_select_next;
                 _learn_rr_pointer               = learn_select_next;
@@ -219,7 +219,7 @@ always_comb begin
         S_LEARN_WRITE: begin
             _cam_key_write          = learn_key_cached;
             _cam_index              = learn_select;
-            _cam_key_write_valid    = 1;
+            _cam_key_write_valid    = 1'b1;
             _learn_state            = S_LEARN_IDLE;
         end
     endcase

@@ -51,34 +51,27 @@ module generic_dual_port_ram#(
 
 
 reg     [DATA_WIDTH-1:0]    memory   [DATA_DEPTH-1:0];
-logic   [DATA_WIDTH-1:0]    _memory  [DATA_DEPTH-1:0];
 reg     [DATA_WIDTH-1:0]    memory_read_data;
 logic   [DATA_WIDTH-1:0]    _memory_read_data;
-integer                     i;
 integer                     j;
 
 
-
-always_comb begin
-    for (i=0; i<DATA_DEPTH; i=i+1) begin
-        _memory[i]  = memory[i];
-    end
-
-    if  (write_enable) begin
-        _memory[write_address] = write_data;
+//the memory array deliberately breaks the two process pattern. touching
+//every entry each cycle costs simulation time proportional to the depth
+//and stops synthesis from inferring block ram, so only the addressed
+//entry is written. contents start at zero instead of clearing on reset;
+//the fifo pointers define which entries are valid
+initial begin
+    for (j=0; j<DATA_DEPTH; j=j+1) begin
+        memory[j]   = '0;
     end
 end
 
-always_ff @(posedge write_clock or negedge write_reset_n) begin
-    if (!write_reset_n) begin
-        for (j=0; j<DATA_DEPTH; j=j+1) begin
-            memory[j]   <=  '0;
-        end
-    end
-    else begin
-        for (j=0; j<DATA_DEPTH; j=j+1) begin
-            memory[j]   <=  _memory[j];
-        end
+//plain always, not always_ff, so the initial block above may also
+//assign the array
+always @(posedge write_clock) begin
+    if (write_enable) begin
+        memory[write_address]   <= write_data;
     end
 end
 

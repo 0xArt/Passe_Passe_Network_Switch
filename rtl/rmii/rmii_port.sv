@@ -39,7 +39,8 @@
 module rmii_port#(
     parameter RECEIVE_QUEUE_SLOTS   = 4,
     parameter TECHNOLOGY            = "SIMULATION",
-    parameter FABRIC_DATA_BYTES     = 1
+    parameter FABRIC_DATA_BYTES     = 1,
+    logic [15:0] TIMEOUT_LIMIT      = 16'h0FFF
 )(
     input   wire                                            clock,
     input   wire                                            reset_n,
@@ -56,6 +57,7 @@ module rmii_port#(
     input   wire                                            receive_data_enable,
 
     output  wire                                            transmit_data_ready,
+    output  wire                                            transmit_frame_ready,
     output  wire    [(FABRIC_DATA_BYTES*8)-1:0]             receive_data,
     output  wire                                            receive_data_first,
     output  wire                                            receive_data_valid,
@@ -67,6 +69,10 @@ module rmii_port#(
 
 localparam FABRIC_BYTE_COUNT_WIDTH  = $clog2(FABRIC_DATA_BYTES+1);
 localparam INGRESS_BUNDLE_WIDTH     = (FABRIC_DATA_BYTES*8) + FABRIC_BYTE_COUNT_WIDTH + 2;
+//reserve one maximum frame of egress fifo space at frame admission so a
+//granted frame can always stream in full without mid frame backpressure
+localparam EGRESS_FIFO_DEPTH        = 32768 / FABRIC_DATA_BYTES;
+localparam FRAME_RESERVE_BEATS      = 1536 / FABRIC_DATA_BYTES;
 
 genvar i;
 
@@ -96,29 +102,36 @@ rmii_byte_packager rmii_byte_packager(
 
 //pack bytes into fabric beats in the phy clock domain, which only ever
 //needs to keep up with the wire
-wire    [(FABRIC_DATA_BYTES*8)-1:0]         ingress_beat_data;
-wire                                        ingress_beat_first;
-wire                                        ingress_beat_last;
-wire    [FABRIC_BYTE_COUNT_WIDTH-1:0]       ingress_beat_byte_count;
-wire                                        ingress_beat_valid;
-wire                                        ingress_beat_ready;
+wire                                        ingress_width_adapter_clock;
+wire                                        ingress_width_adapter_reset_n;
+wire    [8:0]                               ingress_width_adapter_byte_data;
+wire                                        ingress_width_adapter_byte_data_enable;
+wire                                        ingress_width_adapter_byte_data_last;
+wire                                        ingress_width_adapter_beat_ready;
+
+wire                                        ingress_width_adapter_byte_data_ready;
+wire    [(FABRIC_DATA_BYTES*8)-1:0]         ingress_width_adapter_beat_data;
+wire                                        ingress_width_adapter_beat_first;
+wire                                        ingress_width_adapter_beat_last;
+wire    [FABRIC_BYTE_COUNT_WIDTH-1:0]       ingress_width_adapter_beat_byte_count;
+wire                                        ingress_width_adapter_beat_valid;
 
 width_adapter_up #(
     .FABRIC_DATA_BYTES  (FABRIC_DATA_BYTES)
 ) ingress_width_adapter (
-    .clock              (clock),
-    .reset_n            (reset_n),
-    .byte_data          (rmii_byte_packager_packaged_data),
-    .byte_data_valid    (rmii_byte_packager_packaged_data_valid),
-    .byte_data_last     (rmii_byte_packager_packaged_data_last),
-    .beat_ready         (ingress_beat_ready),
+    .clock              (ingress_width_adapter_clock),
+    .reset_n            (ingress_width_adapter_reset_n),
+    .byte_data          (ingress_width_adapter_byte_data),
+    .byte_data_enable   (ingress_width_adapter_byte_data_enable),
+    .byte_data_last     (ingress_width_adapter_byte_data_last),
+    .beat_ready         (ingress_width_adapter_beat_ready),
 
-    .byte_data_ready    (),
-    .beat_data          (ingress_beat_data),
-    .beat_first         (ingress_beat_first),
-    .beat_last          (ingress_beat_last),
-    .beat_byte_count    (ingress_beat_byte_count),
-    .beat_valid         (ingress_beat_valid)
+    .byte_data_ready    (ingress_width_adapter_byte_data_ready),
+    .beat_data          (ingress_width_adapter_beat_data),
+    .beat_first         (ingress_width_adapter_beat_first),
+    .beat_last          (ingress_width_adapter_beat_last),
+    .beat_byte_count    (ingress_width_adapter_beat_byte_count),
+    .beat_valid         (ingress_width_adapter_beat_valid)
 );
 
 
@@ -204,7 +217,8 @@ wire    [7:0]                               ethernet_packet_parser_next_queue_sl
 
 ethernet_packet_parser   #(
     .RECEIVE_QUEUE_SLOTS    (RECEIVE_QUEUE_SLOTS),
-    .DATA_BYTES             (FABRIC_DATA_BYTES)
+    .DATA_BYTES             (FABRIC_DATA_BYTES),
+    .TIMEOUT_LIMIT          (TIMEOUT_LIMIT)
 )
 ethernet_packet_parser(
     .clock                      (ethernet_packet_parser_clock),
@@ -343,8 +357,8 @@ queue_slot_receive_handler(
     .data_byte_count        (queue_slot_receive_handler_data_byte_count),
     .data_enable            (queue_slot_receive_handler_data_enable),
     .push_enable            (queue_slot_receive_handler_push_enable),
-    .next_queue_slot          (queue_slot_receive_handler_next_queue_slot),
-    .next_queue_slot_enable   (queue_slot_receive_handler_next_queue_slot_enable),
+    .next_queue_slot        (queue_slot_receive_handler_next_queue_slot),
+    .next_queue_slot_enable (queue_slot_receive_handler_next_queue_slot_enable),
 
     .data_ready             (queue_slot_receive_handler_data_ready),
     .push_data              (queue_slot_receive_handler_push_data),
@@ -388,13 +402,15 @@ wire    [INGRESS_BUNDLE_WIDTH-1:0]  inbound_fifo_write_data;
 wire    [INGRESS_BUNDLE_WIDTH-1:0]  inbound_fifo_read_data;
 wire            inbound_fifo_read_data_valid;
 wire            inbound_fifo_full;
+wire            inbound_fifo_programmable_full;
 wire            inbound_fifo_empty;
 
 asynchronous_fifo#(
-    .DATA_WIDTH                 (INGRESS_BUNDLE_WIDTH),
-    .DATA_DEPTH                 (4096/FABRIC_DATA_BYTES),
-    .FIRST_WORD_FALL_THROUGH    (1),
-    .TECHNOLOGY                 (TECHNOLOGY)
+    .DATA_WIDTH                     (INGRESS_BUNDLE_WIDTH),
+    .DATA_DEPTH                     (EGRESS_FIFO_DEPTH),
+    .FIRST_WORD_FALL_THROUGH        (1),
+    .TECHNOLOGY                     (TECHNOLOGY),
+    .PROGRAMMABLE_FULL_THRESHOLD    (EGRESS_FIFO_DEPTH - FRAME_RESERVE_BEATS)
 )
 inbound_fifo(
     .read_clock         (inbound_fifo_read_clock),
@@ -408,33 +424,43 @@ inbound_fifo(
     .read_data          (inbound_fifo_read_data),
     .read_data_valid    (inbound_fifo_read_data_valid),
     .full               (inbound_fifo_full),
+    .programmable_full  (inbound_fifo_programmable_full),
     .empty              (inbound_fifo_empty)
 );
 
 
 //unpack beats back to bytes in the phy clock domain, which only ever
 //needs to keep up with the wire
-wire    [8:0]   egress_byte_data;
-wire            egress_byte_valid;
-wire            egress_byte_last;
-wire            egress_adapter_beat_ready;
+wire                                        egress_width_adapter_clock;
+wire                                        egress_width_adapter_reset_n;
+wire    [(FABRIC_DATA_BYTES*8)-1:0]         egress_width_adapter_beat_data;
+wire                                        egress_width_adapter_beat_first;
+wire                                        egress_width_adapter_beat_last;
+wire    [FABRIC_BYTE_COUNT_WIDTH-1:0]       egress_width_adapter_beat_byte_count;
+wire                                        egress_width_adapter_beat_enable;
+wire                                        egress_width_adapter_byte_data_ready;
+
+wire                                        egress_width_adapter_beat_ready;
+wire    [8:0]                               egress_width_adapter_byte_data;
+wire                                        egress_width_adapter_byte_data_valid;
+wire                                        egress_width_adapter_byte_data_last;
 
 width_adapter_down #(
     .FABRIC_DATA_BYTES  (FABRIC_DATA_BYTES)
 ) egress_width_adapter (
-    .clock              (clock),
-    .reset_n            (reset_n),
-    .beat_data          (inbound_fifo_read_data[(FABRIC_DATA_BYTES*8)-1:0]),
-    .beat_first         (inbound_fifo_read_data[INGRESS_BUNDLE_WIDTH-2]),
-    .beat_last          (inbound_fifo_read_data[INGRESS_BUNDLE_WIDTH-1]),
-    .beat_byte_count    (inbound_fifo_read_data[(FABRIC_DATA_BYTES*8) +: FABRIC_BYTE_COUNT_WIDTH]),
-    .beat_valid         (inbound_fifo_read_data_valid),
-    .byte_data_ready    (rmii_byte_shipper_data_ready),
+    .clock              (egress_width_adapter_clock),
+    .reset_n            (egress_width_adapter_reset_n),
+    .beat_data          (egress_width_adapter_beat_data),
+    .beat_first         (egress_width_adapter_beat_first),
+    .beat_last          (egress_width_adapter_beat_last),
+    .beat_byte_count    (egress_width_adapter_beat_byte_count),
+    .beat_enable        (egress_width_adapter_beat_enable),
+    .byte_data_ready    (egress_width_adapter_byte_data_ready),
 
-    .beat_ready         (egress_adapter_beat_ready),
-    .byte_data          (egress_byte_data),
-    .byte_data_valid    (egress_byte_valid),
-    .byte_data_last     (egress_byte_last)
+    .beat_ready         (egress_width_adapter_beat_ready),
+    .byte_data          (egress_width_adapter_byte_data),
+    .byte_data_valid    (egress_width_adapter_byte_data_valid),
+    .byte_data_last     (egress_width_adapter_byte_data_last)
 );
 
 
@@ -446,6 +472,7 @@ assign receive_data_byte_count                                  = queue_slot_rec
 assign rmii_transmit_data                                       = rmii_byte_shipper_shipped_data;
 assign rmii_transmit_data_valid                                 = rmii_byte_shipper_shipped_data_valid;
 assign transmit_data_ready                                      = !inbound_fifo_full;
+assign transmit_frame_ready                                     = !inbound_fifo_programmable_full;
 
 assign rmii_byte_packager_clock                                 = clock;
 assign rmii_byte_packager_reset_n                               = reset_n;
@@ -453,7 +480,21 @@ assign rmii_byte_packager_data                                  = rmii_receive_d
 assign rmii_byte_packager_data_enable                           = rmii_receive_data_enable;
 assign rmii_byte_packager_data_error                            = rmii_receive_data_error;
 
-assign ingress_beat_ready                                       = !phy_received_bytes_fifo_full;
+assign ingress_width_adapter_clock                              = clock;
+assign ingress_width_adapter_reset_n                            = reset_n;
+assign ingress_width_adapter_byte_data                          = rmii_byte_packager_packaged_data;
+assign ingress_width_adapter_byte_data_enable                   = rmii_byte_packager_packaged_data_valid;
+assign ingress_width_adapter_byte_data_last                     = rmii_byte_packager_packaged_data_last;
+assign ingress_width_adapter_beat_ready                         = !phy_received_bytes_fifo_full;
+
+assign egress_width_adapter_clock                               = clock;
+assign egress_width_adapter_reset_n                             = reset_n;
+assign egress_width_adapter_beat_data                           = inbound_fifo_read_data[(FABRIC_DATA_BYTES*8)-1:0];
+assign egress_width_adapter_beat_first                          = inbound_fifo_read_data[INGRESS_BUNDLE_WIDTH-2];
+assign egress_width_adapter_beat_last                           = inbound_fifo_read_data[INGRESS_BUNDLE_WIDTH-1];
+assign egress_width_adapter_beat_byte_count                     = inbound_fifo_read_data[(FABRIC_DATA_BYTES*8) +: FABRIC_BYTE_COUNT_WIDTH];
+assign egress_width_adapter_beat_enable                         = inbound_fifo_read_data_valid;
+assign egress_width_adapter_byte_data_ready                     = rmii_byte_shipper_data_ready;
 
 assign variable_stage_synchronizer_speed_code_clock             = core_clock;
 assign variable_stage_synchronizer_speed_code_reset_n           = core_reset_n;
@@ -463,8 +504,8 @@ assign phy_received_bytes_fifo_read_clock                       = core_clock;
 assign phy_received_bytes_fifo_read_enable                      = ethernet_packet_parser_data_ready;
 assign phy_received_bytes_fifo_read_reset_n                     = core_reset_n;
 assign phy_received_bytes_fifo_write_clock                      = clock;
-assign phy_received_bytes_fifo_write_data                       = {ingress_beat_last, ingress_beat_first, ingress_beat_byte_count, ingress_beat_data};
-assign phy_received_bytes_fifo_write_enable                     = ingress_beat_valid && !phy_received_bytes_fifo_full;
+assign phy_received_bytes_fifo_write_data                       = {ingress_width_adapter_beat_last, ingress_width_adapter_beat_first, ingress_width_adapter_beat_byte_count, ingress_width_adapter_beat_data};
+assign phy_received_bytes_fifo_write_enable                     = ingress_width_adapter_beat_valid && !phy_received_bytes_fifo_full;
 assign phy_received_bytes_fifo_write_reset_n                    = reset_n;
 
 assign ethernet_packet_parser_clock                             = core_clock;
@@ -527,14 +568,14 @@ assign inbound_fifo_read_clock                                  = clock;
 assign inbound_fifo_read_reset_n                                = reset_n;
 assign inbound_fifo_write_clock                                 = core_clock;
 assign inbound_fifo_write_reset_n                               = core_reset_n;
-assign inbound_fifo_read_enable                                 = egress_adapter_beat_ready;
+assign inbound_fifo_read_enable                                 = egress_width_adapter_beat_ready;
 assign inbound_fifo_write_enable                                = transmit_data_enable;
 assign inbound_fifo_write_data                                  = {transmit_data_last, transmit_data_first, transmit_data_byte_count, transmit_data};
 
 assign rmii_byte_shipper_clock                                  = clock;
 assign rmii_byte_shipper_reset_n                                = reset_n;
-assign rmii_byte_shipper_data                                   = egress_byte_data;
-assign rmii_byte_shipper_data_enable                            = egress_byte_valid;
+assign rmii_byte_shipper_data                                   = egress_width_adapter_byte_data;
+assign rmii_byte_shipper_data_enable                            = egress_width_adapter_byte_data_valid;
 assign rmii_byte_shipper_speed_code                             = rmii_byte_packager_speed_code;
 
 

@@ -122,7 +122,7 @@ always_comb begin
     _state                          = state;
     _checksum                       = checksum;
     _lfsr_in                        = lfsr_in;
-    _checksum_valid                 = 0;
+    _checksum_valid                 = '0;
     _ready                          = ready;
 
     //cascade the byte step across the beat. the byte count only shortens
@@ -147,17 +147,17 @@ always_comb begin
         S_CALCULATE: begin
             if (data_enable) begin
                 _lfsr_in         =  lfsr_next;
-                _ready           =  0;
+                _ready           =  '0;
             end
             if (data_last) begin
                 _state              = S_FINISH;
             end
         end
         S_FINISH: begin
-            _checksum_valid         = 1;
+            _checksum_valid         = 1'b1;
             _state                  = S_CALCULATE;
             _lfsr_in                = '1;
-            _ready                  = 1;
+            _ready                  = 1'b1;
         end
     endcase
 end
@@ -165,10 +165,10 @@ end
 always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                       <= S_CALCULATE;
-        checksum                    <= 0;
-        checksum_valid              <= 0;
+        checksum                    <= '0;
+        checksum_valid              <= '0;
         lfsr_in                     <= '1;
-        ready                       <=  1;
+        ready                       <=  1'b1;
     end
     else begin
         state                       <= _state;

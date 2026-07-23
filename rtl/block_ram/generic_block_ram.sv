@@ -49,24 +49,23 @@ module generic_block_ram#(
 
 
 reg     [DATA_WIDTH-1:0]    memory   [DATA_DEPTH-1:0];
-logic   [DATA_WIDTH-1:0]    _memory  [DATA_DEPTH-1:0];
-reg     [DATA_WIDTH-1:0]    pipelined_read_data;
-logic   [DATA_WIDTH-1:0]    _pipelined_read_data;
 reg     [DATA_WIDTH-1:0]    memory_read_data;
 logic   [DATA_WIDTH-1:0]    _memory_read_data;
-integer                     i;
 integer                     j;
 
 
+//the memory array deliberately breaks the two process pattern. touching
+//every entry each cycle costs simulation time proportional to the depth
+//and stops synthesis from inferring block ram, so only the addressed
+//entry is written. contents start at zero instead of clearing on reset;
+//the surrounding fifo pointers define which entries are valid
+initial begin
+    for (j=0; j<DATA_DEPTH; j=j+1) begin
+        memory[j]   = '0;
+    end
+end
+
 always_comb begin
-    for (i=0; i<DATA_DEPTH; i=i+1) begin
-        _memory[i]  = memory[i];
-    end
-
-    if  (write_enable) begin
-        _memory[write_address] = write_data;
-    end
-
     _memory_read_data   = memory[read_address];
 
     if (PIPELINED_OUTPUT) begin
@@ -77,20 +76,20 @@ always_comb begin
     end
 end
 
+//plain always, not always_ff, so the initial block above may also
+//assign the array
+always @(posedge clock) begin
+    if (write_enable) begin
+        memory[write_address]   <=  write_data;
+    end
+end
+
 always_ff @(posedge clock) begin
     if (!reset_n) begin
         memory_read_data    <=  0;
-
-        for (j=0; j<DATA_DEPTH; j=j+1) begin
-            memory[j]   <=  0;
-        end
     end
     else begin
         memory_read_data    <=  _memory_read_data;
-
-        for (j=0; j<DATA_DEPTH; j=j+1) begin
-            memory[j]   <=  _memory[j];
-        end
     end
 end
 

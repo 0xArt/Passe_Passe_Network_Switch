@@ -64,8 +64,8 @@ always_comb begin
     _state                          = state;
     _push_data                      = push_data;
     _queue_slot_select                = queue_slot_select;
-    _push_data_valid                = 0;
-    ready                           = 0;
+    _push_data_valid                = '0;
+    ready                           = '0;
 
     case (state)
         S_IDLE: begin
@@ -74,23 +74,23 @@ always_comb begin
             end
             else begin
                 if (queue_slot_select == (RECEIVE_QUEUE_SLOTS - 1)) begin
-                    _queue_slot_select = 0;
+                    _queue_slot_select = '0;
                 end
                 else begin
-                    _queue_slot_select = queue_slot_select + 1;
+                    _queue_slot_select = queue_slot_select + 1'b1;
                 end
             end
         end
         S_PASSTHROUGH:  begin
             if (!enable[queue_slot_select]) begin
                 _state                  = S_IDLE;
-                ready                   = 0;
+                ready                   = '0;
 
                 if (queue_slot_select == (RECEIVE_QUEUE_SLOTS - 1)) begin
-                    _queue_slot_select = 0;
+                    _queue_slot_select = '0;
                 end
                 else begin
-                    _queue_slot_select = queue_slot_select + 1;
+                    _queue_slot_select = queue_slot_select + 1'b1;
                 end
             end
             else begin
@@ -107,15 +107,15 @@ end
 always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                       <=  S_IDLE;
-        push_data                   <=  0;
-        push_data_valid             <=  0;
-        queue_slot_select             <=  0;
+        push_data                   <=  '0;
+        push_data_valid             <=  '0;
+        queue_slot_select           <=  '0;
     end
     else begin
         state                       <=  _state;
         push_data                   <=  _push_data;
         push_data_valid             <=  _push_data_valid;
-        queue_slot_select             <=  _queue_slot_select;
+        queue_slot_select           <=  _queue_slot_select;
     end
 end
 
