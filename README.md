@@ -26,7 +26,7 @@ redesign.
 
 ## Simulation
 
-The regression testbench (`test/testbench.sv`, cases 000-011) runs in Questa
+The regression testbench (`test/testbench.sv`, cases 000-012) runs in Questa
 with `do run.do`, or headless:
 
 ```
@@ -38,7 +38,10 @@ vsim -c -voptargs=+acc -L presynth -work presynth -t 1ps presynth.testbench \
 
 Add `-GFABRIC_DATA_BYTES=4` to the vsim command to run the same regression
 with four byte fabric beats, and `-GCORE_CLOCK_FREQUENCY=<hz>` to run it at a
-reduced core clock. Unit testbenches live in `test/unit/`, covering the
+reduced core clock. Add `+CASE=<n>` to run a single case instead of the full
+regression (some cases depend on earlier ones, for example unicast
+forwarding needs the previously learned station). Unit testbenches live in
+`test/unit/`, covering the
 fabric modules and the egress drain path (including a clock skew test that
 proves the gap shrink mechanism drains a saturating stream through a
 deliberately slowed transmit clock without dropping a frame).
@@ -176,3 +179,21 @@ embedded timestamps.
 datagram size), 0/200 datagrams lost, none reordered, 0.0 ns jitter (the
 simulation is deterministic, so every datagram sees an identical transit
 time — on hardware this measures clock domain crossing variation).
+
+### case 012 — multicast flood integrity
+
+RGMII port 1 floods 20 broadcast MTU frames at gigabit line rate, so every
+copy fans out through the fabric to all four other ports at once — including
+the byte serial virtual port, the slowest consumer in the switch. A monitor
+on the RGMII port 0 wire validates every flooded copy byte for byte: full
+1518 byte length and a correct frame check sequence. The case exists because
+a flood is only as fast as its slowest granted egress; if a slow port paces
+the fabric handshake directly, the gigabit copy underruns the transmitter
+mid frame and leaves the wire truncated. The beat wide staging FIFO in front
+of the virtual port keeps the flood streaming at full beat rate no matter
+how slowly the virtual port drains.
+
+**Result: pass.** 20/20 flooded copies arrive complete and CRC clean on the
+gigabit wire with the virtual port in the flood set. Before the staging FIFO
+this case failed at the reduced core clock exactly as predicted — the first
+copy truncated mid frame and the rest collapsed to short fragments.

@@ -269,6 +269,14 @@ endgenerate
 //and elaborate to wires at one byte
 localparam FABRIC_BYTE_COUNT_WIDTH = $clog2(FABRIC_DATA_BYTES+1);
 
+//the byte serial virtual port drains slower than the fabric streams, so a
+//beat wide staging fifo fronts it. the fabric handshake sees a full rate
+//fifo admission instead of the byte pace, which keeps a flooded frame from
+//throttling (and truncating) the copies bound for the gigabit wires
+localparam VIRTUAL_EGRESS_BUNDLE_WIDTH  = (FABRIC_DATA_BYTES*8) + FABRIC_BYTE_COUNT_WIDTH + 2;
+localparam VIRTUAL_EGRESS_FIFO_DEPTH    = 4096 / FABRIC_DATA_BYTES;
+localparam VIRTUAL_EGRESS_FRAME_RESERVE = 1536 / FABRIC_DATA_BYTES;
+
 //per port readiness rails driven by the port type assign blocks below
 wire    [NUMBER_OF_PORTS-1:0]                       port_transmit_ready;
 wire    [NUMBER_OF_PORTS-1:0]                       port_transmit_frame_ready;
@@ -501,6 +509,22 @@ wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]                              width_ad
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_down_byte_data_valid;
 wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_down_byte_data_last;
 
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_read_clock;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_read_reset_n;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_write_clock;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_write_reset_n;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_read_enable;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_write_enable;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][VIRTUAL_EGRESS_BUNDLE_WIDTH-1:0]  virtual_egress_fifo_write_data;
+
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][VIRTUAL_EGRESS_BUNDLE_WIDTH-1:0]  virtual_egress_fifo_read_data;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_read_data_valid;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_full;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_almost_full;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_programmable_full;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_empty;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_programmable_empty;
+
 generate
     for (i=0; i<NUMBER_OF_VIRTUAL_PORTS; i=i+1) begin : virtual_port_width_adapters
         //the virtual port stays byte serial, so it crosses into and out of
@@ -539,6 +563,31 @@ generate
             .byte_data          (width_adapter_down_byte_data[i]),
             .byte_data_valid    (width_adapter_down_byte_data_valid[i]),
             .byte_data_last     (width_adapter_down_byte_data_last[i])
+        );
+
+        asynchronous_fifo #(
+            .DATA_WIDTH                     (VIRTUAL_EGRESS_BUNDLE_WIDTH),
+            .DATA_DEPTH                     (VIRTUAL_EGRESS_FIFO_DEPTH),
+            .FIRST_WORD_FALL_THROUGH        (1),
+            .TECHNOLOGY                     (TECHNOLOGY),
+            .NUMBER_OF_CDC_STAGES           (2),
+            .PROGRAMMABLE_FULL_THRESHOLD    (VIRTUAL_EGRESS_FIFO_DEPTH - VIRTUAL_EGRESS_FRAME_RESERVE)
+        ) virtual_egress_fifo (
+            .read_clock         (virtual_egress_fifo_read_clock[i]),
+            .read_reset_n       (virtual_egress_fifo_read_reset_n[i]),
+            .write_clock        (virtual_egress_fifo_write_clock[i]),
+            .write_reset_n      (virtual_egress_fifo_write_reset_n[i]),
+            .read_enable        (virtual_egress_fifo_read_enable[i]),
+            .write_enable       (virtual_egress_fifo_write_enable[i]),
+            .write_data         (virtual_egress_fifo_write_data[i]),
+
+            .read_data          (virtual_egress_fifo_read_data[i]),
+            .read_data_valid    (virtual_egress_fifo_read_data_valid[i]),
+            .full               (virtual_egress_fifo_full[i]),
+            .almost_full        (virtual_egress_fifo_almost_full[i]),
+            .programmable_full  (virtual_egress_fifo_programmable_full[i]),
+            .empty              (virtual_egress_fifo_empty[i]),
+            .programmable_empty (virtual_egress_fifo_programmable_empty[i])
         );
     end
 endgenerate
@@ -588,7 +637,7 @@ generate
         assign  module_receive_data[i]                                      = virtual_port_udp_module_receive_data[i];
         assign  module_receive_data_valid[i]                                = virtual_port_udp_module_receive_data_valid[i];
         assign  port_transmit_ready[i+NUMBER_OF_RMII_PORTS]                 = virtual_port_udp_receive_data_ready[i];
-        assign  port_transmit_frame_ready[i+NUMBER_OF_RMII_PORTS]           = virtual_port_udp_receive_frame_ready[i];
+        assign  port_transmit_frame_ready[i+NUMBER_OF_RMII_PORTS]           = virtual_port_udp_receive_frame_ready[i] && !virtual_egress_fifo_programmable_full[i];
         assign  module_transmit_data_ready[i]                               = virtual_port_udp_module_transmit_data_ready[i];
 
         assign  width_adapter_up_clock[i]                                   = clock;
@@ -603,15 +652,26 @@ generate
         assign  port_header_engine_in_byte_count[i+NUMBER_OF_RMII_PORTS]    = width_adapter_up_beat_byte_count[i];
         assign  port_header_engine_in_enable[i+NUMBER_OF_RMII_PORTS]        = width_adapter_up_beat_valid[i];
 
+        assign  virtual_egress_fifo_read_clock[i]                           = clock;
+        assign  virtual_egress_fifo_read_reset_n[i]                         = reset_n;
+        assign  virtual_egress_fifo_write_clock[i]                          = clock;
+        assign  virtual_egress_fifo_write_reset_n[i]                        = reset_n;
+        assign  virtual_egress_fifo_write_data[i]                           = {egress_scheduler_transmit_last[i+NUMBER_OF_RMII_PORTS],
+                                                                               egress_scheduler_transmit_first[i+NUMBER_OF_RMII_PORTS],
+                                                                               egress_scheduler_transmit_byte_count[i+NUMBER_OF_RMII_PORTS],
+                                                                               egress_scheduler_transmit_data[i+NUMBER_OF_RMII_PORTS]};
+        assign  virtual_egress_fifo_write_enable[i]                         = egress_scheduler_transmit_valid[i+NUMBER_OF_RMII_PORTS];
+        assign  virtual_egress_fifo_read_enable[i]                          = width_adapter_down_beat_ready[i];
+
         assign  width_adapter_down_clock[i]                                 = clock;
         assign  width_adapter_down_reset_n[i]                               = reset_n;
-        assign  width_adapter_down_beat_data[i]                             = egress_scheduler_transmit_data[i+NUMBER_OF_RMII_PORTS];
-        assign  width_adapter_down_beat_first[i]                            = egress_scheduler_transmit_first[i+NUMBER_OF_RMII_PORTS];
-        assign  width_adapter_down_beat_last[i]                             = egress_scheduler_transmit_last[i+NUMBER_OF_RMII_PORTS];
-        assign  width_adapter_down_beat_byte_count[i]                       = egress_scheduler_transmit_byte_count[i+NUMBER_OF_RMII_PORTS];
-        assign  width_adapter_down_beat_enable[i]                           = egress_scheduler_transmit_valid[i+NUMBER_OF_RMII_PORTS];
+        assign  width_adapter_down_beat_data[i]                             = virtual_egress_fifo_read_data[i][(FABRIC_DATA_BYTES*8)-1:0];
+        assign  width_adapter_down_beat_first[i]                            = virtual_egress_fifo_read_data[i][VIRTUAL_EGRESS_BUNDLE_WIDTH-2];
+        assign  width_adapter_down_beat_last[i]                             = virtual_egress_fifo_read_data[i][VIRTUAL_EGRESS_BUNDLE_WIDTH-1];
+        assign  width_adapter_down_beat_byte_count[i]                       = virtual_egress_fifo_read_data[i][(FABRIC_DATA_BYTES*8) +: FABRIC_BYTE_COUNT_WIDTH];
+        assign  width_adapter_down_beat_enable[i]                           = virtual_egress_fifo_read_data_valid[i];
         assign  width_adapter_down_byte_data_ready[i]                       = port_transmit_ready[i+NUMBER_OF_RMII_PORTS];
-        assign  egress_beat_ready[i+NUMBER_OF_RMII_PORTS]                   = width_adapter_down_beat_ready[i];
+        assign  egress_beat_ready[i+NUMBER_OF_RMII_PORTS]                   = !virtual_egress_fifo_full[i];
     end
 endgenerate
 

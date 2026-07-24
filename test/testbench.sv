@@ -44,6 +44,7 @@
 `include "./case_009/case_009.svh"
 `include "./case_010/case_010.svh"
 `include "./case_011/case_011.svh"
+`include "./case_012/case_012.svh"
 
 module testbench#(
     parameter FABRIC_DATA_BYTES     = 1,            //override with vsim -G to test wider fabric beats
@@ -230,21 +231,47 @@ initial begin
     reset_n = 1;
 end
 
+//run a single case with +CASE=<n> on the vsim command line (some cases
+//depend on earlier ones, for example unicast forwarding needs the learned
+//station); with no plusarg the full regression runs
+integer only_case;
+
 initial begin
     wait(reset_n);
     repeat(100) @(posedge rmii_clock);
-    case_000();
-    case_001();
-    case_002();
-    case_003();
-    case_004();
-    case_005();
-    case_006();
-    case_007();
-    case_008();
-    case_009();
-    case_010();
-    case_011();
+    if ($value$plusargs("CASE=%d", only_case)) begin
+        case (only_case)
+            0:  case_000();
+            1:  case_001();
+            2:  case_002();
+            3:  case_003();
+            4:  case_004();
+            5:  case_005();
+            6:  case_006();
+            7:  case_007();
+            8:  case_008();
+            9:  case_009();
+            10: case_010();
+            11: case_011();
+            12: case_012();
+            default: $fatal(0, "no case %0d", only_case);
+        endcase
+    end
+    else begin
+        case_000();
+        case_001();
+        case_002();
+        case_003();
+        case_004();
+        case_005();
+        case_006();
+        case_007();
+        case_008();
+        case_009();
+        case_010();
+        case_011();
+        case_012();
+    end
     $stop();
 end
 
