@@ -386,10 +386,12 @@ wire        rgmii_byte_shipper_reset_n;
 wire [8:0]  rgmii_byte_shipper_data;
 wire        rgmii_byte_shipper_data_enable;
 wire        rgmii_byte_shipper_gap_shrink_enable;
+wire [1:0]  rgmii_byte_shipper_speed_code;
 
 wire        rgmii_byte_shipper_data_ready;
 wire [3:0]  rgmii_byte_shipper_shipped_data;
 wire        rgmii_byte_shipper_shipped_data_valid;
+wire [1:0]  rgmii_byte_shipper_shipped_clock_pattern;
 
 rgmii_byte_shipper#(
   .TECHNOLOGY               (TECHNOLOGY),
@@ -404,10 +406,51 @@ rgmii_byte_shipper(
     .data               (rgmii_byte_shipper_data),
     .data_enable        (rgmii_byte_shipper_data_enable),
     .gap_shrink_enable  (rgmii_byte_shipper_gap_shrink_enable),
+    .speed_code         (rgmii_byte_shipper_speed_code),
 
-    .data_ready         (rgmii_byte_shipper_data_ready),
-    .shipped_data       (rgmii_byte_shipper_shipped_data),
-    .shipped_data_valid (rgmii_byte_shipper_shipped_data_valid)
+    .data_ready             (rgmii_byte_shipper_data_ready),
+    .shipped_data           (rgmii_byte_shipper_shipped_data),
+    .shipped_data_valid     (rgmii_byte_shipper_shipped_data_valid),
+    .shipped_clock_pattern  (rgmii_byte_shipper_shipped_clock_pattern)
+);
+
+//the receive side in band status decode crosses into the transmit and core
+//clock domains through synchronizers. the code is quasi static: it only
+//moves across a link renegotiation, with the link down in between
+wire            transmit_speed_code_synchronizer_clock;
+wire            transmit_speed_code_synchronizer_reset_n;
+wire    [1:0]   transmit_speed_code_synchronizer_source_signal;
+
+wire    [1:0]   transmit_speed_code_synchronizer_destination_signal;
+wire            transmit_speed_code_synchronizer_destination_signal_valid;
+
+variable_stage_synchronizer #(
+    .DATA_WIDTH (2)
+) transmit_speed_code_synchronizer (
+    .clock                      (transmit_speed_code_synchronizer_clock),
+    .reset_n                    (transmit_speed_code_synchronizer_reset_n),
+    .source_signal              (transmit_speed_code_synchronizer_source_signal),
+
+    .destination_signal         (transmit_speed_code_synchronizer_destination_signal),
+    .destination_signal_valid   (transmit_speed_code_synchronizer_destination_signal_valid)
+);
+
+wire            core_speed_code_synchronizer_clock;
+wire            core_speed_code_synchronizer_reset_n;
+wire    [1:0]   core_speed_code_synchronizer_source_signal;
+
+wire    [1:0]   core_speed_code_synchronizer_destination_signal;
+wire            core_speed_code_synchronizer_destination_signal_valid;
+
+variable_stage_synchronizer #(
+    .DATA_WIDTH (2)
+) core_speed_code_synchronizer (
+    .clock                      (core_speed_code_synchronizer_clock),
+    .reset_n                    (core_speed_code_synchronizer_reset_n),
+    .source_signal              (core_speed_code_synchronizer_source_signal),
+
+    .destination_signal         (core_speed_code_synchronizer_destination_signal),
+    .destination_signal_valid   (core_speed_code_synchronizer_destination_signal_valid)
 );
 
 
@@ -557,7 +600,7 @@ assign ethernet_packet_parser_data_last                         = phy_received_b
 assign ethernet_packet_parser_data_enable                       = phy_received_bytes_fifo_read_data_valid;
 assign ethernet_packet_parser_checksum_result                   = frame_check_sequence_generator_checksum;
 assign ethernet_packet_parser_checksum_result_enable            = frame_check_sequence_generator_checksum_valid;
-assign ethernet_packet_parser_speed_code                        = 2;
+assign ethernet_packet_parser_speed_code                        = core_speed_code_synchronizer_destination_signal;
 
 generate
     for (i=0; i<RECEIVE_QUEUE_SLOTS; i=i+1) begin
@@ -635,6 +678,15 @@ assign rgmii_pll_reset_n                                        = phy_receive_re
 
 assign data_clock_ddr_output_buffer_clock                       = (PHASE_SHIFT_TX_CLOCK_ENABLE == 1) ? rgmii_pll_phase_shifted_clock : transmit_clock;
 assign data_clock_ddr_output_buffer_reset_n                     = (PHASE_SHIFT_TX_CLOCK_ENABLE == 1) ? phy_receive_reset_n : phy_transmit_reset_n;
-assign data_clock_ddr_output_buffer_ddr_input                   = {1'b0,1'b1};
+assign data_clock_ddr_output_buffer_ddr_input                   = rgmii_byte_shipper_shipped_clock_pattern;
+
+assign transmit_speed_code_synchronizer_clock                   = transmit_clock;
+assign transmit_speed_code_synchronizer_reset_n                 = phy_transmit_reset_n;
+assign transmit_speed_code_synchronizer_source_signal           = rgmii_byte_packager_packaged_data_speed_code;
+assign rgmii_byte_shipper_speed_code                            = transmit_speed_code_synchronizer_destination_signal;
+
+assign core_speed_code_synchronizer_clock                       = core_clock;
+assign core_speed_code_synchronizer_reset_n                     = core_reset_n;
+assign core_speed_code_synchronizer_source_signal               = rgmii_byte_packager_packaged_data_speed_code;
 
 endmodule
