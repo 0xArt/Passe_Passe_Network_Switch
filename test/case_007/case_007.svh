@@ -107,14 +107,14 @@ testbench.ethernet_message[71]  = 8'hC5;
 
 for (i=0;i<72;i=i+1) begin
     @(posedge testbench.rgmii_clock);
-    testbench.rgmii_data_control        = 1;
-    testbench.rgmii_data                = testbench.ethernet_message[i][3:0];
+    testbench.rgmii_data_control[0]     = 1;
+    testbench.rgmii_data[0]             = testbench.ethernet_message[i][3:0];
     @(negedge testbench.rgmii_clock);
-    testbench.rgmii_data                = testbench.ethernet_message[i][7:4];
+    testbench.rgmii_data[0]             = testbench.ethernet_message[i][7:4];
 end
 @(posedge testbench.rgmii_clock);
-testbench.rgmii_data_control            = 0;
-testbench.rgmii_data                    = 0;
+testbench.rgmii_data_control[0]         = 0;
+testbench.rgmii_data[0]                 = 0;
 
 fork : f0
     begin

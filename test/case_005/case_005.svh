@@ -128,7 +128,7 @@ fork : f0
         disable f0;
     end
     begin
-        wait (testbench.switch_core.genblk2[0].virutal_port_udp.module_receive_data_valid == 1);
+        wait (testbench.switch_core.genblk2[0].virtual_port_udp.module_receive_data_valid == 1);
         $display("Packet from RMII port 0 was received by the virtual port");
         disable f0;
     end

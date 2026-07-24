@@ -11,7 +11,11 @@
 // Project Name:
 // Target Devices:
 // Tool Versions:
-// Description:
+// Description: ethernet crc32 generator. processes DATA_BYTES bytes per
+//              cycle by cascading the byte step; data_byte_count limits the
+//              cascade on the final beat of a frame. byte 0 of the data bus
+//              is first on the wire. at DATA_BYTES = 1 this behaves exactly
+//              like the original byte serial implementation
 //
 // Dependencies:
 //
@@ -32,16 +36,19 @@
 // For licensing inquiries and commercial permissions, contact the creator directly.
 //
 //////////////////////////////////////////////////////////////////////////////////
-module frame_check_sequence_generator(
-    input   wire            clock,
-    input   wire            reset_n,
-    input   wire    [7:0]   data,
-    input   wire            data_enable,
-    input   wire            data_last,
+module frame_check_sequence_generator#(
+    parameter DATA_BYTES = 1
+)(
+    input   wire                                    clock,
+    input   wire                                    reset_n,
+    input   wire    [(DATA_BYTES*8)-1:0]            data,
+    input   wire                                    data_enable,
+    input   wire                                    data_last,
+    input   wire    [$clog2(DATA_BYTES+1)-1:0]      data_byte_count,
 
-    output  reg             ready,
-    output  reg     [31:0]  checksum,
-    output  reg             checksum_valid
+    output  reg                                     ready,
+    output  reg     [31:0]                          checksum,
+    output  reg                                     checksum_valid
 );
 
 
@@ -58,58 +65,75 @@ integer             i;
 integer             j;
 logic   [31:0]      _checksum;
 logic               _checksum_valid;
-logic   [7:0]       data_binary_reverse;
 reg     [31:0]      lfsr_in;
 logic   [31:0]      _lfsr_in;
-logic   [31:0]      lfsr_out;
+logic   [31:0]      lfsr_next;
 logic   [31:0]      lfsr_in_xor;
 logic   [31:0]      lfsr_in_xor_binary_reverse;
 logic               _ready;
+
+//one crc32 byte step of the 802.3 lfsr (data bits enter reversed)
+function automatic logic [31:0] lfsr_byte_step(input logic [31:0] c, input logic [7:0] d);
+    logic [7:0]     r;
+    logic [31:0]    o;
+
+    for (int k = 0; k < 8; k = k + 1) begin
+        r[k]    = d[7-k];
+    end
+
+    o[0]     = c[24] ^ c[30] ^ r[0] ^ r[6];
+    o[1]     = c[24] ^ c[25] ^ c[30] ^ c[31] ^ r[0] ^ r[1] ^ r[6] ^ r[7];
+    o[2]     = c[24] ^ c[25] ^ c[26] ^ c[30] ^ c[31] ^ r[0] ^ r[1] ^ r[2] ^ r[6] ^ r[7];
+    o[3]     = c[25] ^ c[26] ^ c[27] ^ c[31] ^ r[1] ^ r[2] ^ r[3] ^ r[7];
+    o[4]     = c[24] ^ c[26] ^ c[27] ^ c[28] ^ c[30] ^ r[0] ^ r[2] ^ r[3] ^ r[4] ^ r[6];
+    o[5]     = c[24] ^ c[25] ^ c[27] ^ c[28] ^ c[29] ^ c[30] ^ c[31] ^ r[0] ^ r[1] ^ r[3] ^ r[4] ^ r[5] ^ r[6] ^ r[7];
+    o[6]     = c[25] ^ c[26] ^ c[28] ^ c[29] ^ c[30] ^ c[31] ^ r[1] ^ r[2] ^ r[4] ^ r[5] ^ r[6] ^ r[7];
+    o[7]     = c[24] ^ c[26] ^ c[27] ^ c[29] ^ c[31] ^ r[0] ^ r[2] ^ r[3] ^ r[5] ^ r[7];
+    o[8]     = c[0] ^ c[24] ^ c[25] ^ c[27] ^ c[28] ^ r[0] ^ r[1] ^ r[3] ^ r[4];
+    o[9]     = c[1] ^ c[25] ^ c[26] ^ c[28] ^ c[29] ^ r[1] ^ r[2] ^ r[4] ^ r[5];
+    o[10]    = c[2] ^ c[24] ^ c[26] ^ c[27] ^ c[29] ^ r[0] ^ r[2] ^ r[3] ^ r[5];
+    o[11]    = c[3] ^ c[24] ^ c[25] ^ c[27] ^ c[28] ^ r[0] ^ r[1] ^ r[3] ^ r[4];
+    o[12]    = c[4] ^ c[24] ^ c[25] ^ c[26] ^ c[28] ^ c[29] ^ c[30] ^ r[0] ^ r[1] ^ r[2] ^ r[4] ^ r[5] ^ r[6];
+    o[13]    = c[5] ^ c[25] ^ c[26] ^ c[27] ^ c[29] ^ c[30] ^ c[31] ^ r[1] ^ r[2] ^ r[3] ^ r[5] ^ r[6] ^ r[7];
+    o[14]    = c[6] ^ c[26] ^ c[27] ^ c[28] ^ c[30] ^ c[31] ^ r[2] ^ r[3] ^ r[4] ^ r[6] ^ r[7];
+    o[15]    = c[7] ^ c[27] ^ c[28] ^ c[29] ^ c[31] ^ r[3] ^ r[4] ^ r[5] ^ r[7];
+    o[16]    = c[8] ^ c[24] ^ c[28] ^ c[29] ^ r[0] ^ r[4] ^ r[5];
+    o[17]    = c[9] ^ c[25] ^ c[29] ^ c[30] ^ r[1] ^ r[5] ^ r[6];
+    o[18]    = c[10] ^ c[26] ^ c[30] ^ c[31] ^ r[2] ^ r[6] ^ r[7];
+    o[19]    = c[11] ^ c[27] ^ c[31] ^ r[3] ^ r[7];
+    o[20]    = c[12] ^ c[28] ^ r[4];
+    o[21]    = c[13] ^ c[29] ^ r[5];
+    o[22]    = c[14] ^ c[24] ^ r[0];
+    o[23]    = c[15] ^ c[24] ^ c[25] ^ c[30] ^ r[0] ^ r[1] ^ r[6];
+    o[24]    = c[16] ^ c[25] ^ c[26] ^ c[31] ^ r[1] ^ r[2] ^ r[7];
+    o[25]    = c[17] ^ c[26] ^ c[27] ^ r[2] ^ r[3];
+    o[26]    = c[18] ^ c[24] ^ c[27] ^ c[28] ^ c[30] ^ r[0] ^ r[3] ^ r[4] ^ r[6];
+    o[27]    = c[19] ^ c[25] ^ c[28] ^ c[29] ^ c[31] ^ r[1] ^ r[4] ^ r[5] ^ r[7];
+    o[28]    = c[20] ^ c[26] ^ c[29] ^ c[30] ^ r[2] ^ r[5] ^ r[6];
+    o[29]    = c[21] ^ c[27] ^ c[30] ^ c[31] ^ r[3] ^ r[6] ^ r[7];
+    o[30]    = c[22] ^ c[28] ^ c[31] ^ r[4] ^ r[7];
+    o[31]    = c[23] ^ c[29] ^ r[5];
+
+    return o;
+endfunction
 
 
 always_comb begin
     _state                          = state;
     _checksum                       = checksum;
     _lfsr_in                        = lfsr_in;
-    _checksum_valid                 = 0;
+    _checksum_valid                 = '0;
     _ready                          = ready;
 
-    for (i = 0; i < 8; i = i + 1) begin
-        data_binary_reverse[i]      = data[7-i];
-    end
+    //cascade the byte step across the beat. the byte count only shortens
+    //the cascade on the last beat of a frame
+    lfsr_next   = lfsr_in;
 
-    lfsr_out[0]     = lfsr_in[24] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[6];
-    lfsr_out[1]     = lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[2]     = lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[3]     = lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[7];
-    lfsr_out[4]     = lfsr_in[24] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[6];
-    lfsr_out[5]     = lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[6]     = lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[7]     = lfsr_in[24] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[29] ^ lfsr_in[31] ^ data_binary_reverse[0] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[5] ^ data_binary_reverse[7];
-    lfsr_out[8]     = lfsr_in[0] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[27] ^ lfsr_in[28] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[3] ^ data_binary_reverse[4];
-    lfsr_out[9]     = lfsr_in[1] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[28] ^ lfsr_in[29] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[4] ^ data_binary_reverse[5];
-    lfsr_out[10]    = lfsr_in[2] ^ lfsr_in[24] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[29] ^ data_binary_reverse[0] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[5];
-    lfsr_out[11]    = lfsr_in[3] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[27] ^ lfsr_in[28] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[3] ^ data_binary_reverse[4];
-    lfsr_out[12]    = lfsr_in[4] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[6];
-    lfsr_out[13]    = lfsr_in[5] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[29] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[5] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[14]    = lfsr_in[6] ^ lfsr_in[26] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[2] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[15]    = lfsr_in[7] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[31] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[7];
-    lfsr_out[16]    = lfsr_in[8] ^ lfsr_in[24] ^ lfsr_in[28] ^ lfsr_in[29] ^ data_binary_reverse[0] ^ data_binary_reverse[4] ^ data_binary_reverse[5];
-    lfsr_out[17]    = lfsr_in[9] ^ lfsr_in[25] ^ lfsr_in[29] ^ lfsr_in[30] ^ data_binary_reverse[1] ^ data_binary_reverse[5] ^ data_binary_reverse[6];
-    lfsr_out[18]    = lfsr_in[10] ^ lfsr_in[26] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[2] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[19]    = lfsr_in[11] ^ lfsr_in[27] ^ lfsr_in[31] ^ data_binary_reverse[3] ^ data_binary_reverse[7];
-    lfsr_out[20]    = lfsr_in[12] ^ lfsr_in[28] ^ data_binary_reverse[4];
-    lfsr_out[21]    = lfsr_in[13] ^ lfsr_in[29] ^ data_binary_reverse[5];
-    lfsr_out[22]    = lfsr_in[14] ^ lfsr_in[24] ^ data_binary_reverse[0];
-    lfsr_out[23]    = lfsr_in[15] ^ lfsr_in[24] ^ lfsr_in[25] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[1] ^ data_binary_reverse[6];
-    lfsr_out[24]    = lfsr_in[16] ^ lfsr_in[25] ^ lfsr_in[26] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[2] ^ data_binary_reverse[7];
-    lfsr_out[25]    = lfsr_in[17] ^ lfsr_in[26] ^ lfsr_in[27] ^ data_binary_reverse[2] ^ data_binary_reverse[3];
-    lfsr_out[26]    = lfsr_in[18] ^ lfsr_in[24] ^ lfsr_in[27] ^ lfsr_in[28] ^ lfsr_in[30] ^ data_binary_reverse[0] ^ data_binary_reverse[3] ^ data_binary_reverse[4] ^ data_binary_reverse[6];
-    lfsr_out[27]    = lfsr_in[19] ^ lfsr_in[25] ^ lfsr_in[28] ^ lfsr_in[29] ^ lfsr_in[31] ^ data_binary_reverse[1] ^ data_binary_reverse[4] ^ data_binary_reverse[5] ^ data_binary_reverse[7];
-    lfsr_out[28]    = lfsr_in[20] ^ lfsr_in[26] ^ lfsr_in[29] ^ lfsr_in[30] ^ data_binary_reverse[2] ^ data_binary_reverse[5] ^ data_binary_reverse[6];
-    lfsr_out[29]    = lfsr_in[21] ^ lfsr_in[27] ^ lfsr_in[30] ^ lfsr_in[31] ^ data_binary_reverse[3] ^ data_binary_reverse[6] ^ data_binary_reverse[7];
-    lfsr_out[30]    = lfsr_in[22] ^ lfsr_in[28] ^ lfsr_in[31] ^ data_binary_reverse[4] ^ data_binary_reverse[7];
-    lfsr_out[31]    = lfsr_in[23] ^ lfsr_in[29] ^ data_binary_reverse[5];
+    for (i = 0; i < DATA_BYTES; i = i + 1) begin
+        if (!data_last || (i < data_byte_count)) begin
+            lfsr_next   = lfsr_byte_step(lfsr_next, data[(i*8) +: 8]);
+        end
+    end
 
     lfsr_in_xor     = lfsr_in ^ 32'hFFFF_FFFF;
 
@@ -122,18 +146,18 @@ always_comb begin
     case (state)
         S_CALCULATE: begin
             if (data_enable) begin
-                _lfsr_in         =  lfsr_out;
-                _ready           =  0;
+                _lfsr_in         =  lfsr_next;
+                _ready           =  '0;
             end
             if (data_last) begin
                 _state              = S_FINISH;
             end
         end
         S_FINISH: begin
-            _checksum_valid         = 1;
+            _checksum_valid         = 1'b1;
             _state                  = S_CALCULATE;
             _lfsr_in                = '1;
-            _ready                  = 1;
+            _ready                  = 1'b1;
         end
     endcase
 end
@@ -141,10 +165,10 @@ end
 always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                       <= S_CALCULATE;
-        checksum                    <= 0;
-        checksum_valid              <= 0;
+        checksum                    <= '0;
+        checksum_valid              <= '0;
         lfsr_in                     <= '1;
-        ready                       <=  1;
+        ready                       <=  1'b1;
     end
     else begin
         state                       <= _state;

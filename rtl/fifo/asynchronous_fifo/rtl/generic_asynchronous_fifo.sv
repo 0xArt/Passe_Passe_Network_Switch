@@ -33,9 +33,11 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module generic_asynchronous_fifo#(
-    parameter DATA_WIDTH                = 16,
-    parameter DATA_DEPTH                = 4096,
-    parameter FIRST_WORD_FALL_THROUGH   = 0
+    parameter DATA_WIDTH                    = 16,
+    parameter DATA_DEPTH                    = 4096,
+    parameter FIRST_WORD_FALL_THROUGH       = 0,
+    parameter PROGRAMMABLE_FULL_THRESHOLD   = DATA_DEPTH - 8,
+    parameter PROGRAMMABLE_EMPTY_THRESHOLD  = 8
 )(
     input   wire                            read_clock,
     input   wire                            read_reset_n,
@@ -49,7 +51,9 @@ module generic_asynchronous_fifo#(
     output  logic                           read_data_valid,
     output  wire                            full,
     output  wire                            almost_full,
-    output  reg                             empty
+    output  wire                            programmable_full,
+    output  reg                             empty,
+    output  wire                            programmable_empty
 );
 
 
@@ -60,10 +64,14 @@ wire [$clog2(DATA_DEPTH):0]   asynchronous_fifo_write_pointer_read_pointer;
 
 wire                          asynchronous_fifo_write_pointer_full;
 wire                          asynchronous_fifo_write_pointer_almost_full;
+wire                          asynchronous_fifo_write_pointer_programmable_full;
 wire [$clog2(DATA_DEPTH)-1:0] asynchronous_fifo_write_pointer_address;
 wire [$clog2(DATA_DEPTH):0]   asynchronous_fifo_write_pointer_write_pointer_gray;
 
-asynchronous_fifo_write_pointer #(.ADDRESS_SIZE ($clog2(DATA_DEPTH)))
+asynchronous_fifo_write_pointer #(
+    .ADDRESS_SIZE                   ($clog2(DATA_DEPTH)),
+    .PROGRAMMABLE_FULL_THRESHOLD    (PROGRAMMABLE_FULL_THRESHOLD)
+)
 asynchronous_fifo_write_pointer(
   .clock                (asynchronous_fifo_write_pointer_clock),
   .reset_n              (asynchronous_fifo_write_pointer_reset_n),
@@ -72,6 +80,7 @@ asynchronous_fifo_write_pointer(
 
   .full                 (asynchronous_fifo_write_pointer_full),
   .almost_full          (asynchronous_fifo_write_pointer_almost_full),
+  .programmable_full    (asynchronous_fifo_write_pointer_programmable_full),
   .address              (asynchronous_fifo_write_pointer_address),
   .write_pointer_gray   (asynchronous_fifo_write_pointer_write_pointer_gray)
 );
@@ -84,10 +93,14 @@ wire [$clog2(DATA_DEPTH):0]   asynchronous_fifo_read_pointer_write_pointer;
 
 wire                          asynchronous_fifo_read_pointer_empty;
 wire                          asynchronous_fifo_read_pointer_almost_empty;
+wire                          asynchronous_fifo_read_pointer_programmable_empty;
 wire [$clog2(DATA_DEPTH)-1:0] asynchronous_fifo_read_pointer_address;
 wire [$clog2(DATA_DEPTH):0]   asynchronous_fifo_read_pointer_read_pointer_gray;
 
-asynchronous_fifo_read_pointer  #(.ADDRESS_SIZE ($clog2(DATA_DEPTH)))
+asynchronous_fifo_read_pointer  #(
+    .ADDRESS_SIZE                   ($clog2(DATA_DEPTH)),
+    .PROGRAMMABLE_EMPTY_THRESHOLD   (PROGRAMMABLE_EMPTY_THRESHOLD)
+)
 asynchronous_fifo_read_pointer(
   .clock                (asynchronous_fifo_read_pointer_clock),
   .reset_n              (asynchronous_fifo_read_pointer_reset_n),
@@ -96,6 +109,7 @@ asynchronous_fifo_read_pointer(
 
   .empty                (asynchronous_fifo_read_pointer_empty),
   .almost_empty         (asynchronous_fifo_read_pointer_almost_empty),
+  .programmable_empty   (asynchronous_fifo_read_pointer_programmable_empty),
   .address              (asynchronous_fifo_read_pointer_address),
   .read_pointer_gray    (asynchronous_fifo_read_pointer_read_pointer_gray)
 );
@@ -200,7 +214,9 @@ end
 assign read_data                                                = generic_dual_port_ram_read_data;
 assign full                                                     = asynchronous_fifo_write_pointer_full;
 assign almost_full                                              = asynchronous_fifo_write_pointer_almost_full;
+assign programmable_full                                        = asynchronous_fifo_write_pointer_programmable_full;
 assign empty                                                    = asynchronous_fifo_read_pointer_empty;
+assign programmable_empty                                       = asynchronous_fifo_read_pointer_programmable_empty;
 
 assign asynchronous_fifo_write_pointer_clock                    = write_clock;
 assign asynchronous_fifo_write_pointer_reset_n                  = write_reset_n;

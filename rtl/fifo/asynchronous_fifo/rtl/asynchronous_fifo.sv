@@ -33,12 +33,14 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module asynchronous_fifo#(
-    parameter DATA_WIDTH                = 16,
-    parameter DATA_DEPTH                = 4096,
-    parameter FIRST_WORD_FALL_THROUGH   = 0,
-    parameter PIPELINED_MEMORY          = 0,
-    parameter TECHNOLOGY                = "SIMULATION",
-    parameter NUMBER_OF_CDC_STAGES      = 2
+    parameter DATA_WIDTH                    = 16,
+    parameter DATA_DEPTH                    = 4096,
+    parameter FIRST_WORD_FALL_THROUGH       = 0,
+    parameter PIPELINED_MEMORY              = 0,
+    parameter TECHNOLOGY                    = "SIMULATION",
+    parameter NUMBER_OF_CDC_STAGES          = 2,
+    parameter PROGRAMMABLE_FULL_THRESHOLD   = DATA_DEPTH - 8,
+    parameter PROGRAMMABLE_EMPTY_THRESHOLD  = 8
 )(
     input   wire                            read_clock,
     input   wire                            read_reset_n,
@@ -52,7 +54,9 @@ module asynchronous_fifo#(
     output  wire                            read_data_valid,
     output  wire                            full,
     output  wire                            almost_full,
-    output  wire                            empty
+    output  wire                            programmable_full,
+    output  wire                            empty,
+    output  wire                            programmable_empty
 );
 
 
@@ -63,6 +67,8 @@ generate
       wire                    xpm_fifo_async_empty;
       wire                    xpm_fifo_async_full;
       wire                    xpm_fifo_async_almost_full;
+      wire                    xpm_fifo_async_prog_full;
+      wire                    xpm_fifo_async_prog_empty;
       wire  [DATA_WIDTH-1:0]  xpm_fifo_async_din;
       wire                    xpm_fifo_async_rd_clk;
       wire                    xpm_fifo_async_rd_en;
@@ -78,14 +84,14 @@ generate
         .FIFO_READ_LATENCY    (PIPELINED_MEMORY),
         .FIFO_WRITE_DEPTH     (DATA_DEPTH),
         .FULL_RESET_VALUE     (0),   
-        .PROG_EMPTY_THRESH    (10), 
-        .PROG_FULL_THRESH     (10),  
+        .PROG_EMPTY_THRESH    (PROGRAMMABLE_EMPTY_THRESHOLD), 
+        .PROG_FULL_THRESH     (PROGRAMMABLE_FULL_THRESHOLD),  
         .RD_DATA_COUNT_WIDTH  (1),
         .READ_DATA_WIDTH      (DATA_WIDTH),
         .READ_MODE            ("std"),        
         .RELATED_CLOCKS       (0),       
         .SIM_ASSERT_CHK       (0),
-        .USE_ADV_FEATURES     ("1707"),
+        .USE_ADV_FEATURES     ("170F"),
         .WAKEUP_TIME          (0),          
         .WRITE_DATA_WIDTH     (DATA_WIDTH),    
         .WR_DATA_COUNT_WIDTH  (1),
@@ -100,8 +106,8 @@ generate
         .empty                (xpm_fifo_async_empty),
         .full                 (xpm_fifo_async_full),
         .overflow             (),
-        .prog_empty           (),
-        .prog_full            (),
+        .prog_empty           (xpm_fifo_async_prog_empty),
+        .prog_full            (xpm_fifo_async_prog_full),
         .rd_data_count        (),
         .rd_rst_busy          (),
         .sbiterr              (),
@@ -125,6 +131,8 @@ generate
       assign  read_data             = xpm_fifo_async_dout;
       assign  full                  = xpm_fifo_async_full;
       assign  almost_full           = xpm_fifo_async_almost_full;
+      assign  programmable_full     = xpm_fifo_async_prog_full;
+      assign  programmable_empty    = xpm_fifo_async_prog_empty;
       assign  empty                 = xpm_fifo_async_empty;
 
       assign  xpm_fifo_async_din    = write_data;
@@ -140,6 +148,8 @@ generate
       wire                    xpm_fifo_async_empty;
       wire                    xpm_fifo_async_full;
       wire                    xpm_fifo_async_almost_full;
+      wire                    xpm_fifo_async_prog_full;
+      wire                    xpm_fifo_async_prog_empty;
       wire  [DATA_WIDTH-1:0]  xpm_fifo_async_din;
       wire                    xpm_fifo_async_rd_clk;
       wire                    xpm_fifo_async_rd_en;
@@ -155,14 +165,14 @@ generate
         .FIFO_READ_LATENCY    (0),
         .FIFO_WRITE_DEPTH     (DATA_DEPTH),
         .FULL_RESET_VALUE     (0),   
-        .PROG_EMPTY_THRESH    (10), 
-        .PROG_FULL_THRESH     (10),  
+        .PROG_EMPTY_THRESH    (PROGRAMMABLE_EMPTY_THRESHOLD), 
+        .PROG_FULL_THRESH     (PROGRAMMABLE_FULL_THRESHOLD),  
         .RD_DATA_COUNT_WIDTH  (1),
         .READ_DATA_WIDTH      (DATA_WIDTH),
         .READ_MODE            ("fwft"),        
         .RELATED_CLOCKS       (0),       
         .SIM_ASSERT_CHK       (0),
-        .USE_ADV_FEATURES     ("1707"),
+        .USE_ADV_FEATURES     ("170F"),
         .WAKEUP_TIME          (0),          
         .WRITE_DATA_WIDTH     (DATA_WIDTH),    
         .WR_DATA_COUNT_WIDTH  (1),
@@ -177,8 +187,8 @@ generate
         .empty                (xpm_fifo_async_empty),
         .full                 (xpm_fifo_async_full),
         .overflow             (),
-        .prog_empty           (),
-        .prog_full            (),
+        .prog_empty           (xpm_fifo_async_prog_empty),
+        .prog_full            (xpm_fifo_async_prog_full),
         .rd_data_count        (),
         .rd_rst_busy          (),
         .sbiterr              (),
@@ -202,6 +212,8 @@ generate
       assign  read_data             = xpm_fifo_async_dout;
       assign  full                  = xpm_fifo_async_full;
       assign  almost_full           = xpm_fifo_async_almost_full;
+      assign  programmable_full     = xpm_fifo_async_prog_full;
+      assign  programmable_empty    = xpm_fifo_async_prog_empty;
       assign  empty                 = xpm_fifo_async_empty;
 
       assign  xpm_fifo_async_din    = write_data;
@@ -223,13 +235,17 @@ generate
         wire                    generic_asynchronous_fifo_read_data_valid;
         wire                    generic_asynchronous_fifo_full;
         wire                    generic_asynchronous_fifo_almost_full;
+        wire                    generic_asynchronous_fifo_programmable_full;
         wire                    generic_asynchronous_fifo_empty;
+        wire                    generic_asynchronous_fifo_programmable_empty;
 
 
         generic_asynchronous_fifo#(
-            .DATA_WIDTH               (DATA_WIDTH),
-            .DATA_DEPTH               (DATA_DEPTH),
-            .FIRST_WORD_FALL_THROUGH  (FIRST_WORD_FALL_THROUGH)
+            .DATA_WIDTH                     (DATA_WIDTH),
+            .DATA_DEPTH                     (DATA_DEPTH),
+            .FIRST_WORD_FALL_THROUGH        (FIRST_WORD_FALL_THROUGH),
+            .PROGRAMMABLE_FULL_THRESHOLD    (PROGRAMMABLE_FULL_THRESHOLD),
+            .PROGRAMMABLE_EMPTY_THRESHOLD   (PROGRAMMABLE_EMPTY_THRESHOLD)
         )generic_asynchronous_fifo(
           .read_clock        (generic_asynchronous_fifo_read_clock),
           .read_reset_n      (generic_asynchronous_fifo_read_reset_n),
@@ -243,7 +259,9 @@ generate
           .read_data_valid   (generic_asynchronous_fifo_read_data_valid),
           .full              (generic_asynchronous_fifo_full),
           .almost_full       (generic_asynchronous_fifo_almost_full),
-          .empty             (generic_asynchronous_fifo_empty)
+          .programmable_full (generic_asynchronous_fifo_programmable_full),
+          .empty             (generic_asynchronous_fifo_empty),
+          .programmable_empty (generic_asynchronous_fifo_programmable_empty)
         );
 
 
@@ -251,6 +269,8 @@ generate
         assign  read_data_valid                         = generic_asynchronous_fifo_read_data_valid;
         assign  full                                    = generic_asynchronous_fifo_full;
         assign  almost_full                             = generic_asynchronous_fifo_almost_full;
+        assign  programmable_full                       = generic_asynchronous_fifo_programmable_full;
+        assign  programmable_empty                      = generic_asynchronous_fifo_programmable_empty;
         assign  empty                                   = generic_asynchronous_fifo_empty;
 
         assign  generic_asynchronous_fifo_read_clock    = read_clock;

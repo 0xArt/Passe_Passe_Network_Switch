@@ -34,12 +34,17 @@
 //////////////////////////////////////////////////////////////////////////////////
 module rgmii_byte_shipper #(
     parameter TECHNOLOGY                = "SIMULATION",
-    parameter INTER_PACKET_GAP_CYCLES   = 12 //96ns with a RGMII clock of 125MHz
+    parameter INTER_PACKET_GAP_CYCLES   = 10 //enforced gap is this plus two byte times: 12 byte times, 96ns at gigabit
 )(
     input   wire            clock,
     input   wire            reset_n,
     input   wire    [8:0]   data,
     input   wire            data_enable,
+    //while asserted the enforced gap shrinks by one byte time so a backlog
+    //behind a marginally slower transmit clock can drain. gate it on a fifo
+    //fill watermark, never tie it high, so the wire only dips below the
+    //802.3 minimum gap while the backlog is real
+    input   wire            gap_shrink_enable,
 
     output  logic           data_ready,
     output  wire    [3:0]   shipped_data,
@@ -172,8 +177,21 @@ always_comb  begin
             _frame_data = 8'hDD;
             _counter    = counter - 1;
 
-            if (counter == 0) begin
-                _state  = S_FIND_START_BIT;
+            if ((counter == 0) || (counter == 1 && gap_shrink_enable && data_enable && data[8])) begin
+                if (data_enable && data[8]) begin
+                    //the next frame is already waiting. start its preamble
+                    //directly so a backlogged stream repeats at exactly the
+                    //enforced gap, otherwise the find start cycle makes the
+                    //drain period one byte time longer than the ingress
+                    //minimum and a long saturating stream slowly fills every
+                    //fifo upstream
+                    _counter    = 6;
+                    _first_byte = 1;
+                    _state      = S_PREMABLE;
+                end
+                else begin
+                    _state  = S_FIND_START_BIT;
+                end
             end
         end
     endcase

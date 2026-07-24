@@ -7,7 +7,7 @@
 //
 // Create Date: 08/19/2023
 // Design Name:
-// Module Name: udp_receieve_handler
+// Module Name: udp_receive_handler
 // Project Name:
 // Target Devices:
 // Tool Versions:

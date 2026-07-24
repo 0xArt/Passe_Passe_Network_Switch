@@ -33,7 +33,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module ethernet_frame_parser#(
-    parameter RECEIVE_QUE_SLOTS = 4
+    parameter RECEIVE_QUEUE_SLOTS = 4
 )(
     input   wire                            clock,
     input   wire                            reset_n,
@@ -41,16 +41,16 @@ module ethernet_frame_parser#(
     input   wire                            data_enable,
     input   wire    [31:0]                  checksum_result,
     input   wire                            checksum_result_enable,
-    input   wire    [RECEIVE_QUE_SLOTS-1:0] receive_slot_enable,
+    input   wire    [RECEIVE_QUEUE_SLOTS-1:0] receive_slot_enable,
 
     output  logic                           data_ready,
     output  reg     [7:0]                   checksum_data,
     output  reg                             checksum_data_valid,
     output  reg                             checksum_data_last,
     output  reg     [7:0]                   packet_data,
-    output  reg     [RECEIVE_QUE_SLOTS-1:0] packet_data_valid,
-    output  reg     [RECEIVE_QUE_SLOTS-1:0] good_packet,
-    output  reg     [RECEIVE_QUE_SLOTS-1:0] bad_packet,
+    output  reg     [RECEIVE_QUEUE_SLOTS-1:0] packet_data_valid,
+    output  reg     [RECEIVE_QUEUE_SLOTS-1:0] good_packet,
+    output  reg     [RECEIVE_QUEUE_SLOTS-1:0] bad_packet,
     output  reg     [15:0]                  udp_destination,
     output  reg     [15:0]                  ipv4_flags,
     output  reg     [15:0]                  ipv4_identification
@@ -94,17 +94,17 @@ state_type                              state;
 integer                                 index;
 reg     [15:0]                          process_counter;
 logic   [15:0]                          _process_counter;
-logic   [RECEIVE_QUE_SLOTS-1:0]         _packet_data_valid;
+logic   [RECEIVE_QUEUE_SLOTS-1:0]         _packet_data_valid;
 logic   [7:0]                           _packet_data;
 logic   [7:0]                           _checksum_data;
 logic                                   _checksum_data_valid;
 logic                                   _checksum_data_last;
-reg     [$clog2(RECEIVE_QUE_SLOTS)-1:0] que_slot_select;
-logic   [$clog2(RECEIVE_QUE_SLOTS)-1:0] _que_slot_select;
+reg     [$clog2(RECEIVE_QUEUE_SLOTS)-1:0] queue_slot_select;
+logic   [$clog2(RECEIVE_QUEUE_SLOTS)-1:0] _queue_slot_select;
 logic   [31:0]                          _calculated_frame_check_sequence;
 reg     [31:0]                          calculated_frame_check_sequence;
-logic   [RECEIVE_QUE_SLOTS-1:0]         _good_packet;
-logic   [RECEIVE_QUE_SLOTS-1:0]         _bad_packet;
+logic   [RECEIVE_QUEUE_SLOTS-1:0]         _good_packet;
+logic   [RECEIVE_QUEUE_SLOTS-1:0]         _bad_packet;
 logic   [47:0]                          _mac_destination;
 reg     [47:0]                          mac_destination;
 logic   [47:0]                          _mac_source;
@@ -150,7 +150,7 @@ always_comb begin
     _state                              = state;
     _process_counter                    = process_counter;
     _checksum_data_valid                = checksum_data_valid;
-    _que_slot_select                    = que_slot_select;
+    _queue_slot_select                    = queue_slot_select;
     _mac_destination                    = mac_destination;
     _mac_source                         = mac_source;
     _frame_check_sequence               = frame_check_sequence;
@@ -187,9 +187,9 @@ always_comb begin
         S_IDLE: begin
             _calculated_frame_check_sequence = 0;
 
-            for (index=0; index<RECEIVE_QUE_SLOTS; index=index+1) begin
+            for (index=0; index<RECEIVE_QUEUE_SLOTS; index=index+1) begin
                 if (receive_slot_enable[index]) begin
-                    _que_slot_select =  index;
+                    _queue_slot_select =  index;
                 end
             end
             if (data_enable) begin
@@ -224,7 +224,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -238,7 +238,7 @@ always_comb begin
                 _mac_source[47:8]                   = mac_source[39:0];
                 _checksum_data                      = data;
                 _packet_data                        = data;
-                _packet_data_valid[que_slot_select] = 1;
+                _packet_data_valid[queue_slot_select] = 1;
                 _checksum_data_valid                = 1;
 
                 if (process_counter == 0) begin
@@ -247,7 +247,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -268,7 +268,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -285,7 +285,7 @@ always_comb begin
 
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -307,7 +307,7 @@ always_comb begin
 
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -328,7 +328,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -349,7 +349,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -370,7 +370,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -386,7 +386,7 @@ always_comb begin
 
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -403,7 +403,7 @@ always_comb begin
 
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -424,7 +424,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -442,7 +442,7 @@ always_comb begin
                 _ipv4_source_address[31:8]          = ipv4_source_address[23:0];
                 _checksum_data                      = data;
                 _packet_data                        = data;
-                _packet_data_valid[que_slot_select] = 1;
+                _packet_data_valid[queue_slot_select] = 1;
                 _checksum_data_valid                = 1;
                 data_ready                          = 1;
 
@@ -452,7 +452,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -465,7 +465,7 @@ always_comb begin
                 _ipv4_destination_address[31:8]     = ipv4_destination_address[23:0];
                 _checksum_data                      = data;
                 _packet_data                        = data;
-                _packet_data_valid[que_slot_select] = 1;
+                _packet_data_valid[queue_slot_select] = 1;
                 _checksum_data_valid                = 1;
                 data_ready                          = 1;
 
@@ -482,7 +482,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -497,7 +497,7 @@ always_comb begin
                 _checksum_data_valid                = 1;
                 data_ready                          = 1;
                 _packet_data                        = data;
-                _packet_data_valid[que_slot_select] = 1;
+                _packet_data_valid[queue_slot_select] = 1;
 
                 if (process_counter == 0) begin
                     _process_counter    = 1;
@@ -505,7 +505,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -520,7 +520,7 @@ always_comb begin
                 _checksum_data_valid                = 1;
                 data_ready                          = 1;
                 _packet_data                        = data;
-                _packet_data_valid[que_slot_select] = 1;
+                _packet_data_valid[queue_slot_select] = 1;
 
                 if (process_counter == 0) begin
                     _process_counter    = 1;
@@ -528,7 +528,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -543,7 +543,7 @@ always_comb begin
                 _checksum_data_valid                = 1;
                 data_ready                          = 1;
                 _packet_data                        = data;
-                _packet_data_valid[que_slot_select] = 1;
+                _packet_data_valid[queue_slot_select] = 1;
 
                 if (process_counter == 0) begin
                     _process_counter    = 1;
@@ -551,7 +551,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     data_ready                      = 0;
                     _checksum_data_last             = 1;
                 end
@@ -581,7 +581,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     _checksum_data_last             = 1;
                     data_ready                      = 0;
                 end
@@ -591,7 +591,7 @@ always_comb begin
             if (data_enable) begin
                 _process_counter                    = process_counter - 1;
                 _packet_data                        = data;
-                _packet_data_valid[que_slot_select] = 1;
+                _packet_data_valid[queue_slot_select] = 1;
                 _checksum_data                      = data;
                 _checksum_data_valid                = 1;
                 data_ready                          = 1;
@@ -610,7 +610,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     _checksum_data_last             = 1;
                     data_ready                      = 0;
                 end
@@ -630,7 +630,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     _checksum_data_last             = 1;
                     data_ready                      = 0;
                 end
@@ -652,7 +652,7 @@ always_comb begin
                 end
                 if (data[8]) begin
                     _state                          = S_RESTART;
-                    _bad_packet[que_slot_select]    = 1;
+                    _bad_packet[queue_slot_select]    = 1;
                     _checksum_data_last             = 1;
                     data_ready                      = 0;
                 end
@@ -662,10 +662,10 @@ always_comb begin
             _state      = S_IDLE;
 
             if (calculated_frame_check_sequence == frame_check_sequence) begin
-                _good_packet[que_slot_select]   = 1;
+                _good_packet[queue_slot_select]   = 1;
             end
             else begin
-                _bad_packet[que_slot_select]    = 1;
+                _bad_packet[queue_slot_select]    = 1;
             end
         end
         S_DROP_PACKET: begin
@@ -680,9 +680,9 @@ always_comb begin
             end
         end
         S_RESTART: begin
-            for (index=0; index<RECEIVE_QUE_SLOTS; index=index+1) begin
+            for (index=0; index<RECEIVE_QUEUE_SLOTS; index=index+1) begin
                 if (receive_slot_enable[index]) begin
-                    _que_slot_select =  index;
+                    _queue_slot_select =  index;
                 end
             end
             if (checksum_result_enable) begin
@@ -710,7 +710,7 @@ always_ff @(posedge clock) begin
         process_counter                 <=  0;
         packet_data                     <=  0;
         packet_data_valid               <=  0;
-        que_slot_select                 <=  0;
+        queue_slot_select                 <=  0;
         mac_destination                 <=  0;
         mac_source                      <=  0;
         frame_check_sequence            <=  0;
@@ -744,7 +744,7 @@ always_ff @(posedge clock) begin
         process_counter                 <=  _process_counter;
         packet_data                     <=  _packet_data;
         packet_data_valid               <=  _packet_data_valid;
-        que_slot_select                 <=  _que_slot_select;
+        queue_slot_select                 <=  _queue_slot_select;
         mac_destination                 <=  _mac_destination;
         mac_source                      <=  _mac_source;
         frame_check_sequence            <=  _frame_check_sequence;

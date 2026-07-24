@@ -81,7 +81,7 @@ generate
             .READ_DATA_WIDTH        (DATA_WIDTH),
             .READ_MODE              ("std"),
             .SIM_ASSERT_CHK         (0),
-            .USE_ADV_FEATURES       ("1707"),
+            .USE_ADV_FEATURES       ("170F"),
             .WAKEUP_TIME            (0),
             .WRITE_DATA_WIDTH       (DATA_WIDTH),
             .WR_DATA_COUNT_WIDTH    (1)
@@ -154,7 +154,7 @@ generate
             .READ_DATA_WIDTH        (DATA_WIDTH),
             .READ_MODE              ("fwft"),
             .SIM_ASSERT_CHK         (0),
-            .USE_ADV_FEATURES       ("1707"),
+            .USE_ADV_FEATURES       ("170F"),
             .WAKEUP_TIME            (0),
             .WRITE_DATA_WIDTH       (DATA_WIDTH),
             .WR_DATA_COUNT_WIDTH    (1)

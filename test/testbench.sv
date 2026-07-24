@@ -40,12 +40,19 @@
 `include "./case_005/case_005.svh"
 `include "./case_006/case_006.svh"
 `include "./case_007/case_007.svh"
+`include "./case_008/case_008.svh"
+`include "./case_009/case_009.svh"
+`include "./case_010/case_010.svh"
+`include "./case_011/case_011.svh"
+`include "./case_012/case_012.svh"
 
-module testbench;
+module testbench#(
+    parameter FABRIC_DATA_BYTES     = 1,            //override with vsim -G to test wider fabric beats
+    parameter CORE_CLOCK_FREQUENCY  = 250_000_000   //override with vsim -G to test reduced core clocks
+);
 
 localparam  RMII_CLOCK_FREQUENCY        = 50_000_000;
 localparam  RMII_CLOCK_PERIOD           = 1e9/RMII_CLOCK_FREQUENCY;
-localparam  CORE_CLOCK_FREQUENCY        = 250_000_000;
 localparam  CORE_CLOCK_PERIOD           = 1e9/CORE_CLOCK_FREQUENCY;
 localparam  MODULE_CLOCK_FREQUENCY      = 50_000_000;
 localparam  MODULE_CLOCK_PERIOD         = 1e9/MODULE_CLOCK_FREQUENCY;
@@ -53,8 +60,8 @@ localparam  RGMII_CLOCK_FREQUENCY       = 125_000_000;
 localparam  RGMII_CLOCK_PERIOD          = 1e9/RGMII_CLOCK_FREQUENCY;
 localparam  NUMBER_OF_RMII_PORTS        = 2;
 localparam  NUMBER_OF_VIRTUAL_PORTS     = 1;
-localparam  NUMBER_OF_RGMII_PORTS       = 1;
-localparam  RECEIVE_QUE_SLOTS           = 4;
+localparam  NUMBER_OF_RGMII_PORTS       = 2;
+localparam  RECEIVE_QUEUE_SLOTS           = 4;
 localparam  TECHNOLOGY                  = "SIMULATION";
 
 logic                                           rmii_clock                      = 0;
@@ -71,8 +78,8 @@ logic                                           module_clock                    
 logic [8:0]                                     module_transmit_buffer [0:8888];
 
 logic                                           rgmii_clock                     = 0;
-logic [3:0]                                     rgmii_data                      = 0;
-logic                                           rgmii_data_control              = 0;
+logic [NUMBER_OF_RGMII_PORTS-1:0][3:0]          rgmii_data                      = 0;
+logic [NUMBER_OF_RGMII_PORTS-1:0]               rgmii_data_control              = 0;
 
 
 wire                                        switch_core_clock;
@@ -98,8 +105,10 @@ switch_core #(
     .NUMBER_OF_RMII_PORTS       (NUMBER_OF_RMII_PORTS),
     .NUMBER_OF_VIRTUAL_PORTS    (NUMBER_OF_VIRTUAL_PORTS),
     .NUMBER_OF_RGMII_PORTS      (NUMBER_OF_RGMII_PORTS),
-    .RECEIVE_QUE_SLOTS          (RECEIVE_QUE_SLOTS),
-    .TECHNOLOGY                 (TECHNOLOGY)
+    .RECEIVE_QUEUE_SLOTS          (RECEIVE_QUEUE_SLOTS),
+    .TECHNOLOGY                 (TECHNOLOGY),
+    .FABRIC_DATA_BYTES          (FABRIC_DATA_BYTES),
+    .CORE_CLOCK_FREQUENCY       (CORE_CLOCK_FREQUENCY)
 )
 switch_core(
     .clock                              (switch_core_clock),
@@ -121,7 +130,7 @@ switch_core(
     .module_transmit_data               (switch_core_module_transmit_data),
 
     .rmii_phy_transmit_data             (switch_core_rmii_phy_transmit_data),
-    .rmii_phy_transmit_data_vaid        (switch_core_rmii_phy_transmit_data_valid)
+    .rmii_phy_transmit_data_valid        (switch_core_rmii_phy_transmit_data_valid)
 );
 
 
@@ -143,7 +152,8 @@ rmii_byte_packager rmii_byte_packager(
 
     .speed_code             (rmii_byte_packager_speed_code),
     .packaged_data          (rmii_byte_packager_packaged_data),
-    .packaged_data_valid    (rmii_byte_packager_packaged_data_valid)
+    .packaged_data_valid    (rmii_byte_packager_packaged_data_valid),
+    .packaged_data_last     ()
 );
 
 
@@ -161,12 +171,12 @@ assign switch_core_rmii_phy_receive_data[1]             = ethernet_transmit_data
 assign switch_core_rmii_phy_receive_data_enable[1]      = ethernet_transmit_data_valid[1];
 assign switch_core_rmii_phy_receive_data_error[1]       = 0;
 
-assign switch_core_rgmii_phy_receive_data_clock         = rgmii_clock;
+assign switch_core_rgmii_phy_receive_data_clock         = {NUMBER_OF_RGMII_PORTS{rgmii_clock}};
 assign switch_core_rgmii_phy_receive_data               = rgmii_data;
 assign switch_core_rgmii_phy_receive_data_control       = rgmii_data_control;
-assign switch_core_rgmii_transmit_clock                 = rgmii_clock;
-assign switch_core_rgmii_phy_receive_clock_reset_n      = reset_n;
-assign switch_core_rgmii_phy_transmit_clock_reset_n     = reset_n;
+assign switch_core_rgmii_transmit_clock                 = {NUMBER_OF_RGMII_PORTS{rgmii_clock}};
+assign switch_core_rgmii_phy_receive_clock_reset_n      = {NUMBER_OF_RGMII_PORTS{reset_n}};
+assign switch_core_rgmii_phy_transmit_clock_reset_n     = {NUMBER_OF_RGMII_PORTS{reset_n}};
 
 assign switch_core_module_transmit_data                 = module_transmit_data;
 assign switch_core_module_transmit_data_enable          = module_transmit_data_valid;
@@ -221,17 +231,47 @@ initial begin
     reset_n = 1;
 end
 
+//run a single case with +CASE=<n> on the vsim command line (some cases
+//depend on earlier ones, for example unicast forwarding needs the learned
+//station); with no plusarg the full regression runs
+integer only_case;
+
 initial begin
     wait(reset_n);
     repeat(100) @(posedge rmii_clock);
-    case_000();
-    case_001();
-    case_002();
-    case_003();
-    case_004();
-    case_005();
-    case_006();
-    case_007();
+    if ($value$plusargs("CASE=%d", only_case)) begin
+        case (only_case)
+            0:  case_000();
+            1:  case_001();
+            2:  case_002();
+            3:  case_003();
+            4:  case_004();
+            5:  case_005();
+            6:  case_006();
+            7:  case_007();
+            8:  case_008();
+            9:  case_009();
+            10: case_010();
+            11: case_011();
+            12: case_012();
+            default: $fatal(0, "no case %0d", only_case);
+        endcase
+    end
+    else begin
+        case_000();
+        case_001();
+        case_002();
+        case_003();
+        case_004();
+        case_005();
+        case_006();
+        case_007();
+        case_008();
+        case_009();
+        case_010();
+        case_011();
+        case_012();
+    end
     $stop();
 end
 
