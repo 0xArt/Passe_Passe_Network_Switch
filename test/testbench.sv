@@ -46,6 +46,7 @@
 `include "./case_011/case_011.svh"
 `include "./case_012/case_012.svh"
 `include "./case_013/case_013.svh"
+`include "./case_014/case_014.svh"
 
 module testbench#(
     parameter FABRIC_DATA_BYTES     = 1,            //override with vsim -G to test wider fabric beats
@@ -80,9 +81,12 @@ logic [8:0]                                     module_transmit_buffer [0:8888];
 
 logic                                           rgmii_clock                     = 0;
 logic                                           rgmii_clock_25                  = 0;
-//case 013 drives rgmii port 1 as a 100 megabit link: the phy receive clock
-//drops to 25 MHz and the idle data lines carry the in band status
+logic                                           rgmii_clock_2_5                 = 0;
+//cases 013 and 014 drive rgmii port 1 as a 100 or 10 megabit link: the phy
+//receive clock drops to 25 or 2.5 MHz and the idle data lines carry the in
+//band status
 logic                                           rgmii_1_100_megabit_mode        = 0;
+logic                                           rgmii_1_10_megabit_mode         = 0;
 logic [NUMBER_OF_RGMII_PORTS-1:0][3:0]          rgmii_data                      = 0;
 logic [NUMBER_OF_RGMII_PORTS-1:0]               rgmii_data_control              = 0;
 
@@ -176,7 +180,8 @@ assign switch_core_rmii_phy_receive_data[1]             = ethernet_transmit_data
 assign switch_core_rmii_phy_receive_data_enable[1]      = ethernet_transmit_data_valid[1];
 assign switch_core_rmii_phy_receive_data_error[1]       = 0;
 
-assign switch_core_rgmii_phy_receive_data_clock         = {rgmii_1_100_megabit_mode ? rgmii_clock_25 : rgmii_clock, rgmii_clock};
+assign switch_core_rgmii_phy_receive_data_clock         = {rgmii_1_10_megabit_mode  ? rgmii_clock_2_5 :
+                                                           rgmii_1_100_megabit_mode ? rgmii_clock_25  : rgmii_clock, rgmii_clock};
 assign switch_core_rgmii_phy_receive_data               = rgmii_data;
 assign switch_core_rgmii_phy_receive_data_control       = rgmii_data_control;
 assign switch_core_rgmii_transmit_clock                 = {NUMBER_OF_RGMII_PORTS{rgmii_clock}};
@@ -240,6 +245,15 @@ initial begin
 end
 
 initial begin
+    rgmii_clock_2_5 = 0;
+
+    forever begin
+        #(RGMII_CLOCK_PERIOD*25);
+        rgmii_clock_2_5 = ~rgmii_clock_2_5;
+    end
+end
+
+initial begin
     reset_n = 0;
     repeat(100) @(posedge module_clock);
     reset_n = 1;
@@ -269,6 +283,7 @@ initial begin
             11: case_011();
             12: case_012();
             13: case_013();
+            14: case_014();
             default: $fatal(0, "no case %0d", only_case);
         endcase
     end
@@ -287,6 +302,7 @@ initial begin
         case_011();
         case_012();
         case_013();
+        case_014();
     end
     $stop();
 end

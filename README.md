@@ -26,7 +26,7 @@ redesign.
 
 ## Simulation
 
-The regression testbench (`test/testbench.sv`, cases 000-013) runs in Questa
+The regression testbench (`test/testbench.sv`, cases 000-014) runs in Questa
 with `do run.do`, or headless:
 
 ```
@@ -212,5 +212,16 @@ the slower transmit clock as a ddr pattern, so no clock muxing is needed.
 
 **Result: pass.** Both frames arrive complete and CRC clean, and the
 generated transmit clock measures exactly 25 MHz with fifty percent duty.
-The same machinery covers 10 megabit (one nibble per 2.5 MHz clock),
-which does not yet have a dedicated case.
+
+### case 014 — RGMII 10 megabit
+
+The same tri speed path as case 013, one step slower: RGMII port 1
+renegotiates to 10 megabit, dropping the phy receive clock to 2.5 MHz and
+stretching every nibble across fifty transmit cycles. Both directions are
+checked — a 10 megabit frame forwards to the gigabit port 0 wire, and a
+gigabit frame egresses port 1 at 10 megabit, decoded nibble by nibble
+against the generated 2.5 MHz transmit clock.
+
+**Result: pass.** Both frames arrive complete and CRC clean, and the
+generated transmit clock measures exactly 2.5 MHz (400 ns period) with
+fifty percent duty.

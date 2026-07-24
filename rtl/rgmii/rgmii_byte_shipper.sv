@@ -33,8 +33,8 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module rgmii_byte_shipper #(
-    parameter TECHNOLOGY                = "SIMULATION",
-    parameter INTER_PACKET_GAP_CYCLES   = 10, //enforced gap is this plus two byte times: 12 byte times, 96ns at gigabit
+    parameter TECHNOLOGY                            = "SIMULATION",
+    parameter INTER_PACKET_GAP_CYCLES               = 10, //enforced gap is this plus two byte times: 12 byte times, 96ns at gigabit_enable
     parameter logic [1:0]   SPEED_CODE_1000_MEGABIT = 2,
     parameter logic [1:0]   SPEED_CODE_100_MEGABIT  = 1,
     parameter logic [1:0]   SPEED_CODE_10_MEGABIT   = 0
@@ -121,7 +121,7 @@ logic           _first_byte;
 //transmit clock and nibble pacing. the counter free runs so the generated
 //transmit clock never stops, and the byte engine advances only on byte
 //ticks, which keeps the data aligned to the generated clock periods. at
-//gigabit every cycle is a byte tick and the pattern is the plain forwarded
+//gigabit_enable every cycle is a byte tick and the pattern is the plain forwarded
 //clock, matching the original single speed behavior exactly
 reg     [1:0]   active_speed;
 logic   [1:0]   _active_speed;
@@ -129,7 +129,7 @@ reg     [5:0]   txc_count;
 logic   [5:0]   _txc_count;
 reg             nibble_half;
 logic           _nibble_half;
-logic           gigabit;
+logic           gigabit_enable;
 logic   [5:0]   nibble_cycles;
 logic           nibble_tick;
 logic           byte_tick;
@@ -139,7 +139,7 @@ logic   [6:0]   half_cycle_index;
 
 assign  data_ddr_output_buffer_clock                = clock;
 assign  data_ddr_output_buffer_reset_n              = reset_n;
-assign  data_ddr_output_buffer_ddr_input            = gigabit ? frame_data : {2{transmit_nibble}};
+assign  data_ddr_output_buffer_ddr_input            = gigabit_enable ? frame_data : {2{transmit_nibble}};
 
 assign  data_valid_ddr_output_buffer_clock          = clock;
 assign  data_valid_ddr_output_buffer_reset_n        = reset_n;
@@ -150,13 +150,13 @@ assign  shipped_data_valid                          = data_valid__ddr_output_buf
 
 
 always_comb begin
-    gigabit         = (active_speed == SPEED_CODE_1000_MEGABIT) || (active_speed == 2'h3);
+    gigabit_enable  = (active_speed == SPEED_CODE_1000_MEGABIT) || (active_speed == 2'h3);
     nibble_cycles   = (active_speed == SPEED_CODE_100_MEGABIT) ? 6'd5 : 6'd50;
-    nibble_tick     = gigabit ? 1'b1 : (txc_count == (nibble_cycles - 1));
-    byte_tick       = gigabit ? 1'b1 : (nibble_tick && nibble_half);
+    nibble_tick     = gigabit_enable ? 1'b1 : (txc_count == (nibble_cycles - 1));
+    byte_tick       = gigabit_enable ? 1'b1 : (nibble_tick && nibble_half);
     transmit_nibble = nibble_half ? frame_data[7:4] : frame_data[3:0];
 
-    if (gigabit) begin
+    if (gigabit_enable) begin
         _txc_count      = '0;
         _nibble_half    = '0;
     end
@@ -180,7 +180,7 @@ always_comb begin
     //is untouched
     half_cycle_index = {_txc_count, 1'b0};
 
-    if (gigabit) begin
+    if (gigabit_enable) begin
         shipped_clock_pattern   = {1'b0,1'b1};
     end
     else begin
@@ -196,7 +196,7 @@ always_comb  begin
     _frame_data                     = frame_data;
     _frame_data_valid               = frame_data_valid;
     _active_speed                   = active_speed;
-    data_ready                      = 0;
+    data_ready                      = '0;
 
     if (byte_tick) begin
         _frame_data_valid   = 0;
@@ -204,8 +204,8 @@ always_comb  begin
         case (state)
             S_FIND_START_BIT: begin
                 _counter        = 6;
-                _first_byte     = 1;
-                data_ready      = 1;
+                _first_byte     = 1'b1;
+                data_ready      = 1'b1;
                 _frame_data     = 8'hDD;
                 //speed changes only apply between frames, and the link is
                 //down across a renegotiation so nothing is in flight
@@ -213,15 +213,15 @@ always_comb  begin
 
                 if (data_enable) begin
                     if (data[8]) begin
-                        data_ready  = 0;
+                        data_ready  = '0;
                         _state      = S_PREMABLE;
                     end
                 end
             end
             S_PREMABLE: begin
                 _frame_data         = 8'h55;
-                _frame_data_valid   = 1;
-                _counter            = counter - 1;
+                _frame_data_valid   = 1'b1;
+                _counter            = counter - 1'b1;
 
                 if (counter == 0) begin
                     _state  = S_START_OF_FRAME;
@@ -230,7 +230,7 @@ always_comb  begin
             S_START_OF_FRAME: begin
                 _counter            = INTER_PACKET_GAP_CYCLES;
                 _frame_data         = 8'hD5;
-                _frame_data_valid   = 1;
+                _frame_data_valid   = 1'b1;
                 _state              = S_FRAME;
             end
             S_FRAME: begin
@@ -239,10 +239,10 @@ always_comb  begin
                         _state = S_GAP;
                     end
                     else begin
-                        _first_byte         = 0;
+                        _first_byte         = '0;
                         _frame_data         = data[7:0];
-                        _frame_data_valid   = 1;
-                        data_ready          = 1;
+                        _frame_data_valid   = 1'b1;
+                        data_ready          = 1'b1;
                     end
                 end
                 else begin
@@ -251,7 +251,7 @@ always_comb  begin
             end
             S_GAP: begin
                 _frame_data = 8'hDD;
-                _counter    = counter - 1;
+                _counter    = counter - 1'b1;
 
                 if ((counter == 0) || (counter == 1 && gap_shrink_enable && data_enable && data[8])) begin
                     if (data_enable && data[8]) begin
@@ -262,7 +262,7 @@ always_comb  begin
                         //minimum and a long saturating stream slowly fills every
                         //fifo upstream
                         _counter    = 6;
-                        _first_byte = 1;
+                        _first_byte = 1'b1;
                         _state      = S_PREMABLE;
                     end
                     else begin
@@ -277,13 +277,13 @@ end
 always_ff @(posedge clock) begin
     if (!reset_n) begin
         state                       <= S_FIND_START_BIT;
-        counter                     <= 0;
-        frame_data                  <= 0;
-        frame_data_valid            <= 0;
-        first_byte                  <= 0;
+        counter                     <= '0;
+        frame_data                  <= '0;
+        frame_data_valid            <= '0;
+        first_byte                  <= '0;
         active_speed                <= SPEED_CODE_1000_MEGABIT;
-        txc_count                   <= 0;
-        nibble_half                 <= 0;
+        txc_count                   <= '0;
+        nibble_half                 <= '0;
     end
     else begin
         state                       <= _state;
