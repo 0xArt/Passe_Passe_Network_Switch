@@ -51,7 +51,11 @@ module block_ram#(
 
 generate
     if (TECHNOLOGY == "ULTRASCALE" || TECHNOLOGY == "7_SERIES") begin
-        localparam READ_LATENCY = PIPELINED_OUTPUT + 1;
+        // match the generic path's read latency exactly: an unpipelined read
+        // (latency 0) is only possible in distributed ram, a pipelined read
+        // (latency 1) maps to a true block ram
+        localparam READ_LATENCY     = PIPELINED_OUTPUT;
+        localparam MEMORY_PRIMITIVE = PIPELINED_OUTPUT ? "auto" : "distributed";
 
         wire    [DATA_WIDTH-1:0]            xpm_memory_sdpram_dina;
         wire    [DATA_WIDTH-1:0]            xpm_memory_sdpram_doutb;
@@ -77,8 +81,8 @@ generate
             .MEMORY_INIT_FILE       ("none"),     
             .MEMORY_INIT_PARAM      ("0"),       
             .MEMORY_OPTIMIZATION    ("true"),  
-            .MEMORY_PRIMITIVE       ("auto"),     
-            .MEMORY_SIZE            (DATA_DEPTH),            
+            .MEMORY_PRIMITIVE       (MEMORY_PRIMITIVE),
+            .MEMORY_SIZE            (DATA_DEPTH*DATA_WIDTH),
             .MESSAGE_CONTROL        (0),           
             .RAM_DECOMP             ("auto"),           
             .READ_DATA_WIDTH_B      (DATA_WIDTH), 
@@ -106,11 +110,11 @@ generate
             .dina           (xpm_memory_sdpram_dina),
             .ena            (1'b1),
             .enb            (1'b1),
-            .injectdbiterra (),
-            .injectsbiterra (),
-            .regceb         (),
+            .injectdbiterra (1'b0),
+            .injectsbiterra (1'b0),
+            .regceb         (1'b1),
             .rstb           (xpm_memory_sdpram_rstb),
-            .sleep          (),
+            .sleep          (1'b0),
             .wea            (xpm_memory_sdpram_wea)
         );
 
