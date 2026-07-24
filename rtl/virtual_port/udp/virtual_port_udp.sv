@@ -185,7 +185,7 @@ wire    [7:0]   udp_data_buffer_read_data;
 block_ram
 #(.DATA_WIDTH       (8),
   .DATA_DEPTH       (UDP_TRANSMIT_BUFFER_SIZE),
-  .PIPELINED_OUTPUT (0),
+  .PIPELINED_OUTPUT (1), // the frame generator's read address timing expects a one cycle read latency
   .TECHNOLOGY       (TECHNOLOGY)
 )
 udp_data_buffer(
@@ -386,16 +386,16 @@ wire    [8:0]                       ethernet_frame_parser_data;
 wire                                ethernet_frame_parser_data_enable;
 wire    [31:0]                      ethernet_frame_parser_checksum_result;
 wire                                ethernet_frame_parser_checksum_result_enable;
-wire    [RECEIVE_QUEUE_SLOTS-1:0]     ethernet_frame_parser_receive_slot_enable;
+wire    [RECEIVE_QUEUE_SLOTS-1:0]   ethernet_frame_parser_receive_slot_enable;
 
 wire                                ethernet_frame_parser_data_ready;
 wire    [7:0]                       ethernet_frame_parser_checksum_data;
 wire                                ethernet_frame_parser_checksum_data_valid;
 wire                                ethernet_frame_parser_checksum_data_last;
 wire    [7:0]                       ethernet_frame_parser_packet_data;
-wire    [RECEIVE_QUEUE_SLOTS-1:0]     ethernet_frame_parser_packet_data_valid;
-wire    [RECEIVE_QUEUE_SLOTS-1:0]     ethernet_frame_parser_good_packet;
-wire    [RECEIVE_QUEUE_SLOTS-1:0]     ethernet_frame_parser_bad_packet;
+wire    [RECEIVE_QUEUE_SLOTS-1:0]   ethernet_frame_parser_packet_data_valid;
+wire    [RECEIVE_QUEUE_SLOTS-1:0]   ethernet_frame_parser_good_packet;
+wire    [RECEIVE_QUEUE_SLOTS-1:0]   ethernet_frame_parser_bad_packet;
 wire    [15:0]                      ethernet_frame_parser_udp_destination;
 wire    [15:0]                      ethernet_frame_parser_ipv4_flags;
 wire    [15:0]                      ethernet_frame_parser_ipv4_identification;
@@ -427,19 +427,19 @@ ethernet_frame_parser(
 wire                                    receive_slot_clock;
 wire                                    receive_slot_reset_n;
 wire    [7:0]                           receive_slot_data;
-wire    [RECEIVE_QUEUE_SLOTS-1:0]         receive_slot_data_enable;
-wire    [RECEIVE_QUEUE_SLOTS-1:0]         receive_slot_good_packet;
-wire    [RECEIVE_QUEUE_SLOTS-1:0]         receive_slot_bad_packet;
+wire    [RECEIVE_QUEUE_SLOTS-1:0]       receive_slot_data_enable;
+wire    [RECEIVE_QUEUE_SLOTS-1:0]       receive_slot_good_packet;
+wire    [RECEIVE_QUEUE_SLOTS-1:0]       receive_slot_bad_packet;
 wire    [15:0]                          receive_slot_ipv4_flags;
 wire    [15:0]                          receive_slot_ipv4_identification;
-wire    [RECEIVE_QUEUE_SLOTS-1:0]         receive_slot_push_data_enable;
+wire    [RECEIVE_QUEUE_SLOTS-1:0]       receive_slot_push_data_enable;
 
-wire    [RECEIVE_QUEUE_SLOTS-1:0]         receive_slot_ready;
-wire    [RECEIVE_QUEUE_SLOTS-1:0]         receive_slot_data_ready;
-wire    [RECEIVE_QUEUE_SLOTS-1:0][15:0]   receive_slot_current_ipv4_flags;
-wire    [RECEIVE_QUEUE_SLOTS-1:0][15:0]   receive_slot_current_ipv4_identification;
-wire    [RECEIVE_QUEUE_SLOTS-1:0][7:0]    receive_slot_push_data;
-wire    [RECEIVE_QUEUE_SLOTS-1:0]         receive_slot_push_data_valid;
+wire    [RECEIVE_QUEUE_SLOTS-1:0]       receive_slot_ready;
+wire    [RECEIVE_QUEUE_SLOTS-1:0]       receive_slot_data_ready;
+wire    [RECEIVE_QUEUE_SLOTS-1:0][15:0] receive_slot_current_ipv4_flags;
+wire    [RECEIVE_QUEUE_SLOTS-1:0][15:0] receive_slot_current_ipv4_identification;
+wire    [RECEIVE_QUEUE_SLOTS-1:0][7:0]  receive_slot_push_data;
+wire    [RECEIVE_QUEUE_SLOTS-1:0]       receive_slot_push_data_valid;
 
 generate
     for (i=0; i<RECEIVE_QUEUE_SLOTS; i =i+1) begin
@@ -468,23 +468,23 @@ endgenerate
 
 wire                                    udp_receive_handler_clock;
 wire                                    udp_receive_handler_reset_n;
-wire    [RECEIVE_QUEUE_SLOTS-1:0]         udp_receive_handler_enable;
-wire    [RECEIVE_QUEUE_SLOTS-1:0][7:0]    udp_receive_handler_data;
-wire    [RECEIVE_QUEUE_SLOTS-1:0]         udp_receive_handler_data_enable;
-wire    [RECEIVE_QUEUE_SLOTS-1:0][15:0]   udp_receive_handler_ipv4_identification;
-wire    [RECEIVE_QUEUE_SLOTS-1:0][15:0]   udp_receive_handler_ipv4_flags;
+wire    [RECEIVE_QUEUE_SLOTS-1:0]       udp_receive_handler_enable;
+wire    [RECEIVE_QUEUE_SLOTS-1:0][7:0]  udp_receive_handler_data;
+wire    [RECEIVE_QUEUE_SLOTS-1:0]       udp_receive_handler_data_enable;
+wire    [RECEIVE_QUEUE_SLOTS-1:0][15:0] udp_receive_handler_ipv4_identification;
+wire    [RECEIVE_QUEUE_SLOTS-1:0][15:0] udp_receive_handler_ipv4_flags;
 wire    [FRAGMENT_SLOTS-1:0]            udp_receive_handler_fragment_slot_empty;
 wire    [FRAGMENT_SLOTS-1:0][15:0]      udp_receive_handler_fragment_slot_packet_id;
 
-wire    [RECEIVE_QUEUE_SLOTS-1:0]         udp_receive_handler_data_ready;
+wire    [RECEIVE_QUEUE_SLOTS-1:0]       udp_receive_handler_data_ready;
 wire    [7:0]                           udp_receive_handler_push_data;
 wire    [FRAGMENT_SLOTS-1:0]            udp_receive_handler_push_data_valid;
 wire    [FRAGMENT_SLOTS-1:0]            udp_receive_handler_push_data_last;
 wire    [15:0]                          udp_receive_handler_packet_id;
 
 udp_receive_handler#(
-            .FRAGMENT_SLOTS     (FRAGMENT_SLOTS),
-            .RECEIVE_QUEUE_SLOTS  (RECEIVE_QUEUE_SLOTS))
+            .FRAGMENT_SLOTS         (FRAGMENT_SLOTS),
+            .RECEIVE_QUEUE_SLOTS    (RECEIVE_QUEUE_SLOTS))
 udp_receive_handler(
     .clock                      (udp_receive_handler_clock),
     .reset_n                    (udp_receive_handler_reset_n),
@@ -648,14 +648,17 @@ assign  ethernet_frame_generator_reset_n                        = reset_n;
 assign  ethernet_frame_generator_enable                         = udp_transmit_handler_transmit_valid;
 assign  ethenret_frame_generator_checksum_result                = frame_check_sequence_generator_checksum;
 assign  ethernet_frame_generator_checksum_result_enable         = frame_check_sequence_generator_checksum_valid;
-assign  ethernet_frame_generator_ipv4_checksum_result           = ipv4_checksum_calculator_result;
+//the header checksum field carries the ones complement of the folded sum
+assign  ethernet_frame_generator_ipv4_checksum_result           = ~ipv4_checksum_calculator_result;
 assign  ethernet_frame_generator_ipv4_checksum_result_enable    = ipv4_checksum_calculator_result_valid;
 assign  ethernet_frame_generator_udp_buffer_read_data           = udp_data_buffer_read_data;
 assign  ethernet_frame_generator_mac_destination                = udp_transmit_handler_mac_destination;
 assign  ethernet_frame_generator_mac_source                     = mac_source;
 assign  ethernet_frame_generator_ipv4_destination               = udp_transmit_handler_ipv4_destination;
 assign  ethernet_frame_generator_ipv4_source                    = ipv4_source;
-assign  ethernet_frame_generator_udp_checksum                   = udp_checksum_calculator_result;
+// the checksum field carries the ones complement of the folded sum; a computed
+// checksum of zero is transmitted as all ones (rfc 768)
+assign  ethernet_frame_generator_udp_checksum                   = (udp_checksum_calculator_result == 16'hFFFF) ? 16'hFFFF : ~udp_checksum_calculator_result;
 assign  ethernet_frame_generator_udp_destination                = udp_transmit_handler_udp_destination;
 assign  ethernet_frame_generator_udp_source                     = udp_transmit_handler_udp_source;
 assign  ethernet_frame_generator_udp_payload_size               = udp_transmit_handler_udp_total_payload_size;

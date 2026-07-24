@@ -43,7 +43,7 @@ module generic_synchronous_fifo#(
     input   wire                              write_enable,
     input   wire    [DATA_WIDTH-1:0]          write_data,
 
-    output  reg     [$clog2(DATA_DEPTH)-1:0]  available_words,
+    output  reg     [$clog2(DATA_DEPTH):0]    available_words,
     output  reg     [DATA_WIDTH-1:0]          read_data,
     output  logic                             read_data_valid,
     output  logic                             full,
@@ -79,7 +79,7 @@ generic_block_ram(
 
 
 logic [$clog2(DATA_DEPTH):0]    _write_pointer;
-logic [$clog2(DATA_DEPTH)-1:0]  _available_words;
+logic [$clog2(DATA_DEPTH):0]    _available_words;
 logic [$clog2(DATA_DEPTH):0]    _read_pointer;
 logic [$clog2(DATA_DEPTH):0]    read_pointer;
 logic [$clog2(DATA_DEPTH):0]    write_pointer;
