@@ -51,11 +51,9 @@ module block_ram#(
 
 generate
     if (TECHNOLOGY == "ULTRASCALE" || TECHNOLOGY == "7_SERIES") begin
-        // match the generic path's read latency exactly: an unpipelined read
-        // (latency 0) is only possible in distributed ram, a pipelined read
-        // (latency 1) maps to a true block ram
         localparam READ_LATENCY     = PIPELINED_OUTPUT;
         localparam MEMORY_PRIMITIVE = PIPELINED_OUTPUT ? "auto" : "distributed";
+        localparam WRITE_MODE       = PIPELINED_OUTPUT ? "no_change" : "read_first";
 
         wire    [DATA_WIDTH-1:0]            xpm_memory_sdpram_dina;
         wire    [DATA_WIDTH-1:0]            xpm_memory_sdpram_doutb;
@@ -96,7 +94,7 @@ generate
             .USE_MEM_INIT_MMI       (0),           
             .WAKEUP_TIME            ("disable_sleep"),
             .WRITE_DATA_WIDTH_A     (DATA_WIDTH),
-            .WRITE_MODE_B           ("no_change"),
+            .WRITE_MODE_B           (WRITE_MODE),
             .WRITE_PROTECT          (1)
         )
         xpm_memory_sdpram_inst (

@@ -60,6 +60,7 @@ localparam  MODULE_CLOCK_FREQUENCY      = 50_000_000;
 localparam  MODULE_CLOCK_PERIOD         = 1e9/MODULE_CLOCK_FREQUENCY;
 localparam  RGMII_CLOCK_FREQUENCY       = 125_000_000;
 localparam  RGMII_CLOCK_PERIOD          = 1e9/RGMII_CLOCK_FREQUENCY;
+localparam  RGMII_RECEIVE_CLOCK_DELAY   = 2;
 localparam  NUMBER_OF_RMII_PORTS        = 2;
 localparam  NUMBER_OF_VIRTUAL_PORTS     = 1;
 localparam  NUMBER_OF_RGMII_PORTS       = 2;
@@ -82,9 +83,6 @@ logic [8:0]                                     module_transmit_buffer [0:8888];
 logic                                           rgmii_clock                     = 0;
 logic                                           rgmii_clock_25                  = 0;
 logic                                           rgmii_clock_2_5                 = 0;
-//cases 013 and 014 drive rgmii port 1 as a 100 or 10 megabit link: the phy
-//receive clock drops to 25 or 2.5 MHz and the idle data lines carry the in
-//band status
 logic                                           rgmii_1_100_megabit_mode        = 0;
 logic                                           rgmii_1_10_megabit_mode         = 0;
 logic [NUMBER_OF_RGMII_PORTS-1:0][3:0]          rgmii_data                      = 0;
@@ -180,7 +178,8 @@ assign switch_core_rmii_phy_receive_data[1]             = ethernet_transmit_data
 assign switch_core_rmii_phy_receive_data_enable[1]      = ethernet_transmit_data_valid[1];
 assign switch_core_rmii_phy_receive_data_error[1]       = 0;
 
-assign switch_core_rgmii_phy_receive_data_clock         = {rgmii_1_10_megabit_mode  ? rgmii_clock_2_5 :
+assign #(RGMII_RECEIVE_CLOCK_DELAY) switch_core_rgmii_phy_receive_data_clock
+                                                        = {rgmii_1_10_megabit_mode  ? rgmii_clock_2_5 :
                                                            rgmii_1_100_megabit_mode ? rgmii_clock_25  : rgmii_clock, rgmii_clock};
 assign switch_core_rgmii_phy_receive_data               = rgmii_data;
 assign switch_core_rgmii_phy_receive_data_control       = rgmii_data_control;

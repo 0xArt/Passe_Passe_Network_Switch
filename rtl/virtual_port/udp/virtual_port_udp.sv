@@ -32,31 +32,41 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module virtual_port_udp#(
-    parameter RECEIVE_QUEUE_SLOTS         = 4,
+    parameter RECEIVE_QUEUE_SLOTS       = 4,
     parameter FRAGMENT_SLOTS            = 4,
     parameter UDP_TRANSMIT_BUFFER_SIZE  = 4096,
+    parameter FABRIC_DATA_BYTES         = 1,
     parameter TECHNOLOGY                = "SIMULATION"
 )(
-    input   wire            clock,
-    input   wire            reset_n,
-    input   wire    [47:0]  mac_source,
-    input   wire    [31:0]  ipv4_source,
-    input   wire    [8:0]   receive_data,                       //from switch data orch
-    input   wire            receive_data_enable,                //from switch data orch
-    input   wire            transmit_data_enable,               //from switch data orch
-    input   wire            module_clock,                       //clock domain of frabic modules
-    input   wire    [8:0]   module_transmit_data,               //from fabric modules
-    input   wire            module_transmit_data_enable,        //from fabric modules
+    input   wire                                        clock,
+    input   wire                                        reset_n,
+    input   wire    [47:0]                              mac_source,
+    input   wire    [31:0]                              ipv4_source,
+    input   wire    [(FABRIC_DATA_BYTES*8)-1:0]         receive_data,                       //from switch data orch
+    input   wire                                        receive_data_first,                 //from switch data orch
+    input   wire                                        receive_data_last,                  //from switch data orch
+    input   wire    [$clog2(FABRIC_DATA_BYTES+1)-1:0]   receive_data_byte_count,            //from switch data orch
+    input   wire                                        receive_data_enable,                //from switch data orch
+    input   wire                                        transmit_data_enable,               //from switch data orch
+    input   wire                                        module_clock,                       //clock domain of frabic modules
+    input   wire    [8:0]                               module_transmit_data,               //from fabric modules
+    input   wire                                        module_transmit_data_enable,        //from fabric modules
 
-    output  wire    [8:0]   module_receive_data,
-    output  wire            module_receive_data_valid,
-    output  wire            receive_data_ready,
-    output  wire            receive_frame_ready,
-    output  wire    [8:0]   transmit_data,                      //to switch data orch
-    output  wire            transmit_data_valid,                //to switch data orch
-    output  wire            transmit_data_last,                 //to switch data orch
-    output  wire            module_transmit_data_ready
+    output  wire    [8:0]                               module_receive_data,
+    output  wire                                        module_receive_data_valid,
+    output  wire                                        receive_data_ready,
+    output  wire                                        receive_frame_ready,
+    output  wire    [(FABRIC_DATA_BYTES*8)-1:0]         transmit_data,                      //to switch data orch
+    output  wire                                        transmit_data_first,                //to switch data orch
+    output  wire                                        transmit_data_last,                 //to switch data orch
+    output  wire    [$clog2(FABRIC_DATA_BYTES+1)-1:0]   transmit_data_byte_count,           //to switch data orch
+    output  wire                                        transmit_data_valid,                //to switch data orch
+    output  wire                                        module_transmit_data_ready
 );
+
+
+localparam FABRIC_BYTE_COUNT_WIDTH  = $clog2(FABRIC_DATA_BYTES+1);
+localparam BEAT_BUNDLE_WIDTH        = (FABRIC_DATA_BYTES*8) + FABRIC_BYTE_COUNT_WIDTH + 2;
 
 
 genvar i;
@@ -185,7 +195,7 @@ wire    [7:0]   udp_data_buffer_read_data;
 block_ram
 #(.DATA_WIDTH       (8),
   .DATA_DEPTH       (UDP_TRANSMIT_BUFFER_SIZE),
-  .PIPELINED_OUTPUT (1), // the frame generator's read address timing expects a one cycle read latency
+  .PIPELINED_OUTPUT (1),
   .TECHNOLOGY       (TECHNOLOGY)
 )
 udp_data_buffer(
@@ -313,6 +323,79 @@ frame_check_sequence_generator  frame_check_sequence_generator(
     .ready                  (frame_check_sequence_generator_ready),
     .checksum               (frame_check_sequence_generator_checksum),
     .checksum_valid         (frame_check_sequence_generator_checksum_valid)
+);
+
+
+wire                             switch_inbound_beat_fifo_read_clock;
+wire                             switch_inbound_beat_fifo_read_reset_n;
+wire                             switch_inbound_beat_fifo_write_clock;
+wire                             switch_inbound_beat_fifo_write_reset_n;
+wire                             switch_inbound_beat_fifo_read_enable;
+wire                             switch_inbound_beat_fifo_write_enable;
+wire    [BEAT_BUNDLE_WIDTH-1:0]  switch_inbound_beat_fifo_write_data;
+
+wire    [BEAT_BUNDLE_WIDTH-1:0]  switch_inbound_beat_fifo_read_data;
+wire                             switch_inbound_beat_fifo_read_data_valid;
+wire                             switch_inbound_beat_fifo_full;
+wire                             switch_inbound_beat_fifo_programmable_full;
+wire                             switch_inbound_beat_fifo_empty;
+
+asynchronous_fifo#(
+    .DATA_WIDTH                     (BEAT_BUNDLE_WIDTH),
+    .DATA_DEPTH                     (4096 / FABRIC_DATA_BYTES),
+    .FIRST_WORD_FALL_THROUGH        (1),
+    .TECHNOLOGY                     (TECHNOLOGY),
+    .NUMBER_OF_CDC_STAGES           (2),
+    .PROGRAMMABLE_FULL_THRESHOLD    ((4096 / FABRIC_DATA_BYTES) - (1536 / FABRIC_DATA_BYTES))
+)
+switch_inbound_beat_fifo(
+    .read_clock           (switch_inbound_beat_fifo_read_clock),
+    .read_reset_n         (switch_inbound_beat_fifo_read_reset_n),
+    .write_clock          (switch_inbound_beat_fifo_write_clock),
+    .write_reset_n        (switch_inbound_beat_fifo_write_reset_n),
+    .read_enable          (switch_inbound_beat_fifo_read_enable),
+    .write_enable         (switch_inbound_beat_fifo_write_enable),
+    .write_data           (switch_inbound_beat_fifo_write_data),
+
+    .read_data            (switch_inbound_beat_fifo_read_data),
+    .read_data_valid      (switch_inbound_beat_fifo_read_data_valid),
+    .full                 (switch_inbound_beat_fifo_full),
+    .programmable_full    (switch_inbound_beat_fifo_programmable_full),
+    .empty                (switch_inbound_beat_fifo_empty)
+);
+
+
+wire                                   switch_inbound_width_adapter_clock;
+wire                                   switch_inbound_width_adapter_reset_n;
+wire    [(FABRIC_DATA_BYTES*8)-1:0]    switch_inbound_width_adapter_beat_data;
+wire                                   switch_inbound_width_adapter_beat_first;
+wire                                   switch_inbound_width_adapter_beat_last;
+wire    [FABRIC_BYTE_COUNT_WIDTH-1:0]  switch_inbound_width_adapter_beat_byte_count;
+wire                                   switch_inbound_width_adapter_beat_enable;
+wire                                   switch_inbound_width_adapter_byte_data_ready;
+
+wire                                   switch_inbound_width_adapter_beat_ready;
+wire    [8:0]                          switch_inbound_width_adapter_byte_data;
+wire                                   switch_inbound_width_adapter_byte_data_valid;
+wire                                   switch_inbound_width_adapter_byte_data_last;
+
+width_adapter_down#(
+    .FABRIC_DATA_BYTES    (FABRIC_DATA_BYTES)
+)
+switch_inbound_width_adapter(
+    .clock              (switch_inbound_width_adapter_clock),
+    .reset_n            (switch_inbound_width_adapter_reset_n),
+    .beat_data          (switch_inbound_width_adapter_beat_data),
+    .beat_first         (switch_inbound_width_adapter_beat_first),
+    .beat_last          (switch_inbound_width_adapter_beat_last),
+    .beat_byte_count    (switch_inbound_width_adapter_beat_byte_count),
+    .beat_enable        (switch_inbound_width_adapter_beat_enable),
+    .byte_data_ready    (switch_inbound_width_adapter_byte_data_ready),
+
+    .beat_ready         (switch_inbound_width_adapter_beat_ready),
+    .byte_data          (switch_inbound_width_adapter_byte_data),
+    .byte_data_valid    (switch_inbound_width_adapter_byte_data_valid),
+    .byte_data_last     (switch_inbound_width_adapter_byte_data_last)
 );
 
 
@@ -598,22 +681,142 @@ outbound_fifo(
     .empty              (outbound_fifo_empty)
 );
 
-assign  receive_data_ready                                      = !switch_inbound_fifo_full;
-assign  receive_frame_ready                                     = !switch_inbound_fifo_programmable_full;
-assign  transmit_data                                           = outbound_fifo_read_data[8:0];
-assign  transmit_data_valid                                     = outbound_fifo_read_data_valid;
-assign  transmit_data_last                                      = outbound_fifo_read_data[9];
+
+wire                                   outbound_width_adapter_clock;
+wire                                   outbound_width_adapter_reset_n;
+wire    [8:0]                          outbound_width_adapter_byte_data;
+wire                                   outbound_width_adapter_byte_data_enable;
+wire                                   outbound_width_adapter_byte_data_last;
+wire                                   outbound_width_adapter_beat_ready;
+
+wire                                   outbound_width_adapter_byte_data_ready;
+wire    [(FABRIC_DATA_BYTES*8)-1:0]    outbound_width_adapter_beat_data;
+wire                                   outbound_width_adapter_beat_first;
+wire                                   outbound_width_adapter_beat_last;
+wire    [FABRIC_BYTE_COUNT_WIDTH-1:0]  outbound_width_adapter_beat_byte_count;
+wire                                   outbound_width_adapter_beat_valid;
+
+width_adapter_up#(
+    .FABRIC_DATA_BYTES    (FABRIC_DATA_BYTES)
+)
+outbound_width_adapter(
+    .clock               (outbound_width_adapter_clock),
+    .reset_n             (outbound_width_adapter_reset_n),
+    .byte_data           (outbound_width_adapter_byte_data),
+    .byte_data_enable    (outbound_width_adapter_byte_data_enable),
+    .byte_data_last      (outbound_width_adapter_byte_data_last),
+    .beat_ready          (outbound_width_adapter_beat_ready),
+
+    .byte_data_ready     (outbound_width_adapter_byte_data_ready),
+    .beat_data           (outbound_width_adapter_beat_data),
+    .beat_first          (outbound_width_adapter_beat_first),
+    .beat_last           (outbound_width_adapter_beat_last),
+    .beat_byte_count     (outbound_width_adapter_beat_byte_count),
+    .beat_valid          (outbound_width_adapter_beat_valid)
+);
+
+
+wire                             outbound_beat_fifo_clock;
+wire                             outbound_beat_fifo_reset_n;
+wire                             outbound_beat_fifo_read_enable;
+wire                             outbound_beat_fifo_write_enable;
+wire    [BEAT_BUNDLE_WIDTH-1:0]  outbound_beat_fifo_write_data;
+
+wire    [BEAT_BUNDLE_WIDTH-1:0]  outbound_beat_fifo_read_data;
+wire                             outbound_beat_fifo_read_data_valid;
+wire                             outbound_beat_fifo_full;
+wire                             outbound_beat_fifo_empty;
+
+synchronous_fifo#(
+    .DATA_WIDTH                 (BEAT_BUNDLE_WIDTH),
+    .DATA_DEPTH                 (4096 / FABRIC_DATA_BYTES),
+    .FIRST_WORD_FALL_THROUGH    (1),
+    .TECHNOLOGY                 (TECHNOLOGY)
+)
+outbound_beat_fifo(
+    .clock              (outbound_beat_fifo_clock),
+    .reset_n            (outbound_beat_fifo_reset_n),
+    .read_enable        (outbound_beat_fifo_read_enable),
+    .write_enable       (outbound_beat_fifo_write_enable),
+    .write_data         (outbound_beat_fifo_write_data),
+
+    .read_data          (outbound_beat_fifo_read_data),
+    .read_data_valid    (outbound_beat_fifo_read_data_valid),
+    .full               (outbound_beat_fifo_full),
+    .empty              (outbound_beat_fifo_empty)
+);
+
+
+wire            outbound_frame_fifo_clock;
+wire            outbound_frame_fifo_reset_n;
+wire            outbound_frame_fifo_read_enable;
+wire            outbound_frame_fifo_write_enable;
+wire            outbound_frame_fifo_write_data;
+
+wire            outbound_frame_fifo_read_data;
+wire            outbound_frame_fifo_read_data_valid;
+wire            outbound_frame_fifo_full;
+wire            outbound_frame_fifo_empty;
+
+synchronous_fifo#(
+    .DATA_WIDTH                 (1),
+    .DATA_DEPTH                 (128),
+    .FIRST_WORD_FALL_THROUGH    (1),
+    .TECHNOLOGY                 (TECHNOLOGY)
+)
+outbound_frame_fifo(
+    .clock              (outbound_frame_fifo_clock),
+    .reset_n            (outbound_frame_fifo_reset_n),
+    .read_enable        (outbound_frame_fifo_read_enable),
+    .write_enable       (outbound_frame_fifo_write_enable),
+    .write_data         (outbound_frame_fifo_write_data),
+
+    .read_data          (outbound_frame_fifo_read_data),
+    .read_data_valid    (outbound_frame_fifo_read_data_valid),
+    .full               (outbound_frame_fifo_full),
+    .empty              (outbound_frame_fifo_empty)
+);
+
+assign  receive_data_ready                                      = !switch_inbound_beat_fifo_full;
+assign  receive_frame_ready                                     = !switch_inbound_fifo_programmable_full && !switch_inbound_beat_fifo_programmable_full;
+assign  transmit_data                                           = outbound_beat_fifo_read_data[(FABRIC_DATA_BYTES*8)-1:0];
+assign  transmit_data_first                                     = outbound_beat_fifo_read_data[BEAT_BUNDLE_WIDTH-2];
+assign  transmit_data_last                                      = outbound_beat_fifo_read_data[BEAT_BUNDLE_WIDTH-1];
+assign  transmit_data_byte_count                                = outbound_beat_fifo_read_data[(FABRIC_DATA_BYTES*8) +: FABRIC_BYTE_COUNT_WIDTH];
+assign  transmit_data_valid                                     = outbound_beat_fifo_read_data_valid && outbound_frame_fifo_read_data_valid;
 assign  module_transmit_data_ready                              = !module_inbound_fifo_full;
 assign  module_receive_data                                     = receive_slot_arbiter_push_data;
 assign  module_receive_data_valid                               = receive_slot_arbiter_push_data_valid;
 
 assign  outbound_fifo_read_clock                                = clock;
-assign  outbound_fifo_read_enable                               = transmit_data_enable;
+assign  outbound_fifo_read_enable                               = outbound_width_adapter_byte_data_ready;
 assign  outbound_fifo_read_reset_n                              = reset_n;
 assign  outbound_fifo_write_clock                               = clock;
 assign  outbound_fifo_write_data                                = {ethernet_frame_generator_frame_data_last, ethernet_frame_generator_frame_data};
 assign  outbound_fifo_write_enable                              = ethernet_frame_generator_frame_data_valid;
 assign  outbound_fifo_write_reset_n                             = reset_n;
+
+assign  outbound_width_adapter_clock                            = clock;
+assign  outbound_width_adapter_reset_n                          = reset_n;
+assign  outbound_width_adapter_byte_data                        = outbound_fifo_read_data[8:0];
+assign  outbound_width_adapter_byte_data_enable                 = outbound_fifo_read_data_valid;
+assign  outbound_width_adapter_byte_data_last                   = outbound_fifo_read_data[9];
+assign  outbound_width_adapter_beat_ready                       = !outbound_beat_fifo_full && !outbound_frame_fifo_full;
+
+assign  outbound_beat_fifo_clock                                = clock;
+assign  outbound_beat_fifo_reset_n                              = reset_n;
+assign  outbound_beat_fifo_read_enable                          = transmit_data_valid && transmit_data_enable;
+assign  outbound_beat_fifo_write_enable                         = outbound_width_adapter_beat_valid && outbound_width_adapter_beat_ready;
+assign  outbound_beat_fifo_write_data                           = {outbound_width_adapter_beat_last,
+                                                                  outbound_width_adapter_beat_first,
+                                                                  outbound_width_adapter_beat_byte_count,
+                                                                  outbound_width_adapter_beat_data};
+
+assign  outbound_frame_fifo_clock                               = clock;
+assign  outbound_frame_fifo_reset_n                             = reset_n;
+assign  outbound_frame_fifo_read_enable                         = outbound_beat_fifo_read_enable && transmit_data_last;
+assign  outbound_frame_fifo_write_enable                        = outbound_beat_fifo_write_enable && outbound_width_adapter_beat_last;
+assign  outbound_frame_fifo_write_data                          = 1'b1;
 
 assign  udp_transmit_handler_clock                              = clock;
 assign  udp_transmit_handler_reset_n                            = reset_n;
@@ -678,13 +881,33 @@ assign  frame_check_sequence_generator_data                     = ethernet_frame
 assign  frame_check_sequence_generator_data_enable              = ethernet_frame_generator_checksum_data_valid;
 assign  frame_check_sequence_generator_data_last                = ethernet_frame_generator_checksum_data_last;
 
+assign  switch_inbound_beat_fifo_read_clock                     = clock;
+assign  switch_inbound_beat_fifo_read_reset_n                   = reset_n;
+assign  switch_inbound_beat_fifo_write_clock                    = clock;
+assign  switch_inbound_beat_fifo_write_reset_n                  = reset_n;
+assign  switch_inbound_beat_fifo_read_enable                    = switch_inbound_width_adapter_beat_ready;
+assign  switch_inbound_beat_fifo_write_enable                   = receive_data_enable;
+assign  switch_inbound_beat_fifo_write_data                     = {receive_data_last,
+                                                                  receive_data_first,
+                                                                  receive_data_byte_count,
+                                                                  receive_data};
+
+assign  switch_inbound_width_adapter_clock                      = clock;
+assign  switch_inbound_width_adapter_reset_n                    = reset_n;
+assign  switch_inbound_width_adapter_beat_data                  = switch_inbound_beat_fifo_read_data[(FABRIC_DATA_BYTES*8)-1:0];
+assign  switch_inbound_width_adapter_beat_first                 = switch_inbound_beat_fifo_read_data[BEAT_BUNDLE_WIDTH-2];
+assign  switch_inbound_width_adapter_beat_last                  = switch_inbound_beat_fifo_read_data[BEAT_BUNDLE_WIDTH-1];
+assign  switch_inbound_width_adapter_beat_byte_count            = switch_inbound_beat_fifo_read_data[(FABRIC_DATA_BYTES*8) +: FABRIC_BYTE_COUNT_WIDTH];
+assign  switch_inbound_width_adapter_beat_enable                = switch_inbound_beat_fifo_read_data_valid;
+assign  switch_inbound_width_adapter_byte_data_ready            = !switch_inbound_fifo_full;
+
 assign  switch_inbound_fifo_read_clock                          = clock;
 assign  switch_inbound_fifo_read_reset_n                        = reset_n;
 assign  switch_inbound_fifo_write_clock                         = clock;
 assign  switch_inbound_fifo_write_reset_n                       = reset_n;
 assign  switch_inbound_fifo_read_enable                         = ethernet_frame_parser_data_ready;
-assign  switch_inbound_fifo_write_enable                        = receive_data_enable;
-assign  switch_inbound_fifo_write_data                          = receive_data;
+assign  switch_inbound_fifo_write_enable                        = switch_inbound_width_adapter_byte_data_valid && !switch_inbound_fifo_full;
+assign  switch_inbound_fifo_write_data                          = switch_inbound_width_adapter_byte_data;
 
 assign  ethernet_frame_parser_clock                             = clock;
 assign  ethernet_frame_parser_reset_n                           = reset_n;
