@@ -60,7 +60,7 @@ generate
         );
 
         assign phase_shifted_clock          = rgmii_pll_clock_wiz_clk_out1;
-        assign phase_shifted_clock_lock     = rgmii_pll_clock_wiz_locked;
+        assign lock                         = rgmii_pll_clock_wiz_locked;
         assign rgmii_pll_clock_wiz_reset    = !reset_n;
         assign rgmii_pll_clock_wiz_clk_in1  = clock; 
     end
@@ -80,7 +80,7 @@ generate
             phase_shifted_clock = _phase_shifted_clock;
         end
 
-        assign phase_shifted_clock_lock  = 1;
+        assign lock = 1;
     end
 endgenerate
 

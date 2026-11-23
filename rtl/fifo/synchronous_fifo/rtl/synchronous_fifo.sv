@@ -49,7 +49,7 @@ module synchronous_fifo#(
     output  wire                                full,
     output  wire                                almost_full,
     output  wire                                empty,
-    output  wire    [$clog2(DATA_DEPTH)-1:0]    words_available
+    output  wire    [$clog2(DATA_DEPTH):0]      words_available
 );
 
 
@@ -207,7 +207,7 @@ generate
         wire                                generic_synchronous_fifo_write_enable;
         wire    [DATA_WIDTH-1:0]            generic_synchronous_fifo_write_data;
 
-        wire    [$clog2(DATA_DEPTH)-1:0]    generic_synchronous_fifo_available_words;
+        wire    [$clog2(DATA_DEPTH):0]      generic_synchronous_fifo_available_words;
         wire    [DATA_WIDTH-1:0]            generic_synchronous_fifo_read_data;
         wire                                generic_synchronous_fifo_read_data_valid;
         wire                                generic_synchronous_fifo_full;

@@ -79,10 +79,12 @@ rgmii_byte_shipper #(
     .data               (fifo_read_data),
     .data_enable        (fifo_read_data_valid),
     .gap_shrink_enable  (!fifo_programmable_empty),
+    .speed_code         (2'd2),
 
-    .data_ready         (shipper_data_ready),
-    .shipped_data       (shipper_shipped_data),
-    .shipped_data_valid (shipper_shipped_data_valid)
+    .data_ready             (shipper_data_ready),
+    .shipped_data           (shipper_shipped_data),
+    .shipped_data_valid     (shipper_shipped_data_valid),
+    .shipped_clock_pattern  ()
 );
 
 integer dropped_writes  = 0;

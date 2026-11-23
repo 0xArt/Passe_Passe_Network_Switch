@@ -72,12 +72,8 @@ module switch_core#(
     output  wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]       module_transmit_data_ready
 );
 
-localparam NUMBER_OF_PORTS = NUMBER_OF_RMII_PORTS + NUMBER_OF_VIRTUAL_PORTS + NUMBER_OF_RGMII_PORTS;
-
-//timeouts are wall clock requirements, so derive the cycle counts from the
-//core clock. stall recovery is 100 us (a stream that makes no progress is
-//abandoned); admission retry is 2 ms (long enough to drain one reserved
-//frame through a 10 megabit wire before giving up)
+localparam NUMBER_OF_PORTS          = NUMBER_OF_RMII_PORTS + NUMBER_OF_VIRTUAL_PORTS + NUMBER_OF_RGMII_PORTS;
+localparam FABRIC_BYTE_COUNT_WIDTH  = $clog2(FABRIC_DATA_BYTES+1);
 localparam STALL_TIMEOUT_CYCLES     = CORE_CLOCK_FREQUENCY / 10_000;
 localparam ADMISSION_RETRY_CYCLES   = CORE_CLOCK_FREQUENCY / 500;
 
@@ -145,37 +141,46 @@ generate
 endgenerate
 
 
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_clock;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_reset_n;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][47:0]     virtual_port_udp_mac_source;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][31:0]     virtual_port_udp_ipv4_source;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]      virtual_port_udp_receive_data;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_receive_data_enable;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_transmit_data_enable;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_module_clock;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]      virtual_port_udp_module_transmit_data;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_module_transmit_data_enable;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_clock;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_reset_n;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][47:0]                             virtual_port_udp_mac_source;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][31:0]                             virtual_port_udp_ipv4_source;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][(FABRIC_DATA_BYTES*8)-1:0]        virtual_port_udp_receive_data;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_receive_data_first;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_receive_data_last;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][FABRIC_BYTE_COUNT_WIDTH-1:0]      virtual_port_udp_receive_data_byte_count;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_receive_data_enable;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_transmit_data_enable;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_module_clock;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]                              virtual_port_udp_module_transmit_data;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_module_transmit_data_enable;
 
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_receive_data_ready;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_receive_frame_ready;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]      virtual_port_udp_transmit_data;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_transmit_data_valid;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_transmit_data_last;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]      virtual_port_udp_module_receive_data;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_module_receive_data_valid;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]           virtual_port_udp_module_transmit_data_ready;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_receive_data_ready;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_receive_frame_ready;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][(FABRIC_DATA_BYTES*8)-1:0]        virtual_port_udp_transmit_data;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_transmit_data_first;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_transmit_data_last;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][FABRIC_BYTE_COUNT_WIDTH-1:0]      virtual_port_udp_transmit_data_byte_count;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_transmit_data_valid;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]                              virtual_port_udp_module_receive_data;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_module_receive_data_valid;
+wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_port_udp_module_transmit_data_ready;
 
 generate
     for (i=0; i<NUMBER_OF_VIRTUAL_PORTS; i =i+1) begin
         virtual_port_udp #(
             .RECEIVE_QUEUE_SLOTS  (RECEIVE_QUEUE_SLOTS),
-            .TECHNOLOGY         (TECHNOLOGY)
+            .FABRIC_DATA_BYTES    (FABRIC_DATA_BYTES),
+            .TECHNOLOGY           (TECHNOLOGY)
         )virtual_port_udp(
             .clock                              (virtual_port_udp_clock[i]),
             .reset_n                            (virtual_port_udp_reset_n[i]),
             .mac_source                         (virtual_port_udp_mac_source[i]),
             .ipv4_source                        (virtual_port_udp_ipv4_source[i]),
             .receive_data                       (virtual_port_udp_receive_data[i]),
+            .receive_data_first                 (virtual_port_udp_receive_data_first[i]),
+            .receive_data_last                  (virtual_port_udp_receive_data_last[i]),
+            .receive_data_byte_count            (virtual_port_udp_receive_data_byte_count[i]),
             .receive_data_enable                (virtual_port_udp_receive_data_enable[i]),
             .transmit_data_enable               (virtual_port_udp_transmit_data_enable[i]),
             .module_clock                       (virtual_port_udp_module_clock[i]),
@@ -187,8 +192,10 @@ generate
             .receive_data_ready                 (virtual_port_udp_receive_data_ready[i]),
             .receive_frame_ready                (virtual_port_udp_receive_frame_ready[i]),
             .transmit_data                      (virtual_port_udp_transmit_data[i]),
-            .transmit_data_valid                (virtual_port_udp_transmit_data_valid[i]),
+            .transmit_data_first                (virtual_port_udp_transmit_data_first[i]),
             .transmit_data_last                 (virtual_port_udp_transmit_data_last[i]),
+            .transmit_data_byte_count           (virtual_port_udp_transmit_data_byte_count[i]),
+            .transmit_data_valid                (virtual_port_udp_transmit_data_valid[i]),
             .module_transmit_data_ready         (virtual_port_udp_module_transmit_data_ready[i])
         );
     end
@@ -263,21 +270,6 @@ generate
 endgenerate
 
 
-//output queued fabric. one header engine per ingress port, one scheduler
-//per egress port, one shared cam behind the arbiter. width adapters bridge
-//the byte serial virtual ports onto FABRIC_DATA_BYTES wide fabric beats
-//and elaborate to wires at one byte
-localparam FABRIC_BYTE_COUNT_WIDTH = $clog2(FABRIC_DATA_BYTES+1);
-
-//the byte serial virtual port drains slower than the fabric streams, so a
-//beat wide staging fifo fronts it. the fabric handshake sees a full rate
-//fifo admission instead of the byte pace, which keeps a flooded frame from
-//throttling (and truncating) the copies bound for the gigabit wires
-localparam VIRTUAL_EGRESS_BUNDLE_WIDTH  = (FABRIC_DATA_BYTES*8) + FABRIC_BYTE_COUNT_WIDTH + 2;
-localparam VIRTUAL_EGRESS_FIFO_DEPTH    = 4096 / FABRIC_DATA_BYTES;
-localparam VIRTUAL_EGRESS_FRAME_RESERVE = 1536 / FABRIC_DATA_BYTES;
-
-//per port readiness rails driven by the port type assign blocks below
 wire    [NUMBER_OF_PORTS-1:0]                       port_transmit_ready;
 wire    [NUMBER_OF_PORTS-1:0]                       port_transmit_frame_ready;
 wire    [NUMBER_OF_PORTS-1:0]                       egress_beat_ready;
@@ -481,118 +473,6 @@ cam_table(
 );
 
 
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_up_clock;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_up_reset_n;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]                              width_adapter_up_byte_data;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_up_byte_data_enable;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_up_byte_data_last;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_up_beat_ready;
-
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_up_byte_data_ready;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][(FABRIC_DATA_BYTES*8)-1:0]        width_adapter_up_beat_data;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_up_beat_first;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_up_beat_last;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][FABRIC_BYTE_COUNT_WIDTH-1:0]      width_adapter_up_beat_byte_count;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_up_beat_valid;
-
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_down_clock;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_down_reset_n;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][(FABRIC_DATA_BYTES*8)-1:0]        width_adapter_down_beat_data;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_down_beat_first;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_down_beat_last;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][FABRIC_BYTE_COUNT_WIDTH-1:0]      width_adapter_down_beat_byte_count;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_down_beat_enable;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_down_byte_data_ready;
-
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_down_beat_ready;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][8:0]                              width_adapter_down_byte_data;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_down_byte_data_valid;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   width_adapter_down_byte_data_last;
-
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_read_clock;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_read_reset_n;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_write_clock;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_write_reset_n;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_read_enable;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_write_enable;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][VIRTUAL_EGRESS_BUNDLE_WIDTH-1:0]  virtual_egress_fifo_write_data;
-
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0][VIRTUAL_EGRESS_BUNDLE_WIDTH-1:0]  virtual_egress_fifo_read_data;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_read_data_valid;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_full;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_almost_full;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_programmable_full;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_empty;
-wire    [NUMBER_OF_VIRTUAL_PORTS-1:0]                                   virtual_egress_fifo_programmable_empty;
-
-generate
-    for (i=0; i<NUMBER_OF_VIRTUAL_PORTS; i=i+1) begin : virtual_port_width_adapters
-        //the virtual port stays byte serial, so it crosses into and out of
-        //the fabric through width adapters (wires at one byte per beat)
-        width_adapter_up #(
-            .FABRIC_DATA_BYTES  (FABRIC_DATA_BYTES)
-        ) width_adapter_up (
-            .clock              (width_adapter_up_clock[i]),
-            .reset_n            (width_adapter_up_reset_n[i]),
-            .byte_data          (width_adapter_up_byte_data[i]),
-            .byte_data_enable   (width_adapter_up_byte_data_enable[i]),
-            .byte_data_last     (width_adapter_up_byte_data_last[i]),
-            .beat_ready         (width_adapter_up_beat_ready[i]),
-
-            .byte_data_ready    (width_adapter_up_byte_data_ready[i]),
-            .beat_data          (width_adapter_up_beat_data[i]),
-            .beat_first         (width_adapter_up_beat_first[i]),
-            .beat_last          (width_adapter_up_beat_last[i]),
-            .beat_byte_count    (width_adapter_up_beat_byte_count[i]),
-            .beat_valid         (width_adapter_up_beat_valid[i])
-        );
-
-        width_adapter_down #(
-            .FABRIC_DATA_BYTES  (FABRIC_DATA_BYTES)
-        ) width_adapter_down (
-            .clock              (width_adapter_down_clock[i]),
-            .reset_n            (width_adapter_down_reset_n[i]),
-            .beat_data          (width_adapter_down_beat_data[i]),
-            .beat_first         (width_adapter_down_beat_first[i]),
-            .beat_last          (width_adapter_down_beat_last[i]),
-            .beat_byte_count    (width_adapter_down_beat_byte_count[i]),
-            .beat_enable        (width_adapter_down_beat_enable[i]),
-            .byte_data_ready    (width_adapter_down_byte_data_ready[i]),
-
-            .beat_ready         (width_adapter_down_beat_ready[i]),
-            .byte_data          (width_adapter_down_byte_data[i]),
-            .byte_data_valid    (width_adapter_down_byte_data_valid[i]),
-            .byte_data_last     (width_adapter_down_byte_data_last[i])
-        );
-
-        asynchronous_fifo #(
-            .DATA_WIDTH                     (VIRTUAL_EGRESS_BUNDLE_WIDTH),
-            .DATA_DEPTH                     (VIRTUAL_EGRESS_FIFO_DEPTH),
-            .FIRST_WORD_FALL_THROUGH        (1),
-            .TECHNOLOGY                     (TECHNOLOGY),
-            .NUMBER_OF_CDC_STAGES           (2),
-            .PROGRAMMABLE_FULL_THRESHOLD    (VIRTUAL_EGRESS_FIFO_DEPTH - VIRTUAL_EGRESS_FRAME_RESERVE)
-        ) virtual_egress_fifo (
-            .read_clock         (virtual_egress_fifo_read_clock[i]),
-            .read_reset_n       (virtual_egress_fifo_read_reset_n[i]),
-            .write_clock        (virtual_egress_fifo_write_clock[i]),
-            .write_reset_n      (virtual_egress_fifo_write_reset_n[i]),
-            .read_enable        (virtual_egress_fifo_read_enable[i]),
-            .write_enable       (virtual_egress_fifo_write_enable[i]),
-            .write_data         (virtual_egress_fifo_write_data[i]),
-
-            .read_data          (virtual_egress_fifo_read_data[i]),
-            .read_data_valid    (virtual_egress_fifo_read_data_valid[i]),
-            .full               (virtual_egress_fifo_full[i]),
-            .almost_full        (virtual_egress_fifo_almost_full[i]),
-            .programmable_full  (virtual_egress_fifo_programmable_full[i]),
-            .empty              (virtual_egress_fifo_empty[i]),
-            .programmable_empty (virtual_egress_fifo_programmable_empty[i])
-        );
-    end
-endgenerate
-
-
 generate
     for (i=0; i<NUMBER_OF_RMII_PORTS; i=i+1) begin
         assign rmii_port_clock[i]                                   = rmii_clock[i];
@@ -625,9 +505,12 @@ generate
     for (i=0; i<NUMBER_OF_VIRTUAL_PORTS; i=i+1) begin
         assign  virtual_port_udp_clock[i]                                   = clock;
         assign  virtual_port_udp_reset_n[i]                                 = reset_n;
-        assign  virtual_port_udp_receive_data[i]                            = width_adapter_down_byte_data[i];
-        assign  virtual_port_udp_receive_data_enable[i]                     = width_adapter_down_byte_data_valid[i] && port_transmit_ready[i+NUMBER_OF_RMII_PORTS];
-        assign  virtual_port_udp_transmit_data_enable[i]                    = width_adapter_up_byte_data_ready[i];
+        assign  virtual_port_udp_receive_data[i]                            = egress_scheduler_transmit_data[i+NUMBER_OF_RMII_PORTS];
+        assign  virtual_port_udp_receive_data_first[i]                      = egress_scheduler_transmit_first[i+NUMBER_OF_RMII_PORTS];
+        assign  virtual_port_udp_receive_data_last[i]                       = egress_scheduler_transmit_last[i+NUMBER_OF_RMII_PORTS];
+        assign  virtual_port_udp_receive_data_byte_count[i]                 = egress_scheduler_transmit_byte_count[i+NUMBER_OF_RMII_PORTS];
+        assign  virtual_port_udp_receive_data_enable[i]                     = egress_scheduler_transmit_valid[i+NUMBER_OF_RMII_PORTS];
+        assign  virtual_port_udp_transmit_data_enable[i]                    = port_header_engine_in_ready[i+NUMBER_OF_RMII_PORTS];
         assign  virtual_port_udp_module_clock[i]                            = module_clock[i];
         assign  virtual_port_udp_module_transmit_data[i]                    = module_transmit_data[i];
         assign  virtual_port_udp_module_transmit_data_enable[i]             = module_transmit_data_enable[i];
@@ -636,42 +519,15 @@ generate
 
         assign  module_receive_data[i]                                      = virtual_port_udp_module_receive_data[i];
         assign  module_receive_data_valid[i]                                = virtual_port_udp_module_receive_data_valid[i];
-        assign  port_transmit_ready[i+NUMBER_OF_RMII_PORTS]                 = virtual_port_udp_receive_data_ready[i];
-        assign  port_transmit_frame_ready[i+NUMBER_OF_RMII_PORTS]           = virtual_port_udp_receive_frame_ready[i] && !virtual_egress_fifo_programmable_full[i];
         assign  module_transmit_data_ready[i]                               = virtual_port_udp_module_transmit_data_ready[i];
-
-        assign  width_adapter_up_clock[i]                                   = clock;
-        assign  width_adapter_up_reset_n[i]                                 = reset_n;
-        assign  width_adapter_up_byte_data[i]                               = virtual_port_udp_transmit_data[i];
-        assign  width_adapter_up_byte_data_enable[i]                        = virtual_port_udp_transmit_data_valid[i];
-        assign  width_adapter_up_byte_data_last[i]                          = virtual_port_udp_transmit_data_last[i];
-        assign  width_adapter_up_beat_ready[i]                              = port_header_engine_in_ready[i+NUMBER_OF_RMII_PORTS];
-        assign  port_header_engine_in_data[i+NUMBER_OF_RMII_PORTS]          = width_adapter_up_beat_data[i];
-        assign  port_header_engine_in_first[i+NUMBER_OF_RMII_PORTS]         = width_adapter_up_beat_first[i];
-        assign  port_header_engine_in_last[i+NUMBER_OF_RMII_PORTS]          = width_adapter_up_beat_last[i];
-        assign  port_header_engine_in_byte_count[i+NUMBER_OF_RMII_PORTS]    = width_adapter_up_beat_byte_count[i];
-        assign  port_header_engine_in_enable[i+NUMBER_OF_RMII_PORTS]        = width_adapter_up_beat_valid[i];
-
-        assign  virtual_egress_fifo_read_clock[i]                           = clock;
-        assign  virtual_egress_fifo_read_reset_n[i]                         = reset_n;
-        assign  virtual_egress_fifo_write_clock[i]                          = clock;
-        assign  virtual_egress_fifo_write_reset_n[i]                        = reset_n;
-        assign  virtual_egress_fifo_write_data[i]                           = {egress_scheduler_transmit_last[i+NUMBER_OF_RMII_PORTS],
-                                                                               egress_scheduler_transmit_first[i+NUMBER_OF_RMII_PORTS],
-                                                                               egress_scheduler_transmit_byte_count[i+NUMBER_OF_RMII_PORTS],
-                                                                               egress_scheduler_transmit_data[i+NUMBER_OF_RMII_PORTS]};
-        assign  virtual_egress_fifo_write_enable[i]                         = egress_scheduler_transmit_valid[i+NUMBER_OF_RMII_PORTS];
-        assign  virtual_egress_fifo_read_enable[i]                          = width_adapter_down_beat_ready[i];
-
-        assign  width_adapter_down_clock[i]                                 = clock;
-        assign  width_adapter_down_reset_n[i]                               = reset_n;
-        assign  width_adapter_down_beat_data[i]                             = virtual_egress_fifo_read_data[i][(FABRIC_DATA_BYTES*8)-1:0];
-        assign  width_adapter_down_beat_first[i]                            = virtual_egress_fifo_read_data[i][VIRTUAL_EGRESS_BUNDLE_WIDTH-2];
-        assign  width_adapter_down_beat_last[i]                             = virtual_egress_fifo_read_data[i][VIRTUAL_EGRESS_BUNDLE_WIDTH-1];
-        assign  width_adapter_down_beat_byte_count[i]                       = virtual_egress_fifo_read_data[i][(FABRIC_DATA_BYTES*8) +: FABRIC_BYTE_COUNT_WIDTH];
-        assign  width_adapter_down_beat_enable[i]                           = virtual_egress_fifo_read_data_valid[i];
-        assign  width_adapter_down_byte_data_ready[i]                       = port_transmit_ready[i+NUMBER_OF_RMII_PORTS];
-        assign  egress_beat_ready[i+NUMBER_OF_RMII_PORTS]                   = !virtual_egress_fifo_full[i];
+        assign  port_transmit_ready[i+NUMBER_OF_RMII_PORTS]                 = virtual_port_udp_receive_data_ready[i];
+        assign  port_transmit_frame_ready[i+NUMBER_OF_RMII_PORTS]           = virtual_port_udp_receive_frame_ready[i];
+        assign  egress_beat_ready[i+NUMBER_OF_RMII_PORTS]                   = virtual_port_udp_receive_data_ready[i];
+        assign  port_header_engine_in_data[i+NUMBER_OF_RMII_PORTS]          = virtual_port_udp_transmit_data[i];
+        assign  port_header_engine_in_first[i+NUMBER_OF_RMII_PORTS]         = virtual_port_udp_transmit_data_first[i];
+        assign  port_header_engine_in_last[i+NUMBER_OF_RMII_PORTS]          = virtual_port_udp_transmit_data_last[i];
+        assign  port_header_engine_in_byte_count[i+NUMBER_OF_RMII_PORTS]    = virtual_port_udp_transmit_data_byte_count[i];
+        assign  port_header_engine_in_enable[i+NUMBER_OF_RMII_PORTS]        = virtual_port_udp_transmit_data_valid[i];
     end
 endgenerate
 

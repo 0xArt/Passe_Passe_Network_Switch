@@ -26,7 +26,7 @@ redesign.
 
 ## Simulation
 
-The regression testbench (`test/testbench.sv`, cases 000-012) runs in Questa
+The regression testbench (`test/testbench.sv`, cases 000-014) runs in Questa
 with `do run.do`, or headless:
 
 ```
@@ -197,3 +197,31 @@ how slowly the virtual port drains.
 gigabit wire with the virtual port in the flood set. Before the staging FIFO
 this case failed at the reduced core clock exactly as predicted — the first
 copy truncated mid frame and the rest collapsed to short fragments.
+
+### case 013 — RGMII tri speed
+
+RGMII port 1 renegotiates to 100 megabit: the phy receive clock drops to
+25 MHz and the idle data lines carry the RGMII in band status, which the
+byte packager decodes for the link speed. Forwarding is then checked in
+both directions. A 100 megabit frame (one duplicated nibble per clock, low
+nibble first) forwards to the gigabit port 0 wire, and a gigabit frame
+forwards back out of port 1 at 100 megabit, decoded nibble by nibble
+against the generated 25 MHz transmit clock. The transmit side never
+changes clock domains: the shipper stretches every nibble and generates
+the slower transmit clock as a ddr pattern, so no clock muxing is needed.
+
+**Result: pass.** Both frames arrive complete and CRC clean, and the
+generated transmit clock measures exactly 25 MHz with fifty percent duty.
+
+### case 014 — RGMII 10 megabit
+
+The same tri speed path as case 013, one step slower: RGMII port 1
+renegotiates to 10 megabit, dropping the phy receive clock to 2.5 MHz and
+stretching every nibble across fifty transmit cycles. Both directions are
+checked — a 10 megabit frame forwards to the gigabit port 0 wire, and a
+gigabit frame egresses port 1 at 10 megabit, decoded nibble by nibble
+against the generated 2.5 MHz transmit clock.
+
+**Result: pass.** Both frames arrive complete and CRC clean, and the
+generated transmit clock measures exactly 2.5 MHz (400 ns period) with
+fifty percent duty.

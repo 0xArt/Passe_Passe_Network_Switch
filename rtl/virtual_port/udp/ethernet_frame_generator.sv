@@ -188,8 +188,6 @@ logic   [15:0]                                  _saved_ipv4_flags;
 reg     [15:0]                                  saved_ipv4_identification;
 logic   [15:0]                                  _saved_ipv4_identification;
 logic                                           _checksum_data_last;
-reg     [15:0]                                  _saved_udp_checksum;
-logic   [15:0]                                  saved_udp_checksum;
 logic   [15:0]                                  _ipv4_checksum_data;
 logic   [$clog2(UDP_TRANSMIT_BUFFER_SIZE)-1:0]  _udp_buffer_read_address;
 logic   [2:0][8:0]                              _frame_byte;
@@ -226,7 +224,6 @@ always_comb begin
     _saved_ipv4_flags                   = saved_ipv4_flags;
     _saved_ipv4_identification          = saved_ipv4_identification;
     _saved_ipv4_checksum                = saved_ipv4_checksum;
-    _saved_udp_checksum                 = saved_udp_checksum;
     _ipv4_checksum_data                 = ipv4_checksum_data;
     _fragment_offset                    = fragment_offset;
     _frame_byte[2]                      = frame_byte[1];
@@ -284,7 +281,6 @@ always_comb begin
             _frame_total_length                 = frame_total_length;
             _saved_ipv4_flags                   = ipv4_flags;
             _saved_ipv4_identification          = ipv4_identification;
-            _saved_udp_checksum                 = udp_checksum;
             _fragment_offset                    = ipv4_flags[11:0];
 
             if (enable) begin
@@ -552,12 +548,14 @@ always_comb begin
             end
         end
         S_UDP_CHECKSUM_MSB: begin
-            _frame_byte[0][7:0]         = saved_udp_checksum[15:8];
+            // the udp checksum input is read live here: the calculator result has
+            // long settled by this state, avoiding the capture race at S_IDLE
+            _frame_byte[0][7:0]         = udp_checksum[15:8];
             _frame_byte_valid[0]        = 1;
             _state                      = S_UDP_CHECKSUM_LSB;
         end
         S_UDP_CHECKSUM_LSB: begin
-            _frame_byte[0][7:0]             = saved_udp_checksum[7:0];
+            _frame_byte[0][7:0]             = udp_checksum[7:0];
             _frame_byte_valid[0]            = 1;
             process_cycle_timer_count       = saved_udp_fragment_size - 1;
             process_cycle_timer_load_count  = 1;
@@ -666,7 +664,6 @@ always_ff @(posedge clock) begin
         saved_checksum_result           <=  0;
         saved_ipv4_flags                <=  0;
         checksum_data_last              <=  0;
-        saved_udp_checksum              <=  0;
         saved_ipv4_checksum             <=  0;
         frame_byte[0]                   <=  0;
         frame_byte[1]                   <=  0;
@@ -700,7 +697,6 @@ always_ff @(posedge clock) begin
         saved_ipv4_flags                <=  _saved_ipv4_flags;
         saved_ipv4_identification       <=  _saved_ipv4_identification;
         checksum_data_last              <=  _checksum_data_last;
-        saved_udp_checksum              <=  _saved_udp_checksum;
         saved_ipv4_checksum             <=  _saved_ipv4_checksum;
         frame_byte[0]                   <=  _frame_byte[0];
         frame_byte[1]                   <=  _frame_byte[1];
